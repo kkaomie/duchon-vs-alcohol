@@ -4,7 +4,7 @@
     "description": "An offline installable HTML game for mobile",
     "start_url": "/duchon-vs-alcohol/index.html",
     "scope": "/duchon-vs-alcohol/",
-    "display": "minimal-ui",
+    "display": "fullscreen",
     "background_color": "#1a7e28",
     "theme_color": "#1a7e28",
     "orientation": "portrait-primary",

@@ -4,32 +4,32 @@
     "description": "An offline installable HTML game for mobile",
     "start_url": "/duchon-vs-alcohol/index.html",
     "scope": "/duchon-vs-alcohol/",
-    "display": "standalone",
+    "display": "minimal-ui",
     "background_color": "#1a7e28",
     "theme_color": "#1a7e28",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
         {
-            "src": "./assets/icons/icon-192.png",
+            "src": "/duchon-vs-alcohol/assets/icons/icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "./assets/icons/icon-192.png",
+            "src": "/duchon-vs-alcohol/assets/icons/icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable"
         },
         {
-            "src": "./assets/icons/icon-512.png",
+            "src": "/duchon-vs-alcohol/assets/icons/icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "./assets/icons/icon-512.png",
+            "src": "/duchon-vs-alcohol/assets/icons/icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
@@ -38,7 +38,7 @@
     "categories": ["games"],
     "screenshots": [
         {
-            "src": "./assets/icons/icon-192.png",
+            "src": "/duchon-vs-alcohol/assets/icons/icon-192.png",
             "sizes": "192x192",
             "type": "image/png"
         }

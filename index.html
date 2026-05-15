@@ -46,66 +46,66 @@
                 .catch(err => console.log('Service Worker failed:', err));
         }
 
-        // Screen Navigation - Wait for DOM to load
-        document.addEventListener('DOMContentLoaded', () => {
-            const homeScreen = document.getElementById('home-screen');
-            const gameScreen = document.getElementById('game-screen');
-            const installScreen = document.getElementById('install-screen');
+        // Get elements
+        const homeScreen = document.getElementById('home-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const installScreen = document.getElementById('install-screen');
+        const playBtn = document.getElementById('play-btn');
+        const installBtn = document.getElementById('install-btn');
+        const refreshSwBtn = document.getElementById('refresh-sw-btn');
+        const backBtn = document.getElementById('back-btn');
 
-            const playBtn = document.getElementById('play-btn');
-            const installBtn = document.getElementById('install-btn');
-            const refreshSwBtn = document.getElementById('refresh-sw-btn');
-            const backBtn = document.getElementById('back-btn');
+        // Ensure home screen is visible on load
+        homeScreen.classList.remove('hidden');
+        gameScreen.classList.add('hidden');
+        installScreen.classList.add('hidden');
 
-            // Ensure home screen is visible on load
+        // Play button
+        playBtn.addEventListener('click', () => {
+            homeScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            installScreen.classList.add('hidden');
+            initGame();
+        });
+
+        // Install/Tutorial button
+        installBtn.addEventListener('click', () => {
+            homeScreen.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            installScreen.classList.remove('hidden');
+        });
+
+        // Back button
+        backBtn.addEventListener('click', () => {
             homeScreen.classList.remove('hidden');
             gameScreen.classList.add('hidden');
             installScreen.classList.add('hidden');
+        });
 
-            playBtn.addEventListener('click', () => {
-                homeScreen.classList.add('hidden');
-                gameScreen.classList.remove('hidden');
-                installScreen.classList.add('hidden');
-                initGame();
-            });
-
-            installBtn.addEventListener('click', () => {
-                homeScreen.classList.add('hidden');
-                gameScreen.classList.add('hidden');
-                installScreen.classList.remove('hidden');
-            });
-
-            backBtn.addEventListener('click', () => {
-                homeScreen.classList.remove('hidden');
-                gameScreen.classList.add('hidden');
-                installScreen.classList.add('hidden');
-            });
-
-            // Refresh Service Worker and Clear Cache
-            refreshSwBtn.addEventListener('click', async () => {
-                try {
-                    // Unregister all service workers
-                    const registrations = await navigator.serviceWorker.getRegistrations();
-                    for (let registration of registrations) {
-                        await registration.unregister();
-                    }
-
-                    // Clear all caches
-                    const cacheNames = await caches.keys();
-                    for (let cacheName of cacheNames) {
-                        await caches.delete(cacheName);
-                    }
-
-                    // Re-register service worker
-                    await navigator.serviceWorker.register('./service-worker.js');
-                    
-                    alert('Service Worker obnovený! Aplikácia sa bude obnovovať.');
-                    location.reload();
-                } catch (err) {
-                    console.error('Error refreshing Service Worker:', err);
-                    alert('Chyba pri obnove Service Workera');
+        // Refresh Service Worker and Clear Cache
+        refreshSwBtn.addEventListener('click', async () => {
+            try {
+                // Unregister all service workers
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.unregister();
                 }
-            });
+
+                // Clear all caches
+                const cacheNames = await caches.keys();
+                for (let cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                }
+
+                // Re-register service worker
+                await navigator.serviceWorker.register('./service-worker.js');
+                
+                alert('Service Worker obnovený! Aplikácia sa bude obnovovať.');
+                location.reload();
+            } catch (err) {
+                console.error('Error refreshing Service Worker:', err);
+                alert('Chyba pri obnove Service Workera');
+            }
         });
     </script>
 </body>

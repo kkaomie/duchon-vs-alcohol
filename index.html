@@ -15,7 +15,7 @@
     <title>Duchon vs Alcohol</title>
 </head>
 <body>
-    <div id="home-screen" class="screen">
+    <div id="home-screen" class="screen" style="display: flex !important;">
         <div class="background"></div>
         <div class="button-container">
             <button id="play-btn" class="game-button">hrať hríčku</button>
@@ -24,11 +24,11 @@
         </div>
     </div>
 
-    <div id="game-screen" class="screen hidden">
+    <div id="game-screen" class="screen hidden" style="display: none !important;">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
 
-    <div id="install-screen" class="screen hidden">
+    <div id="install-screen" class="screen hidden" style="display: none !important;">
         <button id="back-btn" class="back-button">← Späť</button>
         <div class="install-content">
             <img src="./assets/tutinst1.png" alt="Installation step 1" class="install-image">
@@ -55,19 +55,29 @@
         const refreshSwBtn = document.getElementById('refresh-sw-btn');
         const backBtn = document.getElementById('back-btn');
 
-        // Initialize screens - home screen visible, others hidden
-        function showHomeScreen() {
+        // Force home screen to show on load - ABSOLUTE PRIORITY
+        window.addEventListener('load', () => {
+            homeScreen.style.display = 'flex';
+            gameScreen.style.display = 'none';
+            installScreen.style.display = 'none';
             homeScreen.classList.remove('hidden');
             gameScreen.classList.add('hidden');
             installScreen.classList.add('hidden');
-        }
+        });
 
-        // Set initial state
-        document.addEventListener('DOMContentLoaded', showHomeScreen);
-        showHomeScreen();
+        // Also do it immediately
+        homeScreen.style.display = 'flex';
+        gameScreen.style.display = 'none';
+        installScreen.style.display = 'none';
+        homeScreen.classList.remove('hidden');
+        gameScreen.classList.add('hidden');
+        installScreen.classList.add('hidden');
 
         // Play button
         playBtn.addEventListener('click', () => {
+            homeScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            installScreen.style.display = 'none';
             homeScreen.classList.add('hidden');
             gameScreen.classList.remove('hidden');
             installScreen.classList.add('hidden');
@@ -76,16 +86,24 @@
 
         // Install/Tutorial button
         installBtn.addEventListener('click', () => {
+            homeScreen.style.display = 'none';
+            gameScreen.style.display = 'none';
+            installScreen.style.display = 'flex';
             homeScreen.classList.add('hidden');
             gameScreen.classList.add('hidden');
             installScreen.classList.remove('hidden');
         });
 
-        // Back button - now with improved handling
+        // Back button - return to home
         backBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            showHomeScreen();
+            homeScreen.style.display = 'flex';
+            gameScreen.style.display = 'none';
+            installScreen.style.display = 'none';
+            homeScreen.classList.remove('hidden');
+            gameScreen.classList.add('hidden');
+            installScreen.classList.add('hidden');
         });
 
         // Refresh Service Worker and Clear Cache

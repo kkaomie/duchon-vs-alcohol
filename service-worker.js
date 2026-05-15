@@ -1,4 +1,4 @@
-const CACHE_NAME = 'html-game-v2';
+const CACHE_NAME = 'html-game-v3';
 const urlsToCache = [
     './',
     './index.html',
@@ -6,7 +6,11 @@ const urlsToCache = [
     './game.js',
     './manifest.json',
     './assets/icons/icon-192.png',
-    './assets/icons/icon-512.png'
+    './assets/icons/icon-512.png',
+    './assets/mainbcg.png',
+    './assets/tutinst1.png',
+    './assets/tutinst2.png',
+    './assets/tutinst3.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -38,14 +42,11 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+    // Network first strategy - try to fetch fresh data first
     event.respondWith(
-        caches.match(event.request).then((response) => {
-            if (response) {
-                console.log('Serving from cache:', event.request.url);
-                return response;
-            }
-            
-            return fetch(event.request).then((response) => {
+        fetch(event.request)
+            .then((response) => {
+                // If successful, cache it and return it
                 if (!response || response.status !== 200 || response.type === 'error') {
                     return response;
                 }
@@ -55,11 +56,15 @@ self.addEventListener('fetch', (event) => {
                     cache.put(event.request, responseToCache);
                 });
                 
+                console.log('Fetched from network:', event.request.url);
                 return response;
-            });
-        }).catch(() => {
-            console.log('Network request failed, returning cached index.html');
-            return caches.match('./index.html');
-        })
+            })
+            .catch(() => {
+                // If network fails, fall back to cache
+                console.log('Network failed, using cache:', event.request.url);
+                return caches.match(event.request).then((response) => {
+                    return response || caches.match('./index.html');
+                });
+            })
     );
 });

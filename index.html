@@ -55,10 +55,16 @@
         const refreshSwBtn = document.getElementById('refresh-sw-btn');
         const backBtn = document.getElementById('back-btn');
 
-        // Ensure home screen is visible on load
-        homeScreen.classList.remove('hidden');
-        gameScreen.classList.add('hidden');
-        installScreen.classList.add('hidden');
+        // Initialize screens - home screen visible, others hidden
+        function showHomeScreen() {
+            homeScreen.classList.remove('hidden');
+            gameScreen.classList.add('hidden');
+            installScreen.classList.add('hidden');
+        }
+
+        // Set initial state
+        document.addEventListener('DOMContentLoaded', showHomeScreen);
+        showHomeScreen();
 
         // Play button
         playBtn.addEventListener('click', () => {
@@ -75,11 +81,11 @@
             installScreen.classList.remove('hidden');
         });
 
-        // Back button
-        backBtn.addEventListener('click', () => {
-            homeScreen.classList.remove('hidden');
-            gameScreen.classList.add('hidden');
-            installScreen.classList.add('hidden');
+        // Back button - now with improved handling
+        backBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showHomeScreen();
         });
 
         // Refresh Service Worker and Clear Cache

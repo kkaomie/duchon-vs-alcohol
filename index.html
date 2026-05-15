@@ -15,18 +15,88 @@
     <title>Duchon vs Alcohol</title>
 </head>
 <body>
-    <div id="game-container">
-        <h1>Welcome to My Game</h1>
+    <div id="home-screen" class="screen">
+        <div class="background"></div>
+        <div class="button-container">
+            <button id="play-btn" class="game-button">hrať hríčku</button>
+            <button id="install-btn" class="game-button">ako nainštalovať PWA</button>
+            <button id="refresh-sw-btn" class="game-button">obnoviť service-worker.js</button>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen hidden">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
+    </div>
+
+    <div id="install-screen" class="screen hidden">
+        <button id="back-btn" class="back-button">← Späť</button>
+        <div class="install-content">
+            <img src="./assets/tutinst1.png" alt="Installation step 1" class="install-image">
+            <img src="./assets/tutinst2.png" alt="Installation step 2" class="install-image">
+            <img src="./assets/tutinst3.png" alt="Installation step 3" class="install-image">
+        </div>
     </div>
     
     <script src="game.js"></script>
     <script>
+        // Service Worker Registration
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./service-worker.js')
                 .then(() => console.log('Service Worker registered'))
                 .catch(err => console.log('Service Worker failed:', err));
         }
+
+        // Screen Navigation
+        const homeScreen = document.getElementById('home-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const installScreen = document.getElementById('install-screen');
+
+        const playBtn = document.getElementById('play-btn');
+        const installBtn = document.getElementById('install-btn');
+        const refreshSwBtn = document.getElementById('refresh-sw-btn');
+        const backBtn = document.getElementById('back-btn');
+
+        playBtn.addEventListener('click', () => {
+            homeScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            initGame();
+        });
+
+        installBtn.addEventListener('click', () => {
+            homeScreen.classList.add('hidden');
+            installScreen.classList.remove('hidden');
+        });
+
+        backBtn.addEventListener('click', () => {
+            installScreen.classList.add('hidden');
+            homeScreen.classList.remove('hidden');
+        });
+
+        // Refresh Service Worker and Clear Cache
+        refreshSwBtn.addEventListener('click', async () => {
+            try {
+                // Unregister all service workers
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.unregister();
+                }
+
+                // Clear all caches
+                const cacheNames = await caches.keys();
+                for (let cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                }
+
+                // Re-register service worker
+                await navigator.serviceWorker.register('./service-worker.js');
+                
+                alert('Service Worker obnovený! Aplikácia sa bude obnovovať.');
+                location.reload();
+            } catch (err) {
+                console.error('Error refreshing Service Worker:', err);
+                alert('Chyba pri obnove Service Workera');
+            }
+        });
     </script>
 </body>
 </html>

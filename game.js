@@ -40,6 +40,28 @@ function initGame(level) {
 
         const startTime = Date.now();
 
+        // Image cache
+        const imageCache = {};
+        
+        function loadImage(src) {
+            return new Promise((resolve) => {
+                if (imageCache[src]) {
+                    resolve(imageCache[src]);
+                    return;
+                }
+                const img = new Image();
+                img.onload = () => {
+                    imageCache[src] = img;
+                    resolve(img);
+                };
+                img.onerror = () => {
+                    console.error('Failed to load image:', src);
+                    resolve(null);
+                };
+                img.src = './assets/' + src;
+            });
+        }
+
         // Plant types
         const PLANT_TYPES = {
             peashooter: {
@@ -60,7 +82,7 @@ function initGame(level) {
             name: 'Basic Zombie',
             image: 'ealc1.png',
             health: 300,
-            speed: 0.5, // pixels per frame
+            speed: 0.15, // pixels per frame (much slower)
             damage: 25,
             damageInterval: 1000, // ms between attacks
             width: 50,
@@ -77,11 +99,18 @@ function initGame(level) {
                 this.y = GRID_START_Y + gridY * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
                 this.health = this.type.health;
                 this.lastAttack = 0;
+                this.image = null;
+                loadImage(this.type.image).then(img => this.image = img);
             }
 
             draw() {
-                ctx.fillStyle = '#00cc00';
-                ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
+                if (this.image) {
+                    ctx.drawImage(this.image, this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
+                } else {
+                    // Fallback
+                    ctx.fillStyle = '#00cc00';
+                    ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
+                }
                 // Draw health bar
                 ctx.fillStyle = '#ff0000';
                 ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2 - 10, this.type.width * (this.health / this.type.health), 5);
@@ -142,12 +171,15 @@ function initGame(level) {
         // Enemy class
         class Enemy {
             constructor(rowIndex) {
-                this.x = canvas.width + 50;
+                // Spawn at LEFT edge of grid, not off-screen right
+                this.x = GRID_START_X;
                 this.rowIndex = rowIndex;
                 this.y = GRID_START_Y + rowIndex * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
                 this.health = ENEMY_TYPE.health;
                 this.speed = ENEMY_TYPE.speed;
                 this.lastDamage = 0;
+                this.image = null;
+                loadImage(ENEMY_TYPE.image).then(img => this.image = img);
             }
 
             update(plants) {
@@ -170,8 +202,13 @@ function initGame(level) {
             }
 
             draw() {
-                ctx.fillStyle = '#ff6600';
-                ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2, ENEMY_TYPE.width, ENEMY_TYPE.height);
+                if (this.image) {
+                    ctx.drawImage(this.image, this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2, ENEMY_TYPE.width, ENEMY_TYPE.height);
+                } else {
+                    // Fallback
+                    ctx.fillStyle = '#ff6600';
+                    ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2, ENEMY_TYPE.width, ENEMY_TYPE.height);
+                }
                 // Draw health bar
                 ctx.fillStyle = '#ff0000';
                 ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2 - 10, ENEMY_TYPE.width * (this.health / ENEMY_TYPE.health), 5);
@@ -393,7 +430,7 @@ function initGame(level) {
                 sun.draw();
             }
 
-            // Spawn enemies (after 20 seconds, every 5 seconds)
+            // Spawn enemies (after 20 seconds, every 5 seconds, only on grid rows)
             if (gametime > 20000 && now - lastEnemySpawn > 5000 && gametime < 120000) {
                 const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
                 enemies.push(new Enemy(randomRow));

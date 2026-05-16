@@ -111,6 +111,7 @@ function initGame(level) {
         // Image preloader
         const preloadImages = [
             'dpea1.png',
+            'pecen.png',
             'ealc1.png',
             'projectile.png',
             'sun.png',
@@ -187,6 +188,18 @@ function initGame(level) {
                     attackRange: 300,
                     attackDamage: 50,
                     attackSpeed: 1000,
+                    width: 50,
+                    height: 50,
+                    collisionRadius: 25
+                },
+                pecen: {
+                    name: 'Pecen',
+                    image: 'pecen.png',
+                    cost: 150,
+                    health: 75,
+                    attackRange: 200,
+                    attackDamage: 75,
+                    attackSpeed: 1500,
                     width: 50,
                     height: 50,
                     collisionRadius: 25
@@ -325,13 +338,13 @@ function initGame(level) {
                         this.x = nextX;
                     }
 
-                    // Check damage from nearby plants
+                    // Deal damage to nearby plants
                     const now = Date.now();
                     for (let plant of plants) {
                         if (plant.gridY === this.rowIndex) {
                             if (plant.collidesWith(this.x, this.y)) {
                                 if (now - this.lastDamage > ENEMY_TYPE.damageInterval) {
-                                    this.health -= ENEMY_TYPE.damage;
+                                    plant.health -= ENEMY_TYPE.damage;
                                     this.lastDamage = now;
                                 }
                             }
@@ -404,18 +417,18 @@ function initGame(level) {
                 const menuX = PLANT_MENU_X;
                 const menuY = PLANT_MENU_Y;
                 const slotWidth = 120;
-                const slotHeight = 60;
+                const slotHeight = 140;
                 const slots = 5;
 
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                ctx.fillRect(menuX - 10, menuY - 10, 140, slotHeight * slots + 20);
+                ctx.fillRect(menuX - 10, menuY - 10, 140, slotHeight * slots + 70);
 
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 14px Arial';
                 ctx.textAlign = 'center';
                 ctx.fillText('Plants', menuX + 60, menuY - 25);
 
-                const plantList = ['peashooter'];
+                const plantList = ['peashooter', 'pecen'];
 
                 for (let i = 0; i < slots; i++) {
                     const slotX = menuX;
@@ -431,15 +444,21 @@ function initGame(level) {
                         ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
                         ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
 
+                        // Draw plant image
+                        const img = imageCache[plant.image];
+                        if (img) {
+                            ctx.drawImage(img, slotX + 35, slotY + 10, 50, 50);
+                        }
+
                         ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 12px Arial';
+                        ctx.font = 'bold 11px Arial';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'top';
-                        ctx.fillText(plant.name, slotX + slotWidth / 2, slotY + 5);
-                        ctx.font = '11px Arial';
-                        ctx.fillText(`Cost: ${plant.cost}`, slotX + slotWidth / 2, slotY + 22);
-                        ctx.fillText(`HP: ${plant.health}`, slotX + slotWidth / 2, slotY + 35);
-                        ctx.fillText(`DMG: ${plant.attackDamage}`, slotX + slotWidth / 2, slotY + 48);
+                        ctx.fillText(plant.name, slotX + slotWidth / 2, slotY + 65);
+                        ctx.font = '10px Arial';
+                        ctx.fillText(`Cost: ${plant.cost}`, slotX + slotWidth / 2, slotY + 80);
+                        ctx.fillText(`HP: ${plant.health}`, slotX + slotWidth / 2, slotY + 92);
+                        ctx.fillText(`DMG: ${plant.attackDamage}`, slotX + slotWidth / 2, slotY + 104);
                     } else {
                         ctx.fillStyle = '#333333';
                         ctx.strokeStyle = '#666666';
@@ -448,6 +467,48 @@ function initGame(level) {
                         ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
                     }
                 }
+
+                // Draw deselect button (X)
+                const deselectX = menuX + slotWidth - 15;
+                const deselectY = menuY - 10;
+                const deselectSize = 20;
+
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(deselectX - deselectSize / 2, deselectY, deselectSize, deselectSize);
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(deselectX - deselectSize / 2, deselectY, deselectSize, deselectSize);
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(deselectX - 6, deselectY + 4);
+                ctx.lineTo(deselectX + 6, deselectY + 16);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(deselectX + 6, deselectY + 4);
+                ctx.lineTo(deselectX - 6, deselectY + 16);
+                ctx.stroke();
+
+                // Draw back button
+                const backBtnX = menuX + 60;
+                const backBtnY = menuY + plantList.length * (slotHeight + 5) + 10;
+                const backBtnWidth = 100;
+                const backBtnHeight = 30;
+
+                ctx.fillStyle = '#8b5411';
+                ctx.fillRect(backBtnX - backBtnWidth / 2, backBtnY, backBtnWidth, backBtnHeight);
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(backBtnX - backBtnWidth / 2, backBtnY, backBtnWidth, backBtnHeight);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('← Back', backBtnX, backBtnY + backBtnHeight / 2);
+
+                return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: deselectY, deselectSize: deselectSize };
             }
 
             // Draw game grid with chessboard pattern
@@ -546,13 +607,39 @@ function initGame(level) {
                     return true;
                 });
 
-                // Check plant menu clicks
-                const plantList = ['peashooter'];
+                // Get button positions
+                const plantMenuInfo = { backBtnX: 0, backBtnY: 0, backBtnWidth: 0, backBtnHeight: 0, deselectX: 0, deselectY: 0, deselectSize: 0 };
+                // We'll update this during drawing
+
+                // Check deselect button
+                const plantList = ['peashooter', 'pecen'];
                 const menuX = PLANT_MENU_X;
                 const menuY = PLANT_MENU_Y;
                 const slotWidth = 120;
-                const slotHeight = 60;
+                const deselectX = menuX + slotWidth - 15;
+                const deselectY = menuY - 10;
+                const deselectSize = 20;
 
+                if (mouseX >= deselectX - deselectSize / 2 && mouseX <= deselectX + deselectSize / 2 &&
+                    mouseY >= deselectY && mouseY <= deselectY + deselectSize) {
+                    selectedPlant = null;
+                    return;
+                }
+
+                // Check back button
+                const slotHeight = 140;
+                const backBtnX = menuX + 60;
+                const backBtnY = menuY + plantList.length * (slotHeight + 5) + 10;
+                const backBtnWidth = 100;
+                const backBtnHeight = 30;
+
+                if (mouseX >= backBtnX - backBtnWidth / 2 && mouseX <= backBtnX + backBtnWidth / 2 &&
+                    mouseY >= backBtnY && mouseY <= backBtnY + backBtnHeight) {
+                    returnToLevels();
+                    return;
+                }
+
+                // Check plant menu clicks
                 for (let i = 0; i < plantList.length; i++) {
                     const slotX = menuX;
                     const slotY = menuY + i * (slotHeight + 5);
@@ -665,7 +752,7 @@ function initGame(level) {
 
                     // Auto return after 3 seconds
                     if (Date.now() - gameOverTime > 3000) {
-                        returnToHome();
+                        returnToLevels();
                         return;
                     }
                 } else if (levelWon) {
@@ -676,6 +763,15 @@ function initGame(level) {
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('LEVEL CLEARED!', canvas.width / 2, canvas.height / 2);
+
+                    // Auto return after 3 seconds
+                    if (!gameOverTime) {
+                        gameOverTime = Date.now();
+                    }
+                    if (Date.now() - gameOverTime > 3000) {
+                        returnToLevels();
+                        return;
+                    }
                 } else {
                     requestAnimationFrame(gameLoop);
                     return;
@@ -686,14 +782,14 @@ function initGame(level) {
                 }
             }
 
-            function returnToHome() {
-                const homeScreen = document.getElementById('home-screen');
+            function returnToLevels() {
+                const levelsScreen = document.getElementById('levels-screen');
                 const gameScreen = document.getElementById('game-screen');
 
                 gameScreen.style.display = 'none';
-                homeScreen.style.display = 'flex';
+                levelsScreen.style.display = 'flex';
                 gameScreen.classList.add('hidden');
-                homeScreen.classList.remove('hidden');
+                levelsScreen.classList.remove('hidden');
             }
 
             gameLoop();

@@ -1,4 +1,4 @@
-function initGame() {
+function initGame(level = 1) {
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     
@@ -6,8 +6,22 @@ function initGame() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
-    // Simple game example - a moving square
-    let player = { x: canvas.width / 2, y: canvas.height / 2, width: 40, height: 40, speed: 5 };
+    // Game configuration based on level
+    const levelConfig = {
+        1: { difficulty: 'easy', speed: 3, enemyCount: 2 },
+        2: { difficulty: 'medium', speed: 5, enemyCount: 4 },
+        3: { difficulty: 'hard', speed: 7, enemyCount: 6 }
+    };
+    
+    const config = levelConfig[level] || levelConfig[1];
+    
+    let player = { 
+        x: canvas.width / 2, 
+        y: canvas.height / 2, 
+        width: 40, 
+        height: 40, 
+        speed: config.speed 
+    };
     let keys = {};
     
     // Input handling
@@ -26,6 +40,12 @@ function initGame() {
         if (keys['ArrowDown'] || keys['s']) player.y += player.speed;
         if (keys['ArrowLeft'] || keys['a']) player.x -= player.speed;
         if (keys['ArrowRight'] || keys['d']) player.x += player.speed;
+        
+        // Keep player in bounds
+        if (player.x < 0) player.x = 0;
+        if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+        if (player.y < 0) player.y = 0;
+        if (player.y + player.height > canvas.height) player.y = canvas.height - player.height;
     }
     
     function draw() {
@@ -37,7 +57,8 @@ function initGame() {
         
         ctx.fillStyle = '#fff';
         ctx.font = '16px Arial';
-        ctx.fillText('Use arrow keys or touch to move', 10, 20);
+        ctx.fillText('Level: ' + level + ' (' + config.difficulty + ')', 10, 20);
+        ctx.fillText('Use arrow keys or touch to move', 10, 40);
     }
     
     function gameLoop() {

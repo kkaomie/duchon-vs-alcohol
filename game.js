@@ -111,11 +111,11 @@ function initGame(level) {
         // Image preloader
         const preloadImages = [
             'dpea1.png',
-            'pecen.png',
             'ealc1.png',
             'projectile.png',
             'sun.png',
-            'lvl1bcg.png'
+            'lvl1bcg.png',
+            'pecen.png'
         ];
 
         const imageCache = {};
@@ -191,18 +191,6 @@ function initGame(level) {
                     width: 50,
                     height: 50,
                     collisionRadius: 25
-                },
-                pecen: {
-                    name: 'Pecen',
-                    image: 'pecen.png',
-                    cost: 150,
-                    health: 75,
-                    attackRange: 200,
-                    attackDamage: 75,
-                    attackSpeed: 1500,
-                    width: 50,
-                    height: 50,
-                    collisionRadius: 25
                 }
             };
 
@@ -261,6 +249,11 @@ function initGame(level) {
                 collidesWith(x, y) {
                     const dist = Math.hypot(x - this.x, y - this.y);
                     return dist < this.type.collisionRadius + ENEMY_TYPE.collisionRadius;
+                }
+
+                isNearby(x, y) {
+                    const dist = Math.hypot(x - this.x, y - this.y);
+                    return dist < this.type.collisionRadius + ENEMY_TYPE.collisionRadius + 30;
                 }
             }
 
@@ -338,11 +331,11 @@ function initGame(level) {
                         this.x = nextX;
                     }
 
-                    // Deal damage to nearby plants
+                    // Deal melee damage to nearby plants
                     const now = Date.now();
                     for (let plant of plants) {
                         if (plant.gridY === this.rowIndex) {
-                            if (plant.collidesWith(this.x, this.y)) {
+                            if (plant.isNearby(this.x, this.y)) {
                                 if (now - this.lastDamage > ENEMY_TYPE.damageInterval) {
                                     plant.health -= ENEMY_TYPE.damage;
                                     this.lastDamage = now;
@@ -416,19 +409,19 @@ function initGame(level) {
             function drawPlantMenu() {
                 const menuX = PLANT_MENU_X;
                 const menuY = PLANT_MENU_Y;
-                const slotWidth = 120;
-                const slotHeight = 140;
+                const slotWidth = 80;
+                const slotHeight = 80;
                 const slots = 5;
 
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                ctx.fillRect(menuX - 10, menuY - 10, 140, slotHeight * slots + 70);
+                ctx.fillRect(menuX - 10, menuY - 10, 100, slotHeight * slots + 70);
 
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 14px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText('Plants', menuX + 60, menuY - 25);
+                ctx.fillText('Plants', menuX + 40, menuY - 25);
 
-                const plantList = ['peashooter', 'pecen'];
+                const plantList = ['peashooter'];
 
                 for (let i = 0; i < slots; i++) {
                     const slotX = menuX;
@@ -444,21 +437,11 @@ function initGame(level) {
                         ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
                         ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
 
-                        // Draw plant image
+                        // Draw plant image preview (smaller)
                         const img = imageCache[plant.image];
                         if (img) {
-                            ctx.drawImage(img, slotX + 35, slotY + 10, 50, 50);
+                            ctx.drawImage(img, slotX + 15, slotY + 15, 50, 50);
                         }
-
-                        ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 11px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'top';
-                        ctx.fillText(plant.name, slotX + slotWidth / 2, slotY + 65);
-                        ctx.font = '10px Arial';
-                        ctx.fillText(`Cost: ${plant.cost}`, slotX + slotWidth / 2, slotY + 80);
-                        ctx.fillText(`HP: ${plant.health}`, slotX + slotWidth / 2, slotY + 92);
-                        ctx.fillText(`DMG: ${plant.attackDamage}`, slotX + slotWidth / 2, slotY + 104);
                     } else {
                         ctx.fillStyle = '#333333';
                         ctx.strokeStyle = '#666666';
@@ -469,7 +452,7 @@ function initGame(level) {
                 }
 
                 // Draw deselect button (X)
-                const deselectX = menuX + slotWidth - 15;
+                const deselectX = menuX + slotWidth - 12;
                 const deselectY = menuY - 10;
                 const deselectSize = 20;
 
@@ -491,9 +474,9 @@ function initGame(level) {
                 ctx.stroke();
 
                 // Draw back button
-                const backBtnX = menuX + 60;
+                const backBtnX = menuX + 40;
                 const backBtnY = menuY + plantList.length * (slotHeight + 5) + 10;
-                const backBtnWidth = 100;
+                const backBtnWidth = 80;
                 const backBtnHeight = 30;
 
                 ctx.fillStyle = '#8b5411';
@@ -503,7 +486,7 @@ function initGame(level) {
                 ctx.strokeRect(backBtnX - backBtnWidth / 2, backBtnY, backBtnWidth, backBtnHeight);
 
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 14px Arial';
+                ctx.font = 'bold 12px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText('← Back', backBtnX, backBtnY + backBtnHeight / 2);
@@ -582,12 +565,26 @@ function initGame(level) {
                 ctx.fillText(`${Math.ceil((LEVEL_DURATION - gametime) / 1000)}s`, barX + barWidth / 2, barY + barHeight / 2);
             }
 
-            // Draw suns counter
+            // Draw suns counter with sun image
             function drawSunCounter() {
-                ctx.fillStyle = '#ffff00';
+                const sunImg = imageCache['sun.png'];
+                const sunX = 20;
+                const sunY = 40;
+                const sunSize = 30;
+
+                if (sunImg) {
+                    ctx.drawImage(sunImg, sunX, sunY, sunSize, sunSize);
+                } else {
+                    ctx.fillStyle = '#ffff00';
+                    ctx.beginPath();
+                    ctx.arc(sunX + sunSize / 2, sunY + sunSize / 2, sunSize / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 24px Arial';
                 ctx.textAlign = 'left';
-                ctx.fillText(`Suns: ${suns}`, 20, 50);
+                ctx.fillText(`${suns}`, sunX + sunSize + 10, sunY + sunSize / 2 + 8);
             }
 
             // Handle clicks
@@ -607,16 +604,12 @@ function initGame(level) {
                     return true;
                 });
 
-                // Get button positions
-                const plantMenuInfo = { backBtnX: 0, backBtnY: 0, backBtnWidth: 0, backBtnHeight: 0, deselectX: 0, deselectY: 0, deselectSize: 0 };
-                // We'll update this during drawing
-
                 // Check deselect button
-                const plantList = ['peashooter', 'pecen'];
+                const plantList = ['peashooter'];
                 const menuX = PLANT_MENU_X;
                 const menuY = PLANT_MENU_Y;
-                const slotWidth = 120;
-                const deselectX = menuX + slotWidth - 15;
+                const slotWidth = 80;
+                const deselectX = menuX + slotWidth - 12;
                 const deselectY = menuY - 10;
                 const deselectSize = 20;
 
@@ -627,10 +620,10 @@ function initGame(level) {
                 }
 
                 // Check back button
-                const slotHeight = 140;
-                const backBtnX = menuX + 60;
+                const slotHeight = 80;
+                const backBtnX = menuX + 40;
                 const backBtnY = menuY + plantList.length * (slotHeight + 5) + 10;
-                const backBtnWidth = 100;
+                const backBtnWidth = 80;
                 const backBtnHeight = 30;
 
                 if (mouseX >= backBtnX - backBtnWidth / 2 && mouseX <= backBtnX + backBtnWidth / 2 &&

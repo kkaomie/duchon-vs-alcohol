@@ -188,7 +188,8 @@ function initGame(level) {
                     attackDamage: 50,
                     attackSpeed: 1000,
                     width: 50,
-                    height: 50
+                    height: 50,
+                    collisionRadius: 25
                 }
             };
 
@@ -201,7 +202,8 @@ function initGame(level) {
                 damage: 25,
                 damageInterval: 1000,
                 width: 50,
-                height: 50
+                height: 50,
+                collisionRadius: 25
             };
 
             // Plant class
@@ -241,6 +243,11 @@ function initGame(level) {
                             break;
                         }
                     }
+                }
+
+                collidesWith(x, y) {
+                    const dist = Math.hypot(x - this.x, y - this.y);
+                    return dist < this.type.collisionRadius + ENEMY_TYPE.collisionRadius;
                 }
             }
 
@@ -296,21 +303,37 @@ function initGame(level) {
                     this.health = ENEMY_TYPE.health;
                     this.speed = ENEMY_TYPE.speed;
                     this.lastDamage = 0;
+                    this.desiredX = this.x;
                 }
 
                 update(plants) {
-                    // Move LEFT across the grid
-                    this.x -= this.speed;
+                    // Try to move left
+                    let canMove = true;
+                    const nextX = this.x - this.speed;
+
+                    // Check collision with plants
+                    for (let plant of plants) {
+                        if (plant.gridY === this.rowIndex) {
+                            if (plant.collidesWith(nextX, this.y)) {
+                                canMove = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (canMove) {
+                        this.x = nextX;
+                    }
 
                     // Check damage from nearby plants
                     const now = Date.now();
                     for (let plant of plants) {
                         if (plant.gridY === this.rowIndex) {
-                            const dist = Math.abs(this.x - plant.x);
-                            if (dist < GRID_CELL_WIDTH && now - this.lastDamage > ENEMY_TYPE.damageInterval) {
-                                this.health -= ENEMY_TYPE.damage;
-                                this.lastDamage = now;
-                                break;
+                            if (plant.collidesWith(this.x, this.y)) {
+                                if (now - this.lastDamage > ENEMY_TYPE.damageInterval) {
+                                    this.health -= ENEMY_TYPE.damage;
+                                    this.lastDamage = now;
+                                }
                             }
                         }
                     }
@@ -334,11 +357,21 @@ function initGame(level) {
 
             // Sun class
             class Sun {
-                constructor(x, y) {
+                constructor(x) {
                     this.x = x;
-                    this.y = y;
+                    this.y = -40; // Start above screen
                     this.value = 25;
-                    this.radius = 15;
+                    this.radius = 25; // Bigger suns
+                    this.speed = 1; // Fall speed
+                    this.targetY = GRID_START_Y + Math.random() * (GRID_ROWS * GRID_CELL_HEIGHT);
+                }
+
+                update() {
+                    // Fall down
+                    if (this.y < this.targetY) {
+                        this.y += this.speed;
+                    }
+                    return this.y > canvas.height + 50; // Remove if off screen
                 }
 
                 draw() {
@@ -351,7 +384,7 @@ function initGame(level) {
                         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                         ctx.fill();
                         ctx.fillStyle = '#000000';
-                        ctx.font = 'bold 12px Arial';
+                        ctx.font = 'bold 14px Arial';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         ctx.fillText(this.value, this.x, this.y);
@@ -417,9 +450,8 @@ function initGame(level) {
                 }
             }
 
-            // Draw game grid
+            // Draw game grid with chessboard pattern
             function drawGrid() {
-                ctx.strokeStyle = '#cccccc';
                 ctx.lineWidth = 1;
 
                 for (let row = 0; row < GRID_ROWS; row++) {
@@ -428,11 +460,25 @@ function initGame(level) {
                         const y = GRID_START_Y + row * GRID_CELL_HEIGHT;
 
                         if (row < UNLOCKED_ROWS) {
-                            ctx.fillStyle = 'rgba(200, 255, 200, 0.2)';
+                            // Chessboard pattern for unlocked rows (green shades)
+                            const isEvenSquare = (row + col) % 2 === 0;
+                            if (isEvenSquare) {
+                                ctx.fillStyle = '#228b22'; // Full green
+                            } else {
+                                ctx.fillStyle = '#1a6b1a'; // Dark green
+                            }
                             ctx.fillRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
+                            ctx.strokeStyle = '#ffffff';
                         } else {
-                            ctx.fillStyle = 'rgba(100, 100, 100, 0.2)';
+                            // Chessboard pattern for locked rows (brown shades)
+                            const isEvenSquare = (row + col) % 2 === 0;
+                            if (isEvenSquare) {
+                                ctx.fillStyle = '#8b6914'; // Brown
+                            } else {
+                                ctx.fillStyle = '#6b5411'; // Darker brown
+                            }
                             ctx.fillRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
+                            ctx.strokeStyle = '#665544';
                         }
                         ctx.strokeRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
                     }
@@ -548,16 +594,18 @@ function initGame(level) {
                 drawSunCounter();
                 drawGrid();
 
-                // Spawn suns
+                // Spawn suns (same rate, now falling from top)
                 if (now - lastSunSpawn > 8000) {
-                    suns_on_screen.push(new Sun(GRID_START_X + Math.random() * GRID_WIDTH, GRID_START_Y + Math.random() * GRID_HEIGHT));
+                    suns_on_screen.push(new Sun(GRID_START_X + Math.random() * GRID_WIDTH));
                     lastSunSpawn = now;
                 }
 
-                // Draw and update suns
-                for (let sun of suns_on_screen) {
-                    sun.draw();
-                }
+                // Update and draw suns
+                suns_on_screen = suns_on_screen.filter(sun => {
+                    const shouldKeep = !sun.update();
+                    if (shouldKeep) sun.draw();
+                    return shouldKeep;
+                });
 
                 // Spawn enemies (after 20 seconds, every 5 seconds, only on grid rows)
                 if (gametime > 20000 && now - lastEnemySpawn > 5000 && gametime < 120000) {

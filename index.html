@@ -24,6 +24,39 @@
         </div>
     </div>
 
+    <div id="levels-screen" class="screen hidden" style="display: none !important;">
+        <button id="back-from-levels-btn" class="back-button">← Späť</button>
+        <div class="levels-container">
+            <h2 class="levels-title">Vyberte Úroveň</h2>
+            <div class="levels-grid">
+                <div class="level-item unlocked" data-level="1">
+                    <div class="level-icon">1</div>
+                    <div class="level-label">Ľahké</div>
+                </div>
+                <div class="level-item unlocked" data-level="2">
+                    <div class="level-icon">2</div>
+                    <div class="level-label">Normálne</div>
+                </div>
+                <div class="level-item unlocked" data-level="3">
+                    <div class="level-icon">3</div>
+                    <div class="level-label">Ťažké</div>
+                </div>
+                <div class="level-item locked" data-level="4">
+                    <div class="level-icon">🔒</div>
+                    <div class="level-label">Úroveň 4</div>
+                </div>
+                <div class="level-item locked" data-level="5">
+                    <div class="level-icon">🔒</div>
+                    <div class="level-label">Úroveň 5</div>
+                </div>
+                <div class="level-item locked" data-level="6">
+                    <div class="level-icon">🔒</div>
+                    <div class="level-label">Úroveň 6</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="game-screen" class="screen hidden" style="display: none !important;">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
@@ -48,62 +81,82 @@
 
         // Get elements
         const homeScreen = document.getElementById('home-screen');
+        const levelsScreen = document.getElementById('levels-screen');
         const gameScreen = document.getElementById('game-screen');
         const installScreen = document.getElementById('install-screen');
         const playBtn = document.getElementById('play-btn');
         const installBtn = document.getElementById('install-btn');
         const refreshSwBtn = document.getElementById('refresh-sw-btn');
         const backBtn = document.getElementById('back-btn');
+        const backFromLevelsBtn = document.getElementById('back-from-levels-btn');
+        const levelItems = document.querySelectorAll('.level-item');
 
         // Force home screen to show on load - ABSOLUTE PRIORITY
         window.addEventListener('load', () => {
-            homeScreen.style.display = 'flex';
-            gameScreen.style.display = 'none';
-            installScreen.style.display = 'none';
-            homeScreen.classList.remove('hidden');
-            gameScreen.classList.add('hidden');
-            installScreen.classList.add('hidden');
+            showScreen('home');
         });
 
         // Also do it immediately
-        homeScreen.style.display = 'flex';
-        gameScreen.style.display = 'none';
-        installScreen.style.display = 'none';
-        homeScreen.classList.remove('hidden');
-        gameScreen.classList.add('hidden');
-        installScreen.classList.add('hidden');
+        showScreen('home');
 
-        // Play button
-        playBtn.addEventListener('click', () => {
+        function showScreen(screenName) {
             homeScreen.style.display = 'none';
-            gameScreen.style.display = 'block';
+            levelsScreen.style.display = 'none';
+            gameScreen.style.display = 'none';
             installScreen.style.display = 'none';
             homeScreen.classList.add('hidden');
-            gameScreen.classList.remove('hidden');
+            levelsScreen.classList.add('hidden');
+            gameScreen.classList.add('hidden');
             installScreen.classList.add('hidden');
-            initGame();
+
+            if (screenName === 'home') {
+                homeScreen.style.display = 'flex';
+                homeScreen.classList.remove('hidden');
+            } else if (screenName === 'levels') {
+                levelsScreen.style.display = 'flex';
+                levelsScreen.classList.remove('hidden');
+            } else if (screenName === 'game') {
+                gameScreen.style.display = 'block';
+                gameScreen.classList.remove('hidden');
+            } else if (screenName === 'install') {
+                installScreen.style.display = 'flex';
+                installScreen.classList.remove('hidden');
+            }
+        }
+
+        // Play button - go to levels screen
+        playBtn.addEventListener('click', () => {
+            showScreen('levels');
+        });
+
+        // Level selection
+        levelItems.forEach(item => {
+            item.addEventListener('click', () => {
+                if (!item.classList.contains('locked')) {
+                    const level = item.getAttribute('data-level');
+                    showScreen('game');
+                    initGame(parseInt(level));
+                }
+            });
         });
 
         // Install/Tutorial button
         installBtn.addEventListener('click', () => {
-            homeScreen.style.display = 'none';
-            gameScreen.style.display = 'none';
-            installScreen.style.display = 'flex';
-            homeScreen.classList.add('hidden');
-            gameScreen.classList.add('hidden');
-            installScreen.classList.remove('hidden');
+            showScreen('install');
         });
 
         // Back button - return to home
         backBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            homeScreen.style.display = 'flex';
-            gameScreen.style.display = 'none';
-            installScreen.style.display = 'none';
-            homeScreen.classList.remove('hidden');
-            gameScreen.classList.add('hidden');
-            installScreen.classList.add('hidden');
+            showScreen('home');
+        });
+
+        // Back from levels button
+        backFromLevelsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showScreen('home');
         });
 
         // Refresh Service Worker and Clear Cache

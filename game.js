@@ -1,4 +1,4 @@
-function initGame(level = 1) {
+function initGame(level) {
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     
@@ -8,20 +8,15 @@ function initGame(level = 1) {
     
     // Game configuration based on level
     const levelConfig = {
-        1: { difficulty: 'easy', speed: 3, enemyCount: 2 },
-        2: { difficulty: 'medium', speed: 5, enemyCount: 4 },
-        3: { difficulty: 'hard', speed: 7, enemyCount: 6 }
+        1: { speed: 3, difficulty: 'Easy' },
+        2: { speed: 5, difficulty: 'Normal' },
+        3: { speed: 8, difficulty: 'Hard' }
     };
     
     const config = levelConfig[level] || levelConfig[1];
     
-    let player = { 
-        x: canvas.width / 2, 
-        y: canvas.height / 2, 
-        width: 40, 
-        height: 40, 
-        speed: config.speed 
-    };
+    // Game state
+    let player = { x: canvas.width / 2, y: canvas.height / 2, width: 40, height: 40, speed: config.speed };
     let keys = {};
     
     // Input handling
@@ -41,20 +36,21 @@ function initGame(level = 1) {
         if (keys['ArrowLeft'] || keys['a']) player.x -= player.speed;
         if (keys['ArrowRight'] || keys['d']) player.x += player.speed;
         
-        // Keep player in bounds
-        if (player.x < 0) player.x = 0;
-        if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
-        if (player.y < 0) player.y = 0;
-        if (player.y + player.height > canvas.height) player.y = canvas.height - player.height;
+        // Keep player within bounds
+        player.x = Math.max(0, Math.min(player.x, canvas.width - player.width));
+        player.y = Math.max(0, Math.min(player.y, canvas.height - player.height));
     }
     
     function draw() {
+        // Clear canvas
         ctx.fillStyle = '#222';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
+        // Draw player
         ctx.fillStyle = '#00ff00';
         ctx.fillRect(player.x, player.y, player.width, player.height);
         
+        // Draw UI
         ctx.fillStyle = '#fff';
         ctx.font = '16px Arial';
         ctx.fillText('Level: ' + level + ' (' + config.difficulty + ')', 10, 20);

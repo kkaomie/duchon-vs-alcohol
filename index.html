@@ -72,8 +72,13 @@
         const backFromLevelsBtn = document.getElementById('back-from-levels-btn');
         const levelsGrid = document.getElementById('levelsGrid');
 
+        let levelsGenerated = false;
+
         // Generate 15 levels
         function generateLevels() {
+            if (levelsGenerated) return; // Prevent duplicate generation
+            levelsGenerated = true;
+
             for (let i = 1; i <= 15; i++) {
                 const levelItem = document.createElement('div');
                 levelItem.className = i === 1 ? 'level-item unlocked' : 'level-item locked';
@@ -101,15 +106,11 @@
             }
         }
 
-        // Force home screen to show on load - ABSOLUTE PRIORITY
+        // Force home screen to show on load
         window.addEventListener('load', () => {
             generateLevels();
             showScreen('home');
         });
-
-        // Also do it immediately
-        generateLevels();
-        showScreen('home');
 
         function showScreen(screenName) {
             homeScreen.style.display = 'none';

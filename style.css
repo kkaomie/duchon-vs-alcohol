@@ -39,20 +39,19 @@ body {
     justify-content: flex-end;
     align-items: center;
     background: #1a7e28;
+    background-image: url('./assets/mainbcg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     padding-bottom: 80px;
+    position: relative;
 }
 
 #home-screen .background {
     position: absolute;
-    width: 100%;
-    height: auto;
-    bottom: 0;
-    left: 0;
-    background-image: url('./assets/mainbcg.png');
-    background-size: contain;
-    background-position: bottom center;
-    background-repeat: no-repeat;
-    pointer-events: none;
+    width: 0;
+    height: 0;
+    display: none;
 }
 
 .button-container {

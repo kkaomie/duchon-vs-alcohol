@@ -35,20 +35,24 @@ body {
 /* Home Screen */
 #home-screen {
     display: flex;
-    align-items: flex-end;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
     background: #1a7e28;
-    padding-bottom: 250px;
+    padding-bottom: 80px;
 }
 
 #home-screen .background {
     position: absolute;
     width: 100%;
-    height: 100%;
+    height: auto;
+    bottom: 0;
+    left: 0;
     background-image: url('./assets/mainbcg.png');
-    background-size: cover;
-    background-position: center;
+    background-size: contain;
+    background-position: bottom center;
     background-repeat: no-repeat;
+    pointer-events: none;
 }
 
 .button-container {

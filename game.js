@@ -111,7 +111,9 @@ function initGame(level) {
         // Image preloader
         const preloadImages = [
             'dpea1.png',
+            'dpea1shoot.png',
             'ealc1.png',
+            'ealc1low.png',
             'projectile.png',
             'sun.png',
             'lvl1bcg.png',
@@ -183,11 +185,13 @@ function initGame(level) {
                 peashooter: {
                     name: 'Peashooter',
                     image: 'dpea1.png',
+                    shootImage: 'dpea1shoot.png',
                     cost: 100,
                     health: 50,
                     attackRange: 300,
                     attackDamage: 50,
                     attackSpeed: 1000,
+                    shootDuration: 200,
                     width: 50,
                     height: 50,
                     collisionRadius: 25
@@ -198,13 +202,15 @@ function initGame(level) {
             const ENEMY_TYPE = {
                 name: 'Basic Zombie',
                 image: 'ealc1.png',
+                lowHealthImage: 'ealc1low.png',
                 health: 300,
                 speed: 0.15,
                 damage: 25,
                 damageInterval: 1000,
                 width: 50,
                 height: 50,
-                collisionRadius: 25
+                collisionRadius: 25,
+                lowHealthThreshold: 0.1
             };
 
             // Plant class
@@ -217,15 +223,30 @@ function initGame(level) {
                     this.y = GRID_START_Y + gridY * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
                     this.health = this.type.health;
                     this.lastAttack = 0;
+                    this.isShooting = false;
+                    this.shootStartTime = 0;
                 }
 
                 draw() {
-                    const img = imageCache[this.type.image];
-                    if (img) {
-                        ctx.drawImage(img, this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
+                    // Check if should show shooting animation
+                    const now = Date.now();
+                    if (this.isShooting && now - this.shootStartTime < this.type.shootDuration) {
+                        const img = imageCache[this.type.shootImage];
+                        if (img) {
+                            ctx.drawImage(img, this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
+                        } else {
+                            ctx.fillStyle = '#00cc00';
+                            ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
+                        }
                     } else {
-                        ctx.fillStyle = '#00cc00';
-                        ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
+                        this.isShooting = false;
+                        const img = imageCache[this.type.image];
+                        if (img) {
+                            ctx.drawImage(img, this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
+                        } else {
+                            ctx.fillStyle = '#00cc00';
+                            ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
+                        }
                     }
                     // Draw health bar
                     ctx.fillStyle = '#ff0000';
@@ -241,6 +262,8 @@ function initGame(level) {
                         if (enemy.rowIndex === this.gridY && enemy.x > this.x) {
                             projectiles.push(new Projectile(this.x, this.y, enemy));
                             this.lastAttack = now;
+                            this.isShooting = true;
+                            this.shootStartTime = now;
                             break;
                         }
                     }
@@ -254,6 +277,10 @@ function initGame(level) {
                 isNearby(x, y) {
                     const dist = Math.hypot(x - this.x, y - this.y);
                     return dist < this.type.collisionRadius + ENEMY_TYPE.collisionRadius + 30;
+                }
+
+                isAlive() {
+                    return this.health > 0;
                 }
             }
 
@@ -348,7 +375,14 @@ function initGame(level) {
                 }
 
                 draw() {
-                    const img = imageCache[ENEMY_TYPE.image];
+                    // Show low health version if at 10% health
+                    let imageToUse = ENEMY_TYPE.image;
+                    const healthPercent = this.health / ENEMY_TYPE.health;
+                    if (healthPercent <= ENEMY_TYPE.lowHealthThreshold) {
+                        imageToUse = ENEMY_TYPE.lowHealthImage;
+                    }
+
+                    const img = imageCache[imageToUse];
                     if (img) {
                         ctx.drawImage(img, this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2, ENEMY_TYPE.width, ENEMY_TYPE.height);
                     } else {
@@ -358,6 +392,10 @@ function initGame(level) {
                     // Draw health bar
                     ctx.fillStyle = '#ff0000';
                     ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2 - 10, ENEMY_TYPE.width * (this.health / ENEMY_TYPE.health), 5);
+                }
+
+                isAlive() {
+                    return this.health > 0;
                 }
             }
 
@@ -694,11 +732,12 @@ function initGame(level) {
                     lastEnemySpawn = now;
                 }
 
-                // Update and draw plants
-                for (let plant of plants) {
+                // Update and draw plants - remove dead plants
+                plants = plants.filter(plant => {
                     plant.draw();
                     plant.attack(enemies);
-                }
+                    return plant.isAlive();
+                });
 
                 // Update and draw projectiles
                 projectiles = projectiles.filter(p => {
@@ -707,7 +746,7 @@ function initGame(level) {
                     return shouldKeep;
                 });
 
-                // Update and draw enemies
+                // Update and draw enemies - remove dead enemies
                 enemies = enemies.filter(enemy => {
                     const reachedEnd = enemy.update(plants);
                     if (reachedEnd) {
@@ -715,7 +754,7 @@ function initGame(level) {
                         gameOverTime = Date.now();
                         return false;
                     }
-                    if (enemy.health <= 0) {
+                    if (!enemy.isAlive()) {
                         return false;
                     }
                     enemy.draw();

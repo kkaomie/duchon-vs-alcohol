@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="theme-color" content="#1a7e28">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -28,32 +28,7 @@
         <button id="back-from-levels-btn" class="back-button">← Späť</button>
         <div class="levels-container">
             <h2 class="levels-title">Vyberte Úroveň</h2>
-            <div class="levels-grid">
-                <div class="level-item unlocked" data-level="1">
-                    <div class="level-icon">1</div>
-                    <div class="level-label">Ľahké</div>
-                </div>
-                <div class="level-item unlocked" data-level="2">
-                    <div class="level-icon">2</div>
-                    <div class="level-label">Normálne</div>
-                </div>
-                <div class="level-item unlocked" data-level="3">
-                    <div class="level-icon">3</div>
-                    <div class="level-label">Ťažké</div>
-                </div>
-                <div class="level-item locked" data-level="4">
-                    <div class="level-icon">🔒</div>
-                    <div class="level-label">Úroveň 4</div>
-                </div>
-                <div class="level-item locked" data-level="5">
-                    <div class="level-icon">🔒</div>
-                    <div class="level-label">Úroveň 5</div>
-                </div>
-                <div class="level-item locked" data-level="6">
-                    <div class="level-icon">🔒</div>
-                    <div class="level-label">Úroveň 6</div>
-                </div>
-            </div>
+            <div class="levels-grid" id="levelsGrid"></div>
         </div>
     </div>
 
@@ -79,6 +54,12 @@
                 .catch(err => console.log('Service Worker failed:', err));
         }
 
+        // Prevent zoom
+        document.addEventListener('gesturestart', (e) => e.preventDefault());
+        document.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) e.preventDefault();
+        }, { passive: false });
+
         // Get elements
         const homeScreen = document.getElementById('home-screen');
         const levelsScreen = document.getElementById('levels-screen');
@@ -89,14 +70,45 @@
         const refreshSwBtn = document.getElementById('refresh-sw-btn');
         const backBtn = document.getElementById('back-btn');
         const backFromLevelsBtn = document.getElementById('back-from-levels-btn');
-        const levelItems = document.querySelectorAll('.level-item');
+        const levelsGrid = document.getElementById('levelsGrid');
+
+        // Generate 15 levels
+        function generateLevels() {
+            for (let i = 1; i <= 15; i++) {
+                const levelItem = document.createElement('div');
+                levelItem.className = i === 1 ? 'level-item unlocked' : 'level-item locked';
+                levelItem.setAttribute('data-level', i);
+                
+                const levelIcon = document.createElement('div');
+                levelIcon.className = 'level-icon';
+                levelIcon.textContent = i === 1 ? i : '🔒';
+                
+                const levelLabel = document.createElement('div');
+                levelLabel.className = 'level-label';
+                levelLabel.textContent = 'Úroveň ' + i;
+                
+                levelItem.appendChild(levelIcon);
+                levelItem.appendChild(levelLabel);
+                levelsGrid.appendChild(levelItem);
+
+                // Add click handler
+                if (i === 1) {
+                    levelItem.addEventListener('click', () => {
+                        showScreen('game');
+                        initGame(i);
+                    });
+                }
+            }
+        }
 
         // Force home screen to show on load - ABSOLUTE PRIORITY
         window.addEventListener('load', () => {
+            generateLevels();
             showScreen('home');
         });
 
         // Also do it immediately
+        generateLevels();
         showScreen('home');
 
         function showScreen(screenName) {
@@ -127,17 +139,6 @@
         // Play button - go to levels screen
         playBtn.addEventListener('click', () => {
             showScreen('levels');
-        });
-
-        // Level selection
-        levelItems.forEach(item => {
-            item.addEventListener('click', () => {
-                if (!item.classList.contains('locked')) {
-                    const level = item.getAttribute('data-level');
-                    showScreen('game');
-                    initGame(parseInt(level));
-                }
-            });
         });
 
         // Install/Tutorial button

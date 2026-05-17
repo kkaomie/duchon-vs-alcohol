@@ -2,754 +2,499 @@ function initGame(level) {
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     
-    // Set initial canvas size
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    
-    resizeCanvas();
-    
-    // Handle window resize and orientation change
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('orientationchange', () => {
-        setTimeout(resizeCanvas, 100);
-    });
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    playLevel1();
+    if (level === 1) {
+        playLevel1();
+    }
 
     function playLevel1() {
-        // Image preloader
-        const preloadImages = [
-            'dpea1.png',
-            'dpea1shoot.png',
-            'ealc1.png',
-            'ealc1low.png',
-            'pecen.png',
-            'projectile.png',
-            'sun.png',
-            'lvl1bcg.png'
-        ];
+        // Game constants
+        const GRID_COLS = 10;
+        const GRID_ROWS = 6;
+        const UNLOCKED_ROWS = 2; // Only 2 rows unlocked in level 1
+        const GRID_CELL_WIDTH = 60;
+        const GRID_CELL_HEIGHT = 60;
+        const SIDE_PADDING = 150; // Moved right from 100
+        const TOP_PADDING = 150; // Moved down from 100
+        const GRID_WIDTH = GRID_COLS * GRID_CELL_WIDTH;
+        const GRID_HEIGHT = GRID_ROWS * GRID_CELL_HEIGHT;
+        const GRID_START_X = SIDE_PADDING;
+        const GRID_START_Y = TOP_PADDING;
+        const PLANT_MENU_X = canvas.width - 200; // Moved right closer to arena
+        const PLANT_MENU_Y = TOP_PADDING;
+        const LEVEL_DURATION = 120000; // 2 minutes in milliseconds
 
-        const imageCache = {};
-        let imagesLoaded = 0;
+        // Game state
+        let suns = 50;
+        let selectedPlant = null;
+        let plants = [];
+        let enemies = [];
+        let projectiles = [];
+        let gameOver = false;
+        let levelWon = false;
+        let gametime = 0;
+        let lastEnemySpawn = 0;
+        let lastSunSpawn = 0;
+        let endScreenTime = 0;
 
-        function preloadImage(src) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => {
-                    imageCache[src] = img;
-                    imagesLoaded++;
-                    console.log(`Loaded: ${src} (${imagesLoaded}/${preloadImages.length})`);
-                    resolve(img);
-                };
-                img.onerror = () => {
-                    console.error('Failed to load:', src);
-                    imagesLoaded++;
-                    resolve(null);
-                };
-                img.src = './assets/' + src;
-            });
+        const startTime = Date.now();
+
+        // Plant types
+        const PLANT_TYPES = {
+            peashooter: {
+                name: 'Peashooter',
+                image: 'dpea1.png',
+                cost: 100,
+                health: 50,
+                attackRange: 150,
+                attackDamage: 50,
+                attackSpeed: 1000, // ms between attacks
+                width: 50,
+                height: 50
+            }
+        };
+
+        // Enemy type
+        const ENEMY_TYPE = {
+            name: 'Basic Zombie',
+            image: 'ealc1.png',
+            imageLow: 'ealc1low.png', // Image when health <= 50%
+            health: 300,
+            speed: 0.5, // pixels per frame
+            damage: 25,
+            damageInterval: 1000, // ms between attacks
+            width: 50,
+            height: 50
+        };
+
+        // Plant class
+        class Plant {
+            constructor(type, gridX, gridY) {
+                this.type = PLANT_TYPES[type];
+                this.gridX = gridX;
+                this.gridY = gridY;
+                this.x = GRID_START_X + gridX * GRID_CELL_WIDTH + GRID_CELL_WIDTH / 2;
+                this.y = GRID_START_Y + gridY * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
+                this.health = this.type.health;
+                this.lastAttack = 0;
+            }
+
+            draw() {
+                ctx.fillStyle = '#00cc00';
+                ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
+                // Draw health bar
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2 - 10, this.type.width * (this.health / this.type.health), 5);
+            }
+
+            attack(enemies) {
+                const now = Date.now();
+                if (now - this.lastAttack < this.type.attackSpeed) return;
+
+                for (let enemy of enemies) {
+                    const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
+                    if (dist < this.type.attackRange) {
+                        projectiles.push(new Projectile(this.x, this.y, enemy));
+                        this.lastAttack = now;
+                        break;
+                    }
+                }
+            }
         }
 
-        // Preload all images
-        Promise.all(preloadImages.map(preloadImage)).then(() => {
-            console.log('All images preloaded');
-            startGame();
-        });
-
-        function startGame() {
-            // Responsive game constants based on screen size
-            const isLandscape = window.innerWidth > window.innerHeight;
-            
-            let GRID_COLS = 10;
-            let GRID_ROWS = 6;
-            let UNLOCKED_ROWS = 2;
-            let GRID_CELL_WIDTH = 60;
-            let GRID_CELL_HEIGHT = 60;
-            let SIDE_PADDING = 100;
-            let TOP_PADDING = 100;
-            
-            // Adjust for small screens (mobile landscape)
-            if (window.innerHeight < 500) {
-                GRID_CELL_WIDTH = 45;
-                GRID_CELL_HEIGHT = 45;
-                SIDE_PADDING = 70;
-                TOP_PADDING = 60;
+        // Projectile class
+        class Projectile {
+            constructor(x, y, target) {
+                this.x = x;
+                this.y = y;
+                this.target = target;
+                this.speed = 3;
+                this.radius = 5;
             }
-            
-            const GRID_WIDTH = GRID_COLS * GRID_CELL_WIDTH;
-            const GRID_HEIGHT = GRID_ROWS * GRID_CELL_HEIGHT;
-            const GRID_START_X = SIDE_PADDING;
-            const GRID_START_Y = TOP_PADDING;
-            const GRID_END_X = GRID_START_X + GRID_WIDTH;
-            const DESTINATION_X = GRID_START_X - 80;
-            let PLANT_MENU_X = canvas.width - 150;
-            const PLANT_MENU_Y = TOP_PADDING;
-            const LEVEL_DURATION = 120000;
 
-            // Game state
-            let suns = 50;
-            let selectedPlant = null;
-            let plants = [];
-            let enemies = [];
-            let projectiles = [];
-            let gameOver = false;
-            let levelWon = false;
-            let gametime = 0;
-            let lastEnemySpawn = 0;
-            let lastSunSpawn = 0;
-            let gameOverTime = null;
-
-            const startTime = Date.now();
-
-            // Plant types
-            const PLANT_TYPES = {
-                peashooter: {
-                    name: 'Peashooter',
-                    image: 'dpea1.png',
-                    shootImage: 'dpea1shoot.png',
-                    cost: 100,
-                    health: 50,
-                    attackRange: 300,
-                    attackDamage: 50,
-                    attackSpeed: 1000,
-                    shootDuration: 200,
-                    width: 50,
-                    height: 50,
-                    collisionRadius: 25
-                }
-            };
-
-            // Enemy type
-            const ENEMY_TYPE = {
-                name: 'Basic Zombie',
-                image: 'ealc1.png',
-                lowHealthImage: 'ealc1low.png',
-                health: 300,
-                speed: 0.15,
-                damage: 25,
-                damageInterval: 1000,
-                width: 50,
-                height: 50,
-                collisionRadius: 25,
-                lowHealthThreshold: 0.1
-            };
-
-            // Plant class
-            class Plant {
-                constructor(type, gridX, gridY) {
-                    this.type = PLANT_TYPES[type];
-                    this.gridX = gridX;
-                    this.gridY = gridY;
-                    this.x = GRID_START_X + gridX * GRID_CELL_WIDTH + GRID_CELL_WIDTH / 2;
-                    this.y = GRID_START_Y + gridY * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
-                    this.health = this.type.health;
-                    this.lastAttack = 0;
-                    this.isShooting = false;
-                    this.shootStartTime = 0;
+            update() {
+                if (!this.target || this.target.health <= 0) {
+                    return false; // Remove projectile
                 }
 
-                draw() {
-                    const now = Date.now();
-                    if (this.isShooting && now - this.shootStartTime < this.type.shootDuration) {
-                        const img = imageCache[this.type.shootImage];
-                        if (img) {
-                            ctx.drawImage(img, this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
-                        } else {
-                            ctx.fillStyle = '#00cc00';
-                            ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
-                        }
-                    } else {
-                        this.isShooting = false;
-                        const img = imageCache[this.type.image];
-                        if (img) {
-                            ctx.drawImage(img, this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
-                        } else {
-                            ctx.fillStyle = '#00cc00';
-                            ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
-                        }
-                    }
-                    ctx.fillStyle = '#ff0000';
-                    ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2 - 10, this.type.width * (this.health / this.type.health), 5);
+                const dx = this.target.x - this.x;
+                const dy = this.target.y - this.y;
+                const dist = Math.hypot(dx, dy);
+
+                if (dist < 10) {
+                    this.target.health -= PLANT_TYPES.peashooter.attackDamage;
+                    return false; // Hit, remove projectile
                 }
 
-                attack(enemies) {
-                    const now = Date.now();
-                    if (now - this.lastAttack < this.type.attackSpeed) return;
+                this.x += (dx / dist) * this.speed;
+                this.y += (dy / dist) * this.speed;
+                return true;
+            }
 
-                    for (let enemy of enemies) {
-                        if (enemy.rowIndex === this.gridY && enemy.x > this.x) {
-                            projectiles.push(new Projectile(this.x, this.y, enemy));
-                            this.lastAttack = now;
-                            this.isShooting = true;
-                            this.shootStartTime = now;
+            draw() {
+                ctx.fillStyle = '#ffff00';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Enemy class
+        class Enemy {
+            constructor(rowIndex) {
+                this.x = canvas.width + 50;
+                this.rowIndex = rowIndex;
+                this.y = GRID_START_Y + rowIndex * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
+                this.health = ENEMY_TYPE.health;
+                this.speed = ENEMY_TYPE.speed;
+                this.lastDamage = 0;
+            }
+
+            update(plants) {
+                this.x -= this.speed;
+
+                // Check damage from nearby plants
+                const now = Date.now();
+                for (let plant of plants) {
+                    if (plant.gridY === this.rowIndex) {
+                        const dist = Math.abs(this.x - plant.x);
+                        if (dist < GRID_CELL_WIDTH && now - this.lastDamage > ENEMY_TYPE.damageInterval) {
+                            this.health -= ENEMY_TYPE.damage;
+                            this.lastDamage = now;
                             break;
                         }
                     }
                 }
 
-                collidesWith(x, y) {
-                    const dist = Math.hypot(x - this.x, y - this.y);
-                    return dist < this.type.collisionRadius + ENEMY_TYPE.collisionRadius;
-                }
-
-                isNearby(x, y) {
-                    const dist = Math.hypot(x - this.x, y - this.y);
-                    return dist < this.type.collisionRadius + ENEMY_TYPE.collisionRadius + 30;
-                }
-
-                isAlive() {
-                    return this.health > 0;
-                }
+                return this.x < GRID_START_X - 100; // Check if reached the end
             }
 
-            // Projectile class
-            class Projectile {
-                constructor(x, y, target) {
-                    this.x = x;
-                    this.y = y;
-                    this.target = target;
-                    this.speed = 5;
-                    this.radius = 8;
+            draw() {
+                // Use low health sprite if health <= 50%
+                const maxHealth = ENEMY_TYPE.health;
+                const healthPercent = this.health / maxHealth;
+
+                if (healthPercent <= 0.5) {
+                    ctx.fillStyle = '#ff3300'; // Darker red for low health
+                } else {
+                    ctx.fillStyle = '#ff6600';
                 }
 
-                update() {
-                    if (!this.target || this.target.health <= 0) {
-                        return false;
-                    }
-
-                    const dx = this.target.x - this.x;
-                    const dy = this.target.y - this.y;
-                    const dist = Math.hypot(dx, dy);
-
-                    if (dist < 15) {
-                        this.target.health -= PLANT_TYPES.peashooter.attackDamage;
-                        return false;
-                    }
-
-                    this.x += (dx / dist) * this.speed;
-                    this.y += (dy / dist) * this.speed;
-                    return true;
-                }
-
-                draw() {
-                    const img = imageCache['projectile.png'];
-                    if (img) {
-                        ctx.drawImage(img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
-                    } else {
-                        ctx.fillStyle = '#ffff00';
-                        ctx.beginPath();
-                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                }
-            }
-
-            // Enemy class
-            class Enemy {
-                constructor(rowIndex) {
-                    this.x = GRID_END_X;
-                    this.rowIndex = rowIndex;
-                    this.y = GRID_START_Y + rowIndex * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
-                    this.health = ENEMY_TYPE.health;
-                    this.speed = ENEMY_TYPE.speed;
-                    this.lastDamage = 0;
-                    this.desiredX = this.x;
-                }
-
-                update(plants) {
-                    let canMove = true;
-                    const nextX = this.x - this.speed;
-
-                    for (let plant of plants) {
-                        if (plant.gridY === this.rowIndex) {
-                            if (plant.collidesWith(nextX, this.y)) {
-                                canMove = false;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (canMove) {
-                        this.x = nextX;
-                    }
-
-                    const now = Date.now();
-                    for (let plant of plants) {
-                        if (plant.gridY === this.rowIndex) {
-                            if (plant.isNearby(this.x, this.y)) {
-                                if (now - this.lastDamage > ENEMY_TYPE.damageInterval) {
-                                    plant.health -= ENEMY_TYPE.damage;
-                                    this.lastDamage = now;
-                                }
-                            }
-                        }
-                    }
-
-                    return this.x < DESTINATION_X;
-                }
-
-                draw() {
-                    const healthPercent = this.health / ENEMY_TYPE.health;
-                    let imageToUse = ENEMY_TYPE.image;
-                    
-                    if (healthPercent <= ENEMY_TYPE.lowHealthThreshold) {
-                        imageToUse = ENEMY_TYPE.lowHealthImage;
-                    }
-
-                    const img = imageCache[imageToUse];
-                    if (img) {
-                        ctx.drawImage(img, this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2, ENEMY_TYPE.width, ENEMY_TYPE.height);
-                    } else {
-                        ctx.fillStyle = '#ff6600';
-                        ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2, ENEMY_TYPE.width, ENEMY_TYPE.height);
-                    }
-                    ctx.fillStyle = '#ff0000';
-                    ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2 - 10, ENEMY_TYPE.width * healthPercent, 5);
-                }
-
-                isAlive() {
-                    return this.health > 0;
-                }
-            }
-
-            // Sun class
-            class Sun {
-                constructor(x) {
-                    this.x = x;
-                    this.y = -40;
-                    this.value = 25;
-                    this.radius = 25;
-                    this.speed = 1;
-                    this.targetY = GRID_START_Y + Math.random() * (GRID_ROWS * GRID_CELL_HEIGHT);
-                }
-
-                update() {
-                    if (this.y < this.targetY) {
-                        this.y += this.speed;
-                    }
-                    return this.y > canvas.height + 50;
-                }
-
-                draw() {
-                    const img = imageCache['sun.png'];
-                    if (img) {
-                        ctx.drawImage(img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
-                    } else {
-                        ctx.fillStyle = '#ffff00';
-                        ctx.beginPath();
-                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.fillStyle = '#000000';
-                        ctx.font = 'bold 14px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(this.value, this.x, this.y);
-                    }
-                }
-
-                isClicked(mouseX, mouseY) {
-                    const dist = Math.hypot(mouseX - this.x, mouseY - this.y);
-                    return dist < this.radius + 5;
-                }
-            }
-
-            let suns_on_screen = [];
-
-            function drawPlantMenu() {
-                const menuX = PLANT_MENU_X;
-                const menuY = PLANT_MENU_Y;
-                const slotWidth = 80;
-                const slotHeight = 80;
-                const slots = 5;
-
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                ctx.fillRect(menuX - 10, menuY - 10, 100, slotHeight * slots + 70);
-
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 14px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('Plants', menuX + 40, menuY - 25);
-
-                const plantList = ['peashooter'];
-
-                for (let i = 0; i < slots; i++) {
-                    const slotX = menuX;
-                    const slotY = menuY + i * (slotHeight + 5);
-
-                    if (i < plantList.length) {
-                        const plant = PLANT_TYPES[plantList[i]];
-                        const isSelected = selectedPlant === plantList[i];
-
-                        ctx.fillStyle = isSelected ? '#00ff00' : '#1a7e28';
-                        ctx.strokeStyle = '#ffffff';
-                        ctx.lineWidth = 2;
-                        ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
-                        ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
-
-                        const img = imageCache[plant.image];
-                        if (img) {
-                            ctx.drawImage(img, slotX + 15, slotY + 15, 50, 50);
-                        }
-                    } else {
-                        ctx.fillStyle = '#333333';
-                        ctx.strokeStyle = '#666666';
-                        ctx.lineWidth = 1;
-                        ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
-                        ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
-                    }
-                }
-
-                const deselectX = menuX + slotWidth - 12;
-                const deselectY = menuY - 10;
-                const deselectSize = 20;
-
+                ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2, ENEMY_TYPE.width, ENEMY_TYPE.height);
+                
+                // Draw health bar
                 ctx.fillStyle = '#ff0000';
-                ctx.fillRect(deselectX - deselectSize / 2, deselectY, deselectSize, deselectSize);
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(deselectX - deselectSize / 2, deselectY, deselectSize, deselectSize);
+                ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2 - 10, ENEMY_TYPE.width * healthPercent, 5);
+            }
+        }
 
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 3;
+        // Sun class
+        class Sun {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.value = 25;
+                this.radius = 15;
+                this.clickable = true;
+            }
+
+            draw() {
+                ctx.fillStyle = '#ffff00';
                 ctx.beginPath();
-                ctx.moveTo(deselectX - 6, deselectY + 4);
-                ctx.lineTo(deselectX + 6, deselectY + 16);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(deselectX + 6, deselectY + 4);
-                ctx.lineTo(deselectX - 6, deselectY + 16);
-                ctx.stroke();
-
-                const backBtnX = menuX + 40;
-                const backBtnY = menuY + plantList.length * (slotHeight + 5) + 10;
-                const backBtnWidth = 80;
-                const backBtnHeight = 30;
-
-                ctx.fillStyle = '#8b5411';
-                ctx.fillRect(backBtnX - backBtnWidth / 2, backBtnY, backBtnWidth, backBtnHeight);
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(backBtnX - backBtnWidth / 2, backBtnY, backBtnWidth, backBtnHeight);
-
-                ctx.fillStyle = '#ffffff';
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#000000';
                 ctx.font = 'bold 12px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('← Back', backBtnX, backBtnY + backBtnHeight / 2);
-
-                return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: deselectY, deselectSize: deselectSize };
+                ctx.fillText(this.value, this.x, this.y);
             }
 
-            function drawDestination() {
-                for (let row = 0; row < UNLOCKED_ROWS; row++) {
-                    const destY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
-                    const img = imageCache['pecen.png'];
-                    if (img) {
-                        ctx.drawImage(img, DESTINATION_X - 25, destY - 25, 50, 50);
-                    } else {
-                        ctx.fillStyle = '#ff00ff';
-                        ctx.fillRect(DESTINATION_X - 25, destY - 25, 50, 50);
-                    }
-                }
+            isClicked(mouseX, mouseY) {
+                const dist = Math.hypot(mouseX - this.x, mouseY - this.y);
+                return dist < this.radius;
             }
+        }
 
-            function drawGrid() {
-                ctx.lineWidth = 1;
+        let suns_on_screen = [];
 
-                for (let row = 0; row < GRID_ROWS; row++) {
-                    for (let col = 0; col < GRID_COLS; col++) {
-                        const x = GRID_START_X + col * GRID_CELL_WIDTH;
-                        const y = GRID_START_Y + row * GRID_CELL_HEIGHT;
+        // Plant menu drawing
+        function drawPlantMenu() {
+            const menuX = PLANT_MENU_X;
+            const menuY = PLANT_MENU_Y;
+            const slotWidth = 120;
+            const slotHeight = 60;
+            const slots = 5;
 
-                        if (row < UNLOCKED_ROWS) {
-                            const isEvenSquare = (row + col) % 2 === 0;
-                            if (isEvenSquare) {
-                                ctx.fillStyle = '#228b22';
-                            } else {
-                                ctx.fillStyle = '#1a6b1a';
-                            }
-                            ctx.fillRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
-                            ctx.strokeStyle = '#ffffff';
-                        } else {
-                            const isEvenSquare = (row + col) % 2 === 0;
-                            if (isEvenSquare) {
-                                ctx.fillStyle = '#8b6914';
-                            } else {
-                                ctx.fillStyle = '#6b5411';
-                            }
-                            ctx.fillRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
-                            ctx.strokeStyle = '#665544';
-                        }
-                        ctx.strokeRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
-                    }
-                }
-            }
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(menuX - 10, menuY - 10, 140, slotHeight * slots + 20);
 
-            function drawBackground() {
-                const bgImg = imageCache['lvl1bcg.png'];
-                if (bgImg) {
-                    ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Plants', menuX + 60, menuY - 25);
+
+            const plantList = ['peashooter'];
+
+            for (let i = 0; i < slots; i++) {
+                const slotX = menuX;
+                const slotY = menuY + i * (slotHeight + 5);
+
+                if (i < plantList.length) {
+                    const plant = PLANT_TYPES[plantList[i]];
+                    const isSelected = selectedPlant === plantList[i];
+
+                    ctx.fillStyle = isSelected ? '#00ff00' : '#1a7e28';
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
+                    ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(plant.name, slotX + slotWidth / 2, slotY + 5);
+                    ctx.font = '11px Arial';
+                    ctx.fillText(`Cost: ${plant.cost}`, slotX + slotWidth / 2, slotY + 22);
+                    ctx.fillText(`HP: ${plant.health}`, slotX + slotWidth / 2, slotY + 35);
+                    ctx.fillText(`DMG: ${plant.attackDamage}`, slotX + slotWidth / 2, slotY + 48);
                 } else {
-                    ctx.fillStyle = '#1a7e28';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#333333';
+                    ctx.strokeStyle = '#666666';
+                    ctx.lineWidth = 1;
+                    ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
+                    ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
+                }
+            }
+        }
+
+        // Draw game grid
+        function drawGrid() {
+            ctx.strokeStyle = '#cccccc';
+            ctx.lineWidth = 1;
+
+            for (let row = 0; row < GRID_ROWS; row++) {
+                for (let col = 0; col < GRID_COLS; col++) {
+                    const x = GRID_START_X + col * GRID_CELL_WIDTH;
+                    const y = GRID_START_Y + row * GRID_CELL_HEIGHT;
+
+                    if (row < UNLOCKED_ROWS) {
+                        ctx.fillStyle = 'rgba(200, 255, 200, 0.2)';
+                        ctx.fillRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
+                    } else {
+                        ctx.fillStyle = 'rgba(100, 100, 100, 0.2)';
+                        ctx.fillRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
+                    }
+                    ctx.strokeRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
+                }
+            }
+        }
+
+        // Draw progress bar
+        function drawProgressBar() {
+            const barWidth = GRID_WIDTH;
+            const barHeight = 20;
+            const barX = GRID_START_X;
+            const barY = 30;
+            const progress = gametime / LEVEL_DURATION;
+
+            ctx.fillStyle = '#333333';
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+
+            ctx.fillStyle = '#00ff00';
+            ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(barX, barY, barWidth, barHeight);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${Math.ceil((LEVEL_DURATION - gametime) / 1000)}s`, barX + barWidth / 2, barY + barHeight / 2);
+        }
+
+        // Draw suns counter
+        function drawSunCounter() {
+            ctx.fillStyle = '#ffff00';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Suns: ${suns}`, 20, 50);
+        }
+
+        // Handle clicks
+        canvas.addEventListener('click', (e) => {
+            if (gameOver || levelWon) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // Check sun clicks
+            suns_on_screen = suns_on_screen.filter(sun => {
+                if (sun.isClicked(mouseX, mouseY)) {
+                    suns += sun.value;
+                    return false;
+                }
+                return true;
+            });
+
+            // Check plant menu clicks
+            const plantList = ['peashooter'];
+            const menuX = PLANT_MENU_X;
+            const menuY = PLANT_MENU_Y;
+            const slotWidth = 120;
+            const slotHeight = 60;
+
+            for (let i = 0; i < plantList.length; i++) {
+                const slotX = menuX;
+                const slotY = menuY + i * (slotHeight + 5);
+
+                if (mouseX >= slotX && mouseX <= slotX + slotWidth &&
+                    mouseY >= slotY && mouseY <= slotY + slotHeight) {
+                    selectedPlant = plantList[i];
+                    return;
                 }
             }
 
-            function drawProgressBar() {
-                const barWidth = GRID_WIDTH;
-                const barHeight = 20;
-                const barX = GRID_START_X;
-                const barY = 30;
-                const progress = gametime / LEVEL_DURATION;
+            // Check grid clicks to place plant
+            if (selectedPlant && suns >= PLANT_TYPES[selectedPlant].cost) {
+                const relX = mouseX - GRID_START_X;
+                const relY = mouseY - GRID_START_Y;
 
-                ctx.fillStyle = '#333333';
-                ctx.fillRect(barX, barY, barWidth, barHeight);
+                if (relX >= 0 && relX < GRID_WIDTH && relY >= 0 && relY < GRID_HEIGHT) {
+                    const gridX = Math.floor(relX / GRID_CELL_WIDTH);
+                    const gridY = Math.floor(relY / GRID_CELL_HEIGHT);
 
-                ctx.fillStyle = '#00ff00';
-                ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+                    if (gridY < UNLOCKED_ROWS) {
+                        // Check if cell is empty
+                        const occupied = plants.some(p => p.gridX === gridX && p.gridY === gridY);
+                        if (!occupied) {
+                            plants.push(new Plant(selectedPlant, gridX, gridY));
+                            suns -= PLANT_TYPES[selectedPlant].cost;
+                        }
+                    }
+                }
+            }
+        });
 
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(barX, barY, barWidth, barHeight);
+        // Main game loop
+        function gameLoop() {
+            const now = Date.now();
+            gametime = now - startTime;
 
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 14px Arial';
+            ctx.fillStyle = '#1a7e28';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawProgressBar();
+            drawSunCounter();
+            drawGrid();
+
+            // Spawn suns
+            if (now - lastSunSpawn > 8000) {
+                suns_on_screen.push(new Sun(GRID_START_X + Math.random() * GRID_WIDTH, GRID_START_Y + Math.random() * GRID_HEIGHT));
+                lastSunSpawn = now;
+            }
+
+            // Draw and update suns
+            for (let sun of suns_on_screen) {
+                sun.draw();
+            }
+
+            // Spawn enemies (after 20 seconds, every 5 seconds)
+            if (gametime > 20000 && now - lastEnemySpawn > 5000 && gametime < 120000) {
+                const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
+                enemies.push(new Enemy(randomRow));
+                lastEnemySpawn = now;
+            }
+
+            // Update and draw plants
+            for (let plant of plants) {
+                plant.draw();
+                plant.attack(enemies);
+            }
+
+            // Update and draw projectiles
+            projectiles = projectiles.filter(p => {
+                const shouldKeep = p.update();
+                if (shouldKeep) p.draw();
+                return shouldKeep;
+            });
+
+            // Update and draw enemies
+            enemies = enemies.filter(enemy => {
+                const reachedEnd = enemy.update(plants);
+                if (reachedEnd) {
+                    gameOver = true;
+                    endScreenTime = Date.now();
+                    return false;
+                }
+                if (enemy.health <= 0) {
+                    return false;
+                }
+                enemy.draw();
+                return true;
+            });
+
+            // Draw plants menu
+            drawPlantMenu();
+
+            // Check win condition
+            if (gametime >= LEVEL_DURATION && enemies.length === 0) {
+                levelWon = true;
+                endScreenTime = Date.now();
+            }
+
+            // Draw game over/win message
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#ff0000';
+                ctx.font = 'bold 48px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(`${Math.ceil((LEVEL_DURATION - gametime) / 1000)}s`, barX + barWidth / 2, barY + barHeight / 2);
-            }
-
-            function drawSunCounter() {
-                const sunImg = imageCache['sun.png'];
-                const sunX = 20;
-                const sunY = 40;
-                const sunSize = 30;
-
-                if (sunImg) {
-                    ctx.drawImage(sunImg, sunX, sunY, sunSize, sunSize);
-                } else {
-                    ctx.fillStyle = '#ffff00';
-                    ctx.beginPath();
-                    ctx.arc(sunX + sunSize / 2, sunY + sunSize / 2, sunSize / 2, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
+                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 24px Arial';
-                ctx.textAlign = 'left';
-                ctx.fillText(`${suns}`, sunX + sunSize + 10, sunY + sunSize / 2 + 8);
-            }
+                ctx.font = '24px Arial';
+                ctx.fillText('An enemy reached the end!', canvas.width / 2, canvas.height / 2 + 50);
 
-            function handleGameInput(e) {
-                if (gameOver || levelWon) return;
-
-                const rect = canvas.getBoundingClientRect();
-                let mouseX, mouseY;
-
-                if (e.touches) {
-                    mouseX = e.touches[0].clientX - rect.left;
-                    mouseY = e.touches[0].clientY - rect.top;
-                } else {
-                    mouseX = e.clientX - rect.left;
-                    mouseY = e.clientY - rect.top;
+                // Return to menu after 5 seconds
+                if (Date.now() - endScreenTime > 5000) {
+                    returnToMenu();
                 }
+            } else if (levelWon) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#00ff00';
+                ctx.font = 'bold 48px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('LEVEL CLEARED!', canvas.width / 2, canvas.height / 2);
 
-                suns_on_screen = suns_on_screen.filter(sun => {
-                    if (sun.isClicked(mouseX, mouseY)) {
-                        suns += sun.value;
-                        return false;
-                    }
-                    return true;
-                });
-
-                const plantList = ['peashooter'];
-                const menuX = PLANT_MENU_X;
-                const menuY = PLANT_MENU_Y;
-                const slotWidth = 80;
-                const deselectX = menuX + slotWidth - 12;
-                const deselectY = menuY - 10;
-                const deselectSize = 20;
-
-                if (mouseX >= deselectX - deselectSize / 2 && mouseX <= deselectX + deselectSize / 2 &&
-                    mouseY >= deselectY && mouseY <= deselectY + deselectSize) {
-                    selectedPlant = null;
-                    return;
-                }
-
-                const slotHeight = 80;
-                const backBtnX = menuX + 40;
-                const backBtnY = menuY + plantList.length * (slotHeight + 5) + 10;
-                const backBtnWidth = 80;
-                const backBtnHeight = 30;
-
-                if (mouseX >= backBtnX - backBtnWidth / 2 && mouseX <= backBtnX + backBtnWidth / 2 &&
-                    mouseY >= backBtnY && mouseY <= backBtnY + backBtnHeight) {
-                    returnToLevels();
-                    return;
-                }
-
-                for (let i = 0; i < plantList.length; i++) {
-                    const slotX = menuX;
-                    const slotY = menuY + i * (slotHeight + 5);
-
-                    if (mouseX >= slotX && mouseX <= slotX + slotWidth &&
-                        mouseY >= slotY && mouseY <= slotY + slotHeight) {
-                        selectedPlant = plantList[i];
-                        return;
-                    }
-                }
-
-                if (selectedPlant && suns >= PLANT_TYPES[selectedPlant].cost) {
-                    const relX = mouseX - GRID_START_X;
-                    const relY = mouseY - GRID_START_Y;
-
-                    if (relX >= 0 && relX < GRID_WIDTH && relY >= 0 && relY < GRID_HEIGHT) {
-                        const gridX = Math.floor(relX / GRID_CELL_WIDTH);
-                        const gridY = Math.floor(relY / GRID_CELL_HEIGHT);
-
-                        if (gridY < UNLOCKED_ROWS) {
-                            const occupied = plants.some(p => p.gridX === gridX && p.gridY === gridY);
-                            if (!occupied) {
-                                plants.push(new Plant(selectedPlant, gridX, gridY));
-                                suns -= PLANT_TYPES[selectedPlant].cost;
-                            }
-                        }
-                    }
+                // Return to menu after 5 seconds
+                if (Date.now() - endScreenTime > 5000) {
+                    returnToMenu();
                 }
             }
 
-            canvas.addEventListener('click', handleGameInput);
-            canvas.addEventListener('touchend', handleGameInput);
-
-            function gameLoop() {
-                const now = Date.now();
-                gametime = now - startTime;
-
-                drawBackground();
-                drawProgressBar();
-                drawSunCounter();
-                drawGrid();
-
-                if (now - lastSunSpawn > 8000) {
-                    suns_on_screen.push(new Sun(GRID_START_X + Math.random() * GRID_WIDTH));
-                    lastSunSpawn = now;
-                }
-
-                suns_on_screen = suns_on_screen.filter(sun => {
-                    const shouldKeep = !sun.update();
-                    if (shouldKeep) sun.draw();
-                    return shouldKeep;
-                });
-
-                if (gametime > 20000 && now - lastEnemySpawn > 5000 && gametime < 120000) {
-                    const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
-                    enemies.push(new Enemy(randomRow));
-                    lastEnemySpawn = now;
-                }
-
-                plants = plants.filter(plant => {
-                    plant.draw();
-                    plant.attack(enemies);
-                    return plant.isAlive();
-                });
-
-                projectiles = projectiles.filter(p => {
-                    const shouldKeep = p.update();
-                    if (shouldKeep) p.draw();
-                    return shouldKeep;
-                });
-
-                enemies = enemies.filter(enemy => {
-                    const reachedEnd = enemy.update(plants);
-                    if (reachedEnd) {
-                        gameOver = true;
-                        gameOverTime = Date.now();
-                        return false;
-                    }
-                    if (!enemy.isAlive()) {
-                        return false;
-                    }
-                    enemy.draw();
-                    return true;
-                });
-
-                drawDestination();
-                drawPlantMenu();
-
-                if (gametime >= LEVEL_DURATION && enemies.length === 0) {
-                    levelWon = true;
-                }
-
-                if (gameOver) {
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = '#ff0000';
-                    ctx.font = 'bold 48px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('mojko prehral si či ako sa tomu nadáva', canvas.width / 2, canvas.height / 2 - 30);
-                    
-                    const subtitles = [
-                        'duchoňotrón by sa hneval',
-                        'alkohol neprospieva pečeni',
-                        'ZABIL SI JEHO PEČEŇ!!!',
-                        'tak tebe to teda fakt nejde',
-                        'bruchoň je sklamaný',
-                        'pusti si dúhoňové sväté piesne a neplač'
-                    ];
-                    const randomSubtitle = subtitles[Math.floor(Math.random() * subtitles.length)];
-                    
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = '18px Arial';
-                    ctx.fillText(randomSubtitle, canvas.width / 2, canvas.height / 2 + 40);
-
-                    if (Date.now() - gameOverTime > 3000) {
-                        returnToLevels();
-                        return;
-                    }
-                } else if (levelWon) {
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = '#00ff00';
-                    ctx.font = 'bold 48px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('LEVEL CLEARED!', canvas.width / 2, canvas.height / 2);
-
-                    if (!gameOverTime) {
-                        gameOverTime = Date.now();
-                    }
-                    if (Date.now() - gameOverTime > 3000) {
-                        returnToLevels();
-                        return;
-                    }
-                } else {
-                    requestAnimationFrame(gameLoop);
-                    return;
-                }
-
-                if (!gameOver && !levelWon) {
-                    requestAnimationFrame(gameLoop);
-                }
+            if (!gameOver && !levelWon) {
+                requestAnimationFrame(gameLoop);
             }
-
-            function returnToLevels() {
-                canvas.removeEventListener('click', handleGameInput);
-                canvas.removeEventListener('touchend', handleGameInput);
-                window.removeEventListener('resize', resizeCanvas);
-                window.removeEventListener('orientationchange', resizeCanvas);
-                const levelsScreen = document.getElementById('levels-screen');
-                const gameScreen = document.getElementById('game-screen');
-
-                gameScreen.style.display = 'none';
-                levelsScreen.style.display = 'flex';
-                gameScreen.classList.add('hidden');
-                levelsScreen.classList.remove('hidden');
-            }
-
-            gameLoop();
         }
+
+        function returnToMenu() {
+            const gameScreen = document.getElementById('game-screen');
+            const homeScreen = document.getElementById('home-screen');
+            gameScreen.style.display = 'none';
+            homeScreen.style.display = 'flex';
+            gameScreen.classList.add('hidden');
+            homeScreen.classList.remove('hidden');
+        }
+
+        gameLoop();
     }
 }

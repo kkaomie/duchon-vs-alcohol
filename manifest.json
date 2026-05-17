@@ -2,8 +2,8 @@
     "name": "Duchon vs Alcohol",
     "short_name": "Duchon Game",
     "description": "An offline installable HTML game for mobile",
-    "start_url": "/duchon-vs-alcohol/index.html",
-    "scope": "/duchon-vs-alcohol/",
+    "start_url": "./index.html",
+    "scope": "./",
     "display": "fullscreen",
     "background_color": "#1a7e28",
     "theme_color": "#1a7e28",
@@ -11,25 +11,25 @@
     "prefer_related_applications": false,
     "icons": [
         {
-            "src": "/duchon-vs-alcohol/assets/icons/icon-192.png",
+            "src": "./assets/icons/icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "/duchon-vs-alcohol/assets/icons/icon-192.png",
+            "src": "./assets/icons/icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable"
         },
         {
-            "src": "/duchon-vs-alcohol/assets/icons/icon-512.png",
+            "src": "./assets/icons/icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "/duchon-vs-alcohol/assets/icons/icon-512.png",
+            "src": "./assets/icons/icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
@@ -38,7 +38,7 @@
     "categories": ["games"],
     "screenshots": [
         {
-            "src": "/duchon-vs-alcohol/assets/icons/icon-192.png",
+            "src": "./assets/icons/icon-192.png",
             "sizes": "192x192",
             "type": "image/png"
         }

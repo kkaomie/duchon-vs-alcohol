@@ -67,14 +67,14 @@ function initGame(level) {
             let UNLOCKED_ROWS = 2;
             let GRID_CELL_WIDTH = 60;
             let GRID_CELL_HEIGHT = 60;
-            let SIDE_PADDING = 100;
+            let SIDE_PADDING = 200; // Moved arena to the right
             let TOP_PADDING = 100;
             
             // Adjust for small screens (mobile landscape)
             if (window.innerHeight < 500) {
                 GRID_CELL_WIDTH = 45;
                 GRID_CELL_HEIGHT = 45;
-                SIDE_PADDING = 70;
+                SIDE_PADDING = 150;
                 TOP_PADDING = 60;
             }
             
@@ -83,7 +83,7 @@ function initGame(level) {
             const GRID_START_X = SIDE_PADDING;
             const GRID_START_Y = TOP_PADDING;
             const GRID_END_X = GRID_START_X + GRID_WIDTH;
-            const DESTINATION_X = GRID_START_X - 80;
+            const DESTINATION_X = GRID_START_X - 40; // Closer to the finish line
             let PLANT_MENU_X = canvas.width - 150;
             const PLANT_MENU_Y = TOP_PADDING;
             const LEVEL_DURATION = 120000;
@@ -388,10 +388,18 @@ function initGame(level) {
                         ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
                         ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
 
+                        // Draw plant image
                         const img = imageCache[plant.image];
                         if (img) {
-                            ctx.drawImage(img, slotX + 15, slotY + 15, 50, 50);
+                            ctx.drawImage(img, slotX + 5, slotY + 5, 45, 45);
                         }
+
+                        // Draw cost
+                        ctx.fillStyle = '#ffff00';
+                        ctx.font = 'bold 12px Arial';
+                        ctx.textAlign = 'right';
+                        ctx.textBaseline = 'bottom';
+                        ctx.fillText(plant.cost, slotX + slotWidth - 5, slotY + slotHeight - 5);
                     } else {
                         ctx.fillStyle = '#333333';
                         ctx.strokeStyle = '#666666';
@@ -439,7 +447,7 @@ function initGame(level) {
                 ctx.textBaseline = 'middle';
                 ctx.fillText('← Back', backBtnX, backBtnY + backBtnHeight / 2);
 
-                return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: deselectY, deselectSize: deselectSize };
+                return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: d[...]
             }
 
             function drawDestination() {

@@ -9,6 +9,12 @@
     -webkit-touch-callout: none;
 }
 
+html {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
 body {
     font-family: Arial, sans-serif;
     overflow: hidden;
@@ -17,21 +23,21 @@ body {
     -webkit-user-select: none;
     -webkit-user-zoom: none;
     zoom: 1 !important;
-    orientation: auto;
 }
 
-/* Prevent rotation issues on mobile */
+/* Force landscape mode for portrait devices */
 @media (orientation: portrait) {
-    body {
-        width: 100vw;
-        height: 100vh;
+    html, body {
+        width: 100vh;
+        height: 100vw;
     }
-}
-
-@media (orientation: landscape) {
+    
     body {
-        width: 100vw;
-        height: 100vh;
+        transform: rotate(90deg);
+        transform-origin: 0 0;
+        position: fixed;
+        top: 0;
+        left: 100%;
     }
 }
 
@@ -52,23 +58,15 @@ body {
 /* Home Screen */
 #home-screen {
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+    flex-direction: row;
+    justify-content: center;
     align-items: center;
     background: #1a7e28;
     background-image: url('./assets/mainbcg.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    padding-bottom: 80px;
     position: relative;
-}
-
-@media (orientation: landscape) {
-    #home-screen {
-        padding-bottom: 20px;
-        justify-content: center;
-    }
 }
 
 #home-screen .background {
@@ -83,24 +81,17 @@ body {
     z-index: 10;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
     align-items: center;
     justify-content: center;
     width: 90%;
-    max-width: 400px;
-}
-
-@media (orientation: landscape) {
-    .button-container {
-        max-width: 300px;
-        gap: 15px;
-    }
+    max-width: 280px;
 }
 
 .game-button {
     width: 100%;
-    padding: 20px;
-    font-size: 18px;
+    padding: 12px;
+    font-size: 15px;
     font-weight: bold;
     background-color: rgba(26, 126, 40, 0.9);
     color: white;
@@ -111,13 +102,6 @@ body {
     transition: all 0.2s ease;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     -webkit-tap-highlight-color: transparent;
-}
-
-@media (orientation: landscape) {
-    .game-button {
-        padding: 15px;
-        font-size: 16px;
-    }
 }
 
 .game-button:active {
@@ -138,16 +122,10 @@ body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 20px;
+    overflow-y: hidden;
+    overflow-x: auto;
+    padding: 15px;
     position: relative;
-}
-
-@media (orientation: landscape) {
-    #levels-screen {
-        padding: 15px;
-    }
 }
 
 #levels-screen::before {
@@ -168,52 +146,33 @@ body {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    flex-grow: 1;
-    padding-top: 20px;
-}
-
-@media (orientation: landscape) {
-    .levels-container {
-        padding-top: 10px;
-    }
+    height: 100%;
+    justify-content: center;
 }
 
 .levels-title {
     color: white;
-    font-size: 28px;
-    margin-bottom: 40px;
+    font-size: 22px;
+    margin-bottom: 15px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-}
-
-@media (orientation: landscape) {
-    .levels-title {
-        font-size: 22px;
-        margin-bottom: 20px;
-    }
 }
 
 .levels-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 30px;
-    max-width: 500px;
+    grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+    gap: 12px;
+    max-width: 85vw;
     width: 100%;
     justify-items: center;
-}
-
-@media (orientation: landscape) {
-    .levels-grid {
-        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-        gap: 20px;
-        max-width: 90vw;
-    }
+    overflow-x: auto;
+    padding: 10px 0;
 }
 
 .level-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
     cursor: pointer;
     transition: all 0.3s ease;
 }
@@ -233,28 +192,20 @@ body {
 }
 
 .level-icon {
-    width: 80px;
-    height: 80px;
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(200, 200, 200, 0.8));
     border: 3px solid rgba(255, 255, 255, 0.9);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 36px;
+    font-size: 26px;
     font-weight: bold;
     color: #1a7e28;
     opacity: 0.85;
     transition: all 0.3s ease;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-@media (orientation: landscape) {
-    .level-icon {
-        width: 70px;
-        height: 70px;
-        font-size: 30px;
-    }
 }
 
 .level-item.unlocked .level-icon {
@@ -263,20 +214,14 @@ body {
 
 .level-item.locked .level-icon {
     color: #666;
-    font-size: 40px;
+    font-size: 30px;
 }
 
 .level-label {
     color: white;
-    font-size: 14px;
+    font-size: 10px;
     text-align: center;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
-}
-
-@media (orientation: landscape) {
-    .level-label {
-        font-size: 12px;
-    }
 }
 
 /* Game Screen */
@@ -290,47 +235,31 @@ body {
 /* Install Tutorial Screen */
 #install-screen {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     background: #1a1a1a;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 20px;
-}
-
-@media (orientation: landscape) {
-    #install-screen {
-        flex-direction: row;
-        overflow-y: hidden;
-        overflow-x: auto;
-        padding: 15px;
-    }
+    overflow-y: hidden;
+    overflow-x: auto;
+    padding: 15px;
+    gap: 10px;
+    position: relative;
 }
 
 .back-button {
     align-self: flex-start;
-    padding: 10px 20px;
-    font-size: 16px;
+    padding: 8px 14px;
+    font-size: 13px;
     background-color: #1a7e28;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     touch-action: manipulation;
-    margin-bottom: 20px;
     transition: all 0.2s ease;
     z-index: 20;
-    position: relative;
+    position: absolute;
+    top: 12px;
+    left: 12px;
     -webkit-tap-highlight-color: transparent;
-}
-
-@media (orientation: landscape) {
-    .back-button {
-        margin-bottom: 0;
-        margin-right: 20px;
-        position: absolute;
-        top: 15px;
-        left: 15px;
-    }
 }
 
 .back-button:active {
@@ -343,33 +272,21 @@ body {
 
 .install-content {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    flex-direction: row;
+    gap: 10px;
     align-items: center;
     width: 100%;
-}
-
-@media (orientation: landscape) {
-    .install-content {
-        flex-direction: row;
-        width: auto;
-        gap: 15px;
-        margin-top: 20px;
-    }
+    height: 100%;
+    margin-top: 40px;
+    overflow-x: auto;
 }
 
 .install-image {
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
+    max-width: 28vh;
+    max-height: 90vh;
+    border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-@media (orientation: landscape) {
-    .install-image {
-        max-width: 30vh;
-        max-height: 80vh;
-    }
+    flex-shrink: 0;
 }
 
 /* Mobile-specific improvements */

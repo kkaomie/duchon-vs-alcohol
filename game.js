@@ -16,6 +16,7 @@ function initGame(level) {
 
     function showOrientationScreen() {
         let selectedOrientation = null;
+        let orientationListenersAdded = false;
 
         function drawOrientationScreen() {
             ctx.fillStyle = '#1a7e28';
@@ -62,7 +63,7 @@ function initGame(level) {
             ctx.fillText('Landscape', landscapeX, landscapeY + buttonH / 2);
         }
 
-        canvas.addEventListener('click', (e) => {
+        function orientationClickHandler(e) {
             const rect = canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
@@ -76,6 +77,7 @@ function initGame(level) {
             if (mouseX >= portraitX - buttonW / 2 && mouseX <= portraitX + buttonW / 2 &&
                 mouseY >= buttonY && mouseY <= buttonY + buttonH) {
                 selectedOrientation = 'portrait';
+                canvas.removeEventListener('click', orientationClickHandler);
                 screen.orientation.lock('portrait-primary').catch(() => {
                     screen.orientation.lock('portrait').catch(() => {});
                 });
@@ -89,6 +91,7 @@ function initGame(level) {
             if (mouseX >= landscapeX - buttonW / 2 && mouseX <= landscapeX + buttonW / 2 &&
                 mouseY >= buttonY && mouseY <= buttonY + buttonH) {
                 selectedOrientation = 'landscape';
+                canvas.removeEventListener('click', orientationClickHandler);
                 screen.orientation.lock('landscape-primary').catch(() => {
                     screen.orientation.lock('landscape').catch(() => {});
                 });
@@ -98,7 +101,12 @@ function initGame(level) {
                     playLevel1();
                 }, 500);
             }
-        });
+        }
+
+        if (!orientationListenersAdded) {
+            canvas.addEventListener('click', orientationClickHandler);
+            orientationListenersAdded = true;
+        }
 
         function orientationLoop() {
             drawOrientationScreen();
@@ -114,10 +122,10 @@ function initGame(level) {
             'dpea1shoot.png',
             'ealc1.png',
             'ealc1low.png',
+            'pecen.png',
             'projectile.png',
             'sun.png',
-            'lvl1bcg.png',
-            'pecen.png'
+            'lvl1bcg.png'
         ];
 
         const imageCache = {};
@@ -161,6 +169,7 @@ function initGame(level) {
             const GRID_START_X = SIDE_PADDING;
             const GRID_START_Y = TOP_PADDING;
             const GRID_END_X = GRID_START_X + GRID_WIDTH;
+            const DESTINATION_X = GRID_END_X + 80;
             const PLANT_MENU_X = canvas.width - 150;
             const PLANT_MENU_Y = TOP_PADDING;
             const LEVEL_DURATION = 120000;
@@ -371,13 +380,14 @@ function initGame(level) {
                         }
                     }
 
-                    return this.x < GRID_START_X - 100; // Check if reached the left end
+                    return this.x < DESTINATION_X - 50; // Check if reached the destination
                 }
 
                 draw() {
-                    // Show low health version if at 10% health
-                    let imageToUse = ENEMY_TYPE.image;
+                    // Show low health version if at 10% health or below
                     const healthPercent = this.health / ENEMY_TYPE.health;
+                    let imageToUse = ENEMY_TYPE.image;
+                    
                     if (healthPercent <= ENEMY_TYPE.lowHealthThreshold) {
                         imageToUse = ENEMY_TYPE.lowHealthImage;
                     }
@@ -391,7 +401,7 @@ function initGame(level) {
                     }
                     // Draw health bar
                     ctx.fillStyle = '#ff0000';
-                    ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2 - 10, ENEMY_TYPE.width * (this.health / ENEMY_TYPE.health), 5);
+                    ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2 - 10, ENEMY_TYPE.width * healthPercent, 5);
                 }
 
                 isAlive() {
@@ -532,6 +542,20 @@ function initGame(level) {
                 return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: deselectY, deselectSize: deselectSize };
             }
 
+            // Draw destination (Pecen)
+            function drawDestination() {
+                for (let row = 0; row < UNLOCKED_ROWS; row++) {
+                    const destY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
+                    const img = imageCache['pecen.png'];
+                    if (img) {
+                        ctx.drawImage(img, DESTINATION_X - 25, destY - 25, 50, 50);
+                    } else {
+                        ctx.fillStyle = '#ff00ff';
+                        ctx.fillRect(DESTINATION_X - 25, destY - 25, 50, 50);
+                    }
+                }
+            }
+
             // Draw game grid with chessboard pattern
             function drawGrid() {
                 ctx.lineWidth = 1;
@@ -626,7 +650,7 @@ function initGame(level) {
             }
 
             // Handle clicks
-            canvas.addEventListener('click', (e) => {
+            function handleGameClick(e) {
                 if (gameOver || levelWon) return;
 
                 const rect = canvas.getBoundingClientRect();
@@ -700,7 +724,9 @@ function initGame(level) {
                         }
                     }
                 }
-            });
+            }
+
+            canvas.addEventListener('click', handleGameClick);
 
             // Main game loop
             function gameLoop() {
@@ -746,7 +772,7 @@ function initGame(level) {
                     return shouldKeep;
                 });
 
-                // Update and draw enemies - remove dead enemies
+                // Update and draw enemies - remove dead enemies and check if reached destination
                 enemies = enemies.filter(enemy => {
                     const reachedEnd = enemy.update(plants);
                     if (reachedEnd) {
@@ -760,6 +786,9 @@ function initGame(level) {
                     enemy.draw();
                     return true;
                 });
+
+                // Draw destination
+                drawDestination();
 
                 // Draw plants menu
                 drawPlantMenu();
@@ -780,7 +809,7 @@ function initGame(level) {
                     ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
                     ctx.fillStyle = '#ffffff';
                     ctx.font = '24px Arial';
-                    ctx.fillText('An enemy reached the end!', canvas.width / 2, canvas.height / 2 + 50);
+                    ctx.fillText('An enemy reached the destination!', canvas.width / 2, canvas.height / 2 + 50);
 
                     // Auto return after 3 seconds
                     if (Date.now() - gameOverTime > 3000) {
@@ -815,6 +844,7 @@ function initGame(level) {
             }
 
             function returnToLevels() {
+                canvas.removeEventListener('click', handleGameClick);
                 const levelsScreen = document.getElementById('levels-screen');
                 const gameScreen = document.getElementById('game-screen');
 

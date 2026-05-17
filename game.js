@@ -5,7 +5,6 @@ function initGame(level) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // Start the game
     playLevel1();
 
     function playLevel1() {
@@ -62,7 +61,7 @@ function initGame(level) {
             const GRID_START_X = SIDE_PADDING;
             const GRID_START_Y = TOP_PADDING;
             const GRID_END_X = GRID_START_X + GRID_WIDTH;
-            const DESTINATION_X = GRID_START_X - 80; // Destination on the left side where enemies are heading
+            const DESTINATION_X = GRID_START_X - 80;
             const PLANT_MENU_X = canvas.width - 150;
             const PLANT_MENU_Y = TOP_PADDING;
             const LEVEL_DURATION = 120000;
@@ -130,7 +129,6 @@ function initGame(level) {
                 }
 
                 draw() {
-                    // Check if should show shooting animation
                     const now = Date.now();
                     if (this.isShooting && now - this.shootStartTime < this.type.shootDuration) {
                         const img = imageCache[this.type.shootImage];
@@ -150,7 +148,6 @@ function initGame(level) {
                             ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
                         }
                     }
-                    // Draw health bar
                     ctx.fillStyle = '#ff0000';
                     ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2 - 10, this.type.width * (this.health / this.type.health), 5);
                 }
@@ -159,7 +156,6 @@ function initGame(level) {
                     const now = Date.now();
                     if (now - this.lastAttack < this.type.attackSpeed) return;
 
-                    // Only shoot enemies in the same row
                     for (let enemy of enemies) {
                         if (enemy.rowIndex === this.gridY && enemy.x > this.x) {
                             projectiles.push(new Projectile(this.x, this.y, enemy));
@@ -231,7 +227,6 @@ function initGame(level) {
             // Enemy class
             class Enemy {
                 constructor(rowIndex) {
-                    // Spawn at RIGHT edge of grid (enemies come from right to left)
                     this.x = GRID_END_X;
                     this.rowIndex = rowIndex;
                     this.y = GRID_START_Y + rowIndex * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
@@ -242,11 +237,9 @@ function initGame(level) {
                 }
 
                 update(plants) {
-                    // Try to move left
                     let canMove = true;
                     const nextX = this.x - this.speed;
 
-                    // Check collision with plants
                     for (let plant of plants) {
                         if (plant.gridY === this.rowIndex) {
                             if (plant.collidesWith(nextX, this.y)) {
@@ -260,7 +253,6 @@ function initGame(level) {
                         this.x = nextX;
                     }
 
-                    // Deal melee damage to nearby plants
                     const now = Date.now();
                     for (let plant of plants) {
                         if (plant.gridY === this.rowIndex) {
@@ -273,11 +265,10 @@ function initGame(level) {
                         }
                     }
 
-                    return this.x < DESTINATION_X; // Check if reached the destination
+                    return this.x < DESTINATION_X;
                 }
 
                 draw() {
-                    // Show low health version if at 10% health or below
                     const healthPercent = this.health / ENEMY_TYPE.health;
                     let imageToUse = ENEMY_TYPE.image;
                     
@@ -292,7 +283,6 @@ function initGame(level) {
                         ctx.fillStyle = '#ff6600';
                         ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2, ENEMY_TYPE.width, ENEMY_TYPE.height);
                     }
-                    // Draw health bar
                     ctx.fillStyle = '#ff0000';
                     ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2 - 10, ENEMY_TYPE.width * healthPercent, 5);
                 }
@@ -306,19 +296,18 @@ function initGame(level) {
             class Sun {
                 constructor(x) {
                     this.x = x;
-                    this.y = -40; // Start above screen
+                    this.y = -40;
                     this.value = 25;
-                    this.radius = 25; // Bigger suns
-                    this.speed = 1; // Fall speed
+                    this.radius = 25;
+                    this.speed = 1;
                     this.targetY = GRID_START_Y + Math.random() * (GRID_ROWS * GRID_CELL_HEIGHT);
                 }
 
                 update() {
-                    // Fall down
                     if (this.y < this.targetY) {
                         this.y += this.speed;
                     }
-                    return this.y > canvas.height + 50; // Remove if off screen
+                    return this.y > canvas.height + 50;
                 }
 
                 draw() {
@@ -346,7 +335,6 @@ function initGame(level) {
 
             let suns_on_screen = [];
 
-            // Plant menu drawing
             function drawPlantMenu() {
                 const menuX = PLANT_MENU_X;
                 const menuY = PLANT_MENU_Y;
@@ -378,7 +366,6 @@ function initGame(level) {
                         ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
                         ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
 
-                        // Draw plant image preview (smaller)
                         const img = imageCache[plant.image];
                         if (img) {
                             ctx.drawImage(img, slotX + 15, slotY + 15, 50, 50);
@@ -392,7 +379,6 @@ function initGame(level) {
                     }
                 }
 
-                // Draw deselect button (X)
                 const deselectX = menuX + slotWidth - 12;
                 const deselectY = menuY - 10;
                 const deselectSize = 20;
@@ -414,7 +400,6 @@ function initGame(level) {
                 ctx.lineTo(deselectX - 6, deselectY + 16);
                 ctx.stroke();
 
-                // Draw back button
                 const backBtnX = menuX + 40;
                 const backBtnY = menuY + plantList.length * (slotHeight + 5) + 10;
                 const backBtnWidth = 80;
@@ -432,10 +417,9 @@ function initGame(level) {
                 ctx.textBaseline = 'middle';
                 ctx.fillText('← Back', backBtnX, backBtnY + backBtnHeight / 2);
 
-                return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: d[...]
+                return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: deselectY };
             }
 
-            // Draw destination (Pecen) on the left side
             function drawDestination() {
                 for (let row = 0; row < UNLOCKED_ROWS; row++) {
                     const destY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
@@ -449,7 +433,6 @@ function initGame(level) {
                 }
             }
 
-            // Draw game grid with chessboard pattern
             function drawGrid() {
                 ctx.lineWidth = 1;
 
@@ -459,22 +442,20 @@ function initGame(level) {
                         const y = GRID_START_Y + row * GRID_CELL_HEIGHT;
 
                         if (row < UNLOCKED_ROWS) {
-                            // Chessboard pattern for unlocked rows (green shades)
                             const isEvenSquare = (row + col) % 2 === 0;
                             if (isEvenSquare) {
-                                ctx.fillStyle = '#228b22'; // Full green
+                                ctx.fillStyle = '#228b22';
                             } else {
-                                ctx.fillStyle = '#1a6b1a'; // Dark green
+                                ctx.fillStyle = '#1a6b1a';
                             }
                             ctx.fillRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
                             ctx.strokeStyle = '#ffffff';
                         } else {
-                            // Chessboard pattern for locked rows (brown shades)
                             const isEvenSquare = (row + col) % 2 === 0;
                             if (isEvenSquare) {
-                                ctx.fillStyle = '#8b6914'; // Brown
+                                ctx.fillStyle = '#8b6914';
                             } else {
-                                ctx.fillStyle = '#6b5411'; // Darker brown
+                                ctx.fillStyle = '#6b5411';
                             }
                             ctx.fillRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
                             ctx.strokeStyle = '#665544';
@@ -484,7 +465,6 @@ function initGame(level) {
                 }
             }
 
-            // Draw background
             function drawBackground() {
                 const bgImg = imageCache['lvl1bcg.png'];
                 if (bgImg) {
@@ -495,7 +475,6 @@ function initGame(level) {
                 }
             }
 
-            // Draw progress bar
             function drawProgressBar() {
                 const barWidth = GRID_WIDTH;
                 const barHeight = 20;
@@ -520,7 +499,6 @@ function initGame(level) {
                 ctx.fillText(`${Math.ceil((LEVEL_DURATION - gametime) / 1000)}s`, barX + barWidth / 2, barY + barHeight / 2);
             }
 
-            // Draw suns counter with sun image
             function drawSunCounter() {
                 const sunImg = imageCache['sun.png'];
                 const sunX = 20;
@@ -542,7 +520,6 @@ function initGame(level) {
                 ctx.fillText(`${suns}`, sunX + sunSize + 10, sunY + sunSize / 2 + 8);
             }
 
-            // Handle clicks
             function handleGameClick(e) {
                 if (gameOver || levelWon) return;
 
@@ -550,7 +527,6 @@ function initGame(level) {
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
 
-                // Check sun clicks
                 suns_on_screen = suns_on_screen.filter(sun => {
                     if (sun.isClicked(mouseX, mouseY)) {
                         suns += sun.value;
@@ -559,7 +535,6 @@ function initGame(level) {
                     return true;
                 });
 
-                // Check deselect button
                 const plantList = ['peashooter'];
                 const menuX = PLANT_MENU_X;
                 const menuY = PLANT_MENU_Y;
@@ -574,7 +549,6 @@ function initGame(level) {
                     return;
                 }
 
-                // Check back button
                 const slotHeight = 80;
                 const backBtnX = menuX + 40;
                 const backBtnY = menuY + plantList.length * (slotHeight + 5) + 10;
@@ -587,7 +561,6 @@ function initGame(level) {
                     return;
                 }
 
-                // Check plant menu clicks
                 for (let i = 0; i < plantList.length; i++) {
                     const slotX = menuX;
                     const slotY = menuY + i * (slotHeight + 5);
@@ -599,7 +572,6 @@ function initGame(level) {
                     }
                 }
 
-                // Check grid clicks to place plant
                 if (selectedPlant && suns >= PLANT_TYPES[selectedPlant].cost) {
                     const relX = mouseX - GRID_START_X;
                     const relY = mouseY - GRID_START_Y;
@@ -621,7 +593,6 @@ function initGame(level) {
 
             canvas.addEventListener('click', handleGameClick);
 
-            // Main game loop
             function gameLoop() {
                 const now = Date.now();
                 gametime = now - startTime;
@@ -631,41 +602,35 @@ function initGame(level) {
                 drawSunCounter();
                 drawGrid();
 
-                // Spawn suns (same rate, now falling from top)
                 if (now - lastSunSpawn > 8000) {
                     suns_on_screen.push(new Sun(GRID_START_X + Math.random() * GRID_WIDTH));
                     lastSunSpawn = now;
                 }
 
-                // Update and draw suns
                 suns_on_screen = suns_on_screen.filter(sun => {
                     const shouldKeep = !sun.update();
                     if (shouldKeep) sun.draw();
                     return shouldKeep;
                 });
 
-                // Spawn enemies (after 20 seconds, every 5 seconds, only on grid rows)
                 if (gametime > 20000 && now - lastEnemySpawn > 5000 && gametime < 120000) {
                     const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
                     enemies.push(new Enemy(randomRow));
                     lastEnemySpawn = now;
                 }
 
-                // Update and draw plants - remove dead plants
                 plants = plants.filter(plant => {
                     plant.draw();
                     plant.attack(enemies);
                     return plant.isAlive();
                 });
 
-                // Update and draw projectiles
                 projectiles = projectiles.filter(p => {
                     const shouldKeep = p.update();
                     if (shouldKeep) p.draw();
                     return shouldKeep;
                 });
 
-                // Update and draw enemies - remove dead enemies and check if reached destination
                 enemies = enemies.filter(enemy => {
                     const reachedEnd = enemy.update(plants);
                     if (reachedEnd) {
@@ -680,18 +645,13 @@ function initGame(level) {
                     return true;
                 });
 
-                // Draw destination
                 drawDestination();
-
-                // Draw plants menu
                 drawPlantMenu();
 
-                // Check win condition
                 if (gametime >= LEVEL_DURATION && enemies.length === 0) {
                     levelWon = true;
                 }
 
-                // Draw game over/win message
                 if (gameOver) {
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -701,7 +661,6 @@ function initGame(level) {
                     ctx.textBaseline = 'middle';
                     ctx.fillText('mojko prehral si či ako sa tomu nadáva', canvas.width / 2, canvas.height / 2 - 30);
                     
-                    // Random subtitle
                     const subtitles = [
                         'duchoňotrón by sa hneval',
                         'alkohol neprospieva pečeni',
@@ -716,7 +675,6 @@ function initGame(level) {
                     ctx.font = '18px Arial';
                     ctx.fillText(randomSubtitle, canvas.width / 2, canvas.height / 2 + 40);
 
-                    // Auto return after 3 seconds
                     if (Date.now() - gameOverTime > 3000) {
                         returnToLevels();
                         return;
@@ -730,7 +688,6 @@ function initGame(level) {
                     ctx.textBaseline = 'middle';
                     ctx.fillText('LEVEL CLEARED!', canvas.width / 2, canvas.height / 2);
 
-                    // Auto return after 3 seconds
                     if (!gameOverTime) {
                         gameOverTime = Date.now();
                     }

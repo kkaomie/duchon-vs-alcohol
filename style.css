@@ -62,7 +62,7 @@ body {
     justify-content: center;
     align-items: center;
     background: #1a7e28;
-    background-image: url('/duchon-vs-alcohol/assets/mainbcg.png');
+    background-image: url('./assets/mainbcg.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -118,7 +118,7 @@ body {
     display: flex;
     flex-direction: column;
     background: #1a1a1a;
-    background-image: url('/duchon-vs-alcohol/assets/lvlsbcg.png');
+    background-image: url('./assets/lvlsbcg.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

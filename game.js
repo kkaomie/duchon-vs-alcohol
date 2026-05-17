@@ -5,115 +5,12 @@ function initGame(level) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // Check device orientation
-    const isPortrait = canvas.height > canvas.width;
-    
-    if (isPortrait) {
-        showOrientationScreen();
-    } else {
-        playLevel1();
-    }
+    // Force landscape orientation
+    screen.orientation.lock('landscape-primary').catch(() => {
+        screen.orientation.lock('landscape').catch(() => {});
+    });
 
-    function showOrientationScreen() {
-        let selectedOrientation = null;
-        let orientationListenersAdded = false;
-
-        function drawOrientationScreen() {
-            ctx.fillStyle = '#1a7e28';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 32px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.fillText('Choose Orientation', canvas.width / 2, 50);
-
-            // Portrait button
-            const portraitX = canvas.width / 4;
-            const portraitY = canvas.height / 2 - 50;
-            const buttonW = 150;
-            const buttonH = 100;
-
-            ctx.fillStyle = selectedOrientation === 'portrait' ? '#00ff00' : '#1a7e28';
-            ctx.fillRect(portraitX - buttonW / 2, portraitY, buttonW, buttonH);
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(portraitX - buttonW / 2, portraitY, buttonW, buttonH);
-
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 20px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('Portrait', portraitX, portraitY + buttonH / 2);
-
-            // Landscape button
-            const landscapeX = (canvas.width * 3) / 4;
-            const landscapeY = canvas.height / 2 - 50;
-
-            ctx.fillStyle = selectedOrientation === 'landscape' ? '#00ff00' : '#1a7e28';
-            ctx.fillRect(landscapeX - buttonW / 2, landscapeY, buttonW, buttonH);
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(landscapeX - buttonW / 2, landscapeY, buttonW, buttonH);
-
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 20px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('Landscape', landscapeX, landscapeY + buttonH / 2);
-        }
-
-        function orientationClickHandler(e) {
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-
-            const portraitX = canvas.width / 4;
-            const landscapeX = (canvas.width * 3) / 4;
-            const buttonY = canvas.height / 2 - 50;
-            const buttonW = 150;
-            const buttonH = 100;
-
-            if (mouseX >= portraitX - buttonW / 2 && mouseX <= portraitX + buttonW / 2 &&
-                mouseY >= buttonY && mouseY <= buttonY + buttonH) {
-                selectedOrientation = 'portrait';
-                canvas.removeEventListener('click', orientationClickHandler);
-                screen.orientation.lock('portrait-primary').catch(() => {
-                    screen.orientation.lock('portrait').catch(() => {});
-                });
-                setTimeout(() => {
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
-                    playLevel1();
-                }, 500);
-            }
-
-            if (mouseX >= landscapeX - buttonW / 2 && mouseX <= landscapeX + buttonW / 2 &&
-                mouseY >= buttonY && mouseY <= buttonY + buttonH) {
-                selectedOrientation = 'landscape';
-                canvas.removeEventListener('click', orientationClickHandler);
-                screen.orientation.lock('landscape-primary').catch(() => {
-                    screen.orientation.lock('landscape').catch(() => {});
-                });
-                setTimeout(() => {
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
-                    playLevel1();
-                }, 500);
-            }
-        }
-
-        if (!orientationListenersAdded) {
-            canvas.addEventListener('click', orientationClickHandler);
-            orientationListenersAdded = true;
-        }
-
-        function orientationLoop() {
-            drawOrientationScreen();
-            requestAnimationFrame(orientationLoop);
-        }
-        orientationLoop();
-    }
+    playLevel1();
 
     function playLevel1() {
         // Image preloader

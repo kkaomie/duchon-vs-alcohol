@@ -101,6 +101,7 @@ function initGame(level) {
             let lastEnemySpawn = 0;
             let lastSunSpawn = 0;
             let gameOverTime = null;
+            let isTransitioning = false;
 
             const startTime = Date.now();
 
@@ -366,7 +367,7 @@ function initGame(level) {
                 const slots = 5;
 
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                ctx.fillRect(menuX - 10, menuY - 10, 100, slotHeight * slots + 70);
+                ctx.fillRect(menuX - 10, menuY - 10, 100, slotHeight * slots + 20);
 
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 14px Arial';
@@ -389,13 +390,13 @@ function initGame(level) {
                         ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
                         ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
 
-                        // Draw plant image
+                        // Draw plant image - BIGGER (60x60)
                         const img = imageCache[plant.image];
                         if (img) {
-                            ctx.drawImage(img, slotX + 5, slotY + 5, 45, 45);
+                            ctx.drawImage(img, slotX + 10, slotY + 10, 60, 60);
                         }
 
-                        // Draw cost
+                        // Draw cost (will overlap with bigger image)
                         ctx.fillStyle = '#ffff00';
                         ctx.font = 'bold 12px Arial';
                         ctx.textAlign = 'right';
@@ -431,10 +432,11 @@ function initGame(level) {
                 ctx.lineTo(deselectX - 6, deselectY + 16);
                 ctx.stroke();
 
-                const backBtnX = menuX + 40;
-                const backBtnY = menuY + plantList.length * (slotHeight + 5) + 10;
-                const backBtnWidth = 80;
-                const backBtnHeight = 30;
+                // Back button moved to TOP RIGHT
+                const backBtnX = canvas.width - 60;
+                const backBtnY = 20;
+                const backBtnWidth = 100;
+                const backBtnHeight = 40;
 
                 ctx.fillStyle = '#8b5411';
                 ctx.fillRect(backBtnX - backBtnWidth / 2, backBtnY, backBtnWidth, backBtnHeight);
@@ -550,7 +552,7 @@ function initGame(level) {
             }
 
             function handleGameInput(e) {
-                if (gameOver || levelWon) return;
+                if (gameOver || levelWon || isTransitioning) return;
 
                 const rect = canvas.getBoundingClientRect();
                 let mouseX, mouseY;
@@ -585,11 +587,11 @@ function initGame(level) {
                     return;
                 }
 
-                const slotHeight = 80;
-                const backBtnX = menuX + 40;
-                const backBtnY = menuY + plantList.length * (slotHeight + 5) + 10;
-                const backBtnWidth = 80;
-                const backBtnHeight = 30;
+                // Back button in TOP RIGHT
+                const backBtnX = canvas.width - 60;
+                const backBtnY = 20;
+                const backBtnWidth = 100;
+                const backBtnHeight = 40;
 
                 if (mouseX >= backBtnX - backBtnWidth / 2 && mouseX <= backBtnX + backBtnWidth / 2 &&
                     mouseY >= backBtnY && mouseY <= backBtnY + backBtnHeight) {
@@ -597,6 +599,7 @@ function initGame(level) {
                     return;
                 }
 
+                const slotHeight = 80;
                 for (let i = 0; i < plantList.length; i++) {
                     const slotX = menuX;
                     const slotY = menuY + i * (slotHeight + 5);
@@ -631,6 +634,8 @@ function initGame(level) {
             canvas.addEventListener('touchend', handleGameInput);
 
             function gameLoop() {
+                if (isTransitioning) return;
+
                 const now = Date.now();
                 gametime = now - startTime;
 
@@ -713,9 +718,11 @@ function initGame(level) {
                     ctx.fillText(randomSubtitle, canvas.width / 2, canvas.height / 2 + 40);
 
                     if (Date.now() - gameOverTime > 3000) {
+                        isTransitioning = true;
                         returnToLevels();
                         return;
                     }
+                    requestAnimationFrame(gameLoop);
                 } else if (levelWon) {
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -729,15 +736,12 @@ function initGame(level) {
                         gameOverTime = Date.now();
                     }
                     if (Date.now() - gameOverTime > 3000) {
+                        isTransitioning = true;
                         returnToLevels();
                         return;
                     }
-                } else {
                     requestAnimationFrame(gameLoop);
-                    return;
-                }
-
-                if (!gameOver && !levelWon) {
+                } else {
                     requestAnimationFrame(gameLoop);
                 }
             }

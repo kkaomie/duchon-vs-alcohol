@@ -1,16 +1,16 @@
 const CACHE_NAME = 'html-game-v4';
 const urlsToCache = [
-    './',
-    './index.html',
-    './style.css',
-    './game.js',
-    './manifest.json',
-    './assets/icons/icon-192.png',
-    './assets/icons/icon-512.png',
-    './assets/mainbcg.png',
-    './assets/tutinst1.png',
-    './assets/tutinst2.png',
-    './assets/tutinst3.png'
+    '/duchon-vs-alcohol/',
+    '/duchon-vs-alcohol/index.html',
+    '/duchon-vs-alcohol/style.css',
+    '/duchon-vs-alcohol/game.js',
+    '/duchon-vs-alcohol/manifest.json',
+    '/duchon-vs-alcohol/assets/icons/icon-192.png',
+    '/duchon-vs-alcohol/assets/icons/icon-512.png',
+    '/duchon-vs-alcohol/assets/mainbcg.png',
+    '/duchon-vs-alcohol/assets/tutinst1.png',
+    '/duchon-vs-alcohol/assets/tutinst2.png',
+    '/duchon-vs-alcohol/assets/tutinst3.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -63,7 +63,7 @@ self.addEventListener('fetch', (event) => {
                 // If network fails, fall back to cache
                 console.log('Network failed, using cache:', event.request.url);
                 return caches.match(event.request).then((response) => {
-                    return response || caches.match('./index.html');
+                    return response || caches.match('/duchon-vs-alcohol/index.html');
                 });
             })
     );

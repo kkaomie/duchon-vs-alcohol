@@ -33,7 +33,7 @@
     </div>
 
     <div id="game-screen" class="screen hidden" style="display: none !important;">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <canvas id="gameCanvas"></canvas>
     </div>
 
     <div id="install-screen" class="screen hidden" style="display: none !important;">
@@ -100,6 +100,7 @@
                 if (i === 1) {
                     levelItem.addEventListener('click', () => {
                         showScreen('game');
+                        console.log('Starting game...');
                         initGame(i);
                     });
                 }

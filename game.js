@@ -447,8 +447,6 @@ function initGame(level) {
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText('← Back', backBtnX, backBtnY + backBtnHeight / 2);
-
-                return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: deselectY, deselectSize: deselectSize };
             }
 
             function drawDestination() {

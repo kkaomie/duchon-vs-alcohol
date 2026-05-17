@@ -17,6 +17,22 @@ body {
     -webkit-user-select: none;
     -webkit-user-zoom: none;
     zoom: 1 !important;
+    orientation: auto;
+}
+
+/* Prevent rotation issues on mobile */
+@media (orientation: portrait) {
+    body {
+        width: 100vw;
+        height: 100vh;
+    }
+}
+
+@media (orientation: landscape) {
+    body {
+        width: 100vw;
+        height: 100vh;
+    }
 }
 
 .screen {
@@ -29,7 +45,8 @@ body {
 }
 
 .screen.hidden {
-    display: none;
+    display: none !important;
+    pointer-events: none;
 }
 
 /* Home Screen */
@@ -45,6 +62,13 @@ body {
     background-repeat: no-repeat;
     padding-bottom: 80px;
     position: relative;
+}
+
+@media (orientation: landscape) {
+    #home-screen {
+        padding-bottom: 20px;
+        justify-content: center;
+    }
 }
 
 #home-screen .background {
@@ -66,6 +90,13 @@ body {
     max-width: 400px;
 }
 
+@media (orientation: landscape) {
+    .button-container {
+        max-width: 300px;
+        gap: 15px;
+    }
+}
+
 .game-button {
     width: 100%;
     padding: 20px;
@@ -76,8 +107,17 @@ body {
     border: 3px solid white;
     border-radius: 10px;
     cursor: pointer;
+    touch-action: manipulation;
     transition: all 0.2s ease;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (orientation: landscape) {
+    .game-button {
+        padding: 15px;
+        font-size: 16px;
+    }
 }
 
 .game-button:active {
@@ -99,8 +139,15 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 20px;
     position: relative;
+}
+
+@media (orientation: landscape) {
+    #levels-screen {
+        padding: 15px;
+    }
 }
 
 #levels-screen::before {
@@ -125,11 +172,24 @@ body {
     padding-top: 20px;
 }
 
+@media (orientation: landscape) {
+    .levels-container {
+        padding-top: 10px;
+    }
+}
+
 .levels-title {
     color: white;
     font-size: 28px;
     margin-bottom: 40px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+@media (orientation: landscape) {
+    .levels-title {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
 }
 
 .levels-grid {
@@ -139,6 +199,14 @@ body {
     max-width: 500px;
     width: 100%;
     justify-items: center;
+}
+
+@media (orientation: landscape) {
+    .levels-grid {
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        gap: 20px;
+        max-width: 90vw;
+    }
 }
 
 .level-item {
@@ -181,6 +249,14 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+@media (orientation: landscape) {
+    .level-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 30px;
+    }
+}
+
 .level-item.unlocked .level-icon {
     color: #1a7e28;
 }
@@ -197,11 +273,18 @@ body {
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
 }
 
+@media (orientation: landscape) {
+    .level-label {
+        font-size: 12px;
+    }
+}
+
 /* Game Screen */
 #gameCanvas {
     display: block;
     width: 100vw;
     height: 100vh;
+    touch-action: manipulation;
 }
 
 /* Install Tutorial Screen */
@@ -210,7 +293,17 @@ body {
     flex-direction: column;
     background: #1a1a1a;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 20px;
+}
+
+@media (orientation: landscape) {
+    #install-screen {
+        flex-direction: row;
+        overflow-y: hidden;
+        overflow-x: auto;
+        padding: 15px;
+    }
 }
 
 .back-button {
@@ -222,10 +315,22 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    touch-action: manipulation;
     margin-bottom: 20px;
     transition: all 0.2s ease;
     z-index: 20;
     position: relative;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (orientation: landscape) {
+    .back-button {
+        margin-bottom: 0;
+        margin-right: 20px;
+        position: absolute;
+        top: 15px;
+        left: 15px;
+    }
 }
 
 .back-button:active {
@@ -244,9 +349,35 @@ body {
     width: 100%;
 }
 
+@media (orientation: landscape) {
+    .install-content {
+        flex-direction: row;
+        width: auto;
+        gap: 15px;
+        margin-top: 20px;
+    }
+}
+
 .install-image {
     max-width: 100%;
     height: auto;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+@media (orientation: landscape) {
+    .install-image {
+        max-width: 30vh;
+        max-height: 80vh;
+    }
+}
+
+/* Mobile-specific improvements */
+@supports (padding: max(0px)) {
+    .screen {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+        padding-top: max(0px, env(safe-area-inset-top));
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
 }

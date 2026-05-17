@@ -37,6 +37,7 @@ function initGame(level) {
         function preloadImage(src) {
             return new Promise((resolve) => {
                 const img = new Image();
+                img.crossOrigin = 'anonymous';
                 img.onload = () => {
                     imageCache[src] = img;
                     imagesLoaded++;
@@ -447,7 +448,7 @@ function initGame(level) {
                 ctx.textBaseline = 'middle';
                 ctx.fillText('← Back', backBtnX, backBtnY + backBtnHeight / 2);
 
-                return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: d[...]
+                return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: deselectY, deselectSize: deselectSize };
             }
 
             function drawDestination() {

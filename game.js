@@ -169,7 +169,7 @@ function initGame(level) {
             const GRID_START_X = SIDE_PADDING;
             const GRID_START_Y = TOP_PADDING;
             const GRID_END_X = GRID_START_X + GRID_WIDTH;
-            const DESTINATION_X = GRID_END_X + 80;
+            const DESTINATION_X = GRID_START_X - 80; // Destination on the left side where enemies are heading
             const PLANT_MENU_X = canvas.width - 150;
             const PLANT_MENU_Y = TOP_PADDING;
             const LEVEL_DURATION = 120000;
@@ -380,7 +380,7 @@ function initGame(level) {
                         }
                     }
 
-                    return this.x < DESTINATION_X - 50; // Check if reached the destination
+                    return this.x < DESTINATION_X; // Check if reached the destination
                 }
 
                 draw() {
@@ -542,7 +542,7 @@ function initGame(level) {
                 return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: deselectY, deselectSize: deselectSize };
             }
 
-            // Draw destination (Pecen)
+            // Draw destination (Pecen) on the left side
             function drawDestination() {
                 for (let row = 0; row < UNLOCKED_ROWS; row++) {
                     const destY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;

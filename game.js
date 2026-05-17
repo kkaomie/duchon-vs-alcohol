@@ -5,11 +5,7 @@ function initGame(level) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // Force landscape orientation
-    screen.orientation.lock('landscape-primary').catch(() => {
-        screen.orientation.lock('landscape').catch(() => {});
-    });
-
+    // Start the game
     playLevel1();
 
     function playLevel1() {

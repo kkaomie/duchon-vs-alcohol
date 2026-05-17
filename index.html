@@ -13,19 +13,6 @@
     <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
     <link rel="stylesheet" href="style.css">
     <title>Duchon vs Alcohol</title>
-    <style>
-        @media (orientation: portrait) {
-            html {
-                transform: rotate(-90deg);
-                transform-origin: left top;
-                width: 100vh;
-                height: 100vw;
-                position: absolute;
-                left: 100%;
-                top: 0;
-            }
-        }
-    </style>
 </head>
 <body>
     <div id="home-screen" class="screen" style="display: flex !important;">
@@ -60,9 +47,13 @@
     
     <script src="game.js"></script>
     <script>
-        // Lock to landscape orientation
+        // Lock to landscape orientation (this is the proper way for mobile)
         if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('landscape').catch(err => console.log('Cannot lock orientation:', err));
+            screen.orientation.lock('landscape-primary').catch(err => {
+                console.log('Cannot lock orientation:', err);
+                // Fallback: try landscape without specific orientation
+                screen.orientation.lock('landscape').catch(() => console.log('Landscape lock failed'));
+            });
         }
 
         // Service Worker Registration

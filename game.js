@@ -2,8 +2,19 @@ function initGame(level) {
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Set initial canvas size
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    
+    resizeCanvas();
+    
+    // Handle window resize and orientation change
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('orientationchange', () => {
+        setTimeout(resizeCanvas, 100);
+    });
 
     playLevel1();
 
@@ -48,21 +59,32 @@ function initGame(level) {
         });
 
         function startGame() {
-            // Game constants
-            const GRID_COLS = 10;
-            const GRID_ROWS = 6;
-            const UNLOCKED_ROWS = 2;
-            const GRID_CELL_WIDTH = 60;
-            const GRID_CELL_HEIGHT = 60;
-            const SIDE_PADDING = 100;
-            const TOP_PADDING = 100;
+            // Responsive game constants based on screen size
+            const isLandscape = window.innerWidth > window.innerHeight;
+            
+            let GRID_COLS = 10;
+            let GRID_ROWS = 6;
+            let UNLOCKED_ROWS = 2;
+            let GRID_CELL_WIDTH = 60;
+            let GRID_CELL_HEIGHT = 60;
+            let SIDE_PADDING = 100;
+            let TOP_PADDING = 100;
+            
+            // Adjust for small screens (mobile landscape)
+            if (window.innerHeight < 500) {
+                GRID_CELL_WIDTH = 45;
+                GRID_CELL_HEIGHT = 45;
+                SIDE_PADDING = 70;
+                TOP_PADDING = 60;
+            }
+            
             const GRID_WIDTH = GRID_COLS * GRID_CELL_WIDTH;
             const GRID_HEIGHT = GRID_ROWS * GRID_CELL_HEIGHT;
             const GRID_START_X = SIDE_PADDING;
             const GRID_START_Y = TOP_PADDING;
             const GRID_END_X = GRID_START_X + GRID_WIDTH;
             const DESTINATION_X = GRID_START_X - 80;
-            const PLANT_MENU_X = canvas.width - 150;
+            let PLANT_MENU_X = canvas.width - 150;
             const PLANT_MENU_Y = TOP_PADDING;
             const LEVEL_DURATION = 120000;
 
@@ -417,7 +439,7 @@ function initGame(level) {
                 ctx.textBaseline = 'middle';
                 ctx.fillText('← Back', backBtnX, backBtnY + backBtnHeight / 2);
 
-                return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: deselectY };
+                return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: deselectY, deselectSize: deselectSize };
             }
 
             function drawDestination() {
@@ -520,12 +542,19 @@ function initGame(level) {
                 ctx.fillText(`${suns}`, sunX + sunSize + 10, sunY + sunSize / 2 + 8);
             }
 
-            function handleGameClick(e) {
+            function handleGameInput(e) {
                 if (gameOver || levelWon) return;
 
                 const rect = canvas.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                const mouseY = e.clientY - rect.top;
+                let mouseX, mouseY;
+
+                if (e.touches) {
+                    mouseX = e.touches[0].clientX - rect.left;
+                    mouseY = e.touches[0].clientY - rect.top;
+                } else {
+                    mouseX = e.clientX - rect.left;
+                    mouseY = e.clientY - rect.top;
+                }
 
                 suns_on_screen = suns_on_screen.filter(sun => {
                     if (sun.isClicked(mouseX, mouseY)) {
@@ -591,7 +620,8 @@ function initGame(level) {
                 }
             }
 
-            canvas.addEventListener('click', handleGameClick);
+            canvas.addEventListener('click', handleGameInput);
+            canvas.addEventListener('touchend', handleGameInput);
 
             function gameLoop() {
                 const now = Date.now();
@@ -706,7 +736,10 @@ function initGame(level) {
             }
 
             function returnToLevels() {
-                canvas.removeEventListener('click', handleGameClick);
+                canvas.removeEventListener('click', handleGameInput);
+                canvas.removeEventListener('touchend', handleGameInput);
+                window.removeEventListener('resize', resizeCanvas);
+                window.removeEventListener('orientationchange', resizeCanvas);
                 const levelsScreen = document.getElementById('levels-screen');
                 const gameScreen = document.getElementById('game-screen');
 

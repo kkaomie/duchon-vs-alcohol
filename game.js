@@ -539,7 +539,7 @@ function initGame(level) {
                 ctx.textBaseline = 'middle';
                 ctx.fillText('← Back', backBtnX, backBtnY + backBtnHeight / 2);
 
-                return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: deselectY, deselectSize: deselectSize };
+                return { backBtnX: backBtnX - backBtnWidth / 2, backBtnY: backBtnY, backBtnWidth: backBtnWidth, backBtnHeight: backBtnHeight, deselectX: deselectX - deselectSize / 2, deselectY: d[...]
             }
 
             // Draw destination (Pecen) on the left side
@@ -806,10 +806,22 @@ function initGame(level) {
                     ctx.font = 'bold 48px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
+                    ctx.fillText('mojko prehral si či ako sa tomu nadáva', canvas.width / 2, canvas.height / 2 - 30);
+                    
+                    // Random subtitle
+                    const subtitles = [
+                        'duchoňotrón by sa hneval',
+                        'alkohol neprospieva pečeni',
+                        'ZABIL SI JEHO PEČEŇ!!!',
+                        'tak tebe to teda fakt nejde',
+                        'bruchoň je sklamaný',
+                        'pusti si dúhoňové sväté piesne a neplač'
+                    ];
+                    const randomSubtitle = subtitles[Math.floor(Math.random() * subtitles.length)];
+                    
                     ctx.fillStyle = '#ffffff';
-                    ctx.font = '24px Arial';
-                    ctx.fillText('An enemy reached the destination!', canvas.width / 2, canvas.height / 2 + 50);
+                    ctx.font = '18px Arial';
+                    ctx.fillText(randomSubtitle, canvas.width / 2, canvas.height / 2 + 40);
 
                     // Auto return after 3 seconds
                     if (Date.now() - gameOverTime > 3000) {

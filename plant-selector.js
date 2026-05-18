@@ -43,6 +43,11 @@ class PlantSelector {
 
     createUI() {
         const levelsScreen = document.getElementById('levels-screen');
+
+        // Check if plant selector button already exists
+        if (document.getElementById('plant-selector-btn')) {
+            return; // Already created, don't create again
+        }
         
         // Create plant selector button
         const btn = document.createElement('button');
@@ -87,14 +92,17 @@ class PlantSelector {
         const backBtn = document.getElementById('plant-selector-back-btn');
         const codex = document.getElementById('plant-codex');
 
-        btn.addEventListener('click', () => this.show());
-        backBtn.addEventListener('click', () => this.hide());
-        codex.addEventListener('click', (e) => this.handlePlantClick(e));
-        codex.addEventListener('mouseover', (e) => this.handlePlantHover(e));
+        if (btn) btn.addEventListener('click', () => this.show());
+        if (backBtn) backBtn.addEventListener('click', () => this.hide());
+        if (codex) {
+            codex.addEventListener('click', (e) => this.handlePlantClick(e));
+            codex.addEventListener('mouseover', (e) => this.handlePlantHover(e));
+        }
     }
 
     renderCodex() {
         const codex = document.getElementById('plant-codex');
+        if (!codex) return;
         codex.innerHTML = '';
 
         // Get all plants and sort by unlock status
@@ -132,6 +140,8 @@ class PlantSelector {
     renderSelectedList() {
         const list = document.getElementById('selected-plants-list');
         const count = document.getElementById('selected-count');
+        
+        if (!list || !count) return;
         
         list.innerHTML = '';
         count.textContent = `${this.selectedPlants.length} / ${this.maxSelections} Selected`;
@@ -202,9 +212,12 @@ class PlantSelector {
     showPlantInfo(plantKey) {
         const plant = PLANT_DATABASE[plantKey];
         if (plant) {
-            document.getElementById('plant-info-name').textContent = plant.name;
-            document.getElementById('plant-info-description').textContent = plant.description;
-            document.getElementById('plant-info-stats').textContent = plant.stats;
+            const nameEl = document.getElementById('plant-info-name');
+            const descEl = document.getElementById('plant-info-description');
+            const statsEl = document.getElementById('plant-info-stats');
+            if (nameEl) nameEl.textContent = plant.name;
+            if (descEl) descEl.textContent = plant.description;
+            if (statsEl) statsEl.textContent = plant.stats;
         }
     }
 
@@ -212,20 +225,24 @@ class PlantSelector {
         const screen = document.getElementById('plant-selector-screen');
         const levelsScreen = document.getElementById('levels-screen');
         
-        levelsScreen.style.display = 'none';
-        levelsScreen.classList.add('hidden');
-        screen.style.display = 'flex';
-        screen.classList.remove('hidden');
+        if (screen && levelsScreen) {
+            levelsScreen.style.display = 'none';
+            levelsScreen.classList.add('hidden');
+            screen.style.display = 'flex';
+            screen.classList.remove('hidden');
+        }
     }
 
     hide() {
         const screen = document.getElementById('plant-selector-screen');
         const levelsScreen = document.getElementById('levels-screen');
         
-        screen.style.display = 'none';
-        screen.classList.add('hidden');
-        levelsScreen.style.display = 'flex';
-        levelsScreen.classList.remove('hidden');
+        if (screen && levelsScreen) {
+            screen.style.display = 'none';
+            screen.classList.add('hidden');
+            levelsScreen.style.display = 'flex';
+            levelsScreen.classList.remove('hidden');
+        }
     }
 
     unlockPlant(plantKey) {
@@ -239,7 +256,6 @@ class PlantSelector {
     completeLevel(levelNumber) {
         this.completedLevels.add(levelNumber);
         this.checkAndUnlockPlants();
-        this.selectedPlants = []; // Clear selected plants when level completes
         this.saveToStorage();
     }
 

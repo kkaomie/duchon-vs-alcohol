@@ -613,7 +613,7 @@ function initGame(level) {
                 const slots = 5;
 
                 // Back button - positioned to the right of plant menu, moved 50px to the right
-                const backBtnX = menuX + 100 + 50; // To the right of menu + 50px offset
+                const backBtnX = menuX + 120; // To the right of menu + 50px offset
                 const backBtnY = menuY;
                 const backBtnWidth = 40;
                 const backBtnHeight = slotHeight * slots + 20;

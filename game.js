@@ -4,28 +4,43 @@ function initGame(level) {
     
     // Game paused state
     let gamePaused = false;
+    let gameActive = true; // Track if game should still be running
     
     // Handle visibility changes - freeze game when window loses focus
-    document.addEventListener('visibilitychange', () => {
+    const handleVisibilityChange = () => {
         if (document.hidden) {
             gamePaused = true;
-            console.log('Game paused - window lost focus');
+            gameActive = false; // Mark as failed
+            console.log('Game paused and marked as failed - window lost focus');
         } else {
             gamePaused = false;
             console.log('Game resumed - window regained focus');
         }
-    });
+    };
     
-    // Also handle focus events for better coverage
-    window.addEventListener('blur', () => {
+    // Handle window/tab blur - user switched away
+    const handleBlur = () => {
         gamePaused = true;
-        console.log('Game paused - window blurred');
-    });
+        gameActive = false; // Mark as failed
+        console.log('Game paused and marked as failed - window blurred');
+    };
     
-    window.addEventListener('focus', () => {
+    // Handle window/tab focus - user came back
+    const handleFocus = () => {
         gamePaused = false;
         console.log('Game resumed - window focused');
-    });
+    };
+    
+    // Handle beforeunload - app/window closing
+    const handleBeforeUnload = () => {
+        gameActive = false; // Mark as failed
+        console.log('Game marked as failed - app/window closing');
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('beforeunload', handleBeforeUnload);
     
     // Set initial canvas size
     function resizeCanvas() {
@@ -710,6 +725,14 @@ function initGame(level) {
             function gameLoop() {
                 if (isTransitioning) return;
                 
+                // Check if game was marked as failed (closed/switched away)
+                if (!gameActive && !gameOver && !levelWon) {
+                    gameOver = true;
+                    gameOverTime = Date.now();
+                    loseScreenSubtitle = 'nosratá si to keď si išiel preč 😬';
+                    console.log('Level failed - user closed/switched away');
+                }
+                
                 // Skip game logic if paused, but still draw the frame
                 const now = Date.now();
                 
@@ -881,6 +904,10 @@ function initGame(level) {
                 canvas.removeEventListener('touchend', handleGameInput);
                 window.removeEventListener('resize', resizeCanvas);
                 window.removeEventListener('orientationchange', resizeCanvas);
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
+                window.removeEventListener('blur', handleBlur);
+                window.removeEventListener('focus', handleFocus);
+                window.removeEventListener('beforeunload', handleBeforeUnload);
                 const levelsScreen = document.getElementById('levels-screen');
                 const gameScreen = document.getElementById('game-screen');
 

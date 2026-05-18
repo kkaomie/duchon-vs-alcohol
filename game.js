@@ -452,7 +452,8 @@ function initGame(level) {
                  ctx.textAlign = 'center';
                  ctx.fillText('Plants', menuX + menuWidth / 2, menuY - 20);
 
-                 const plantList = ['peashooter'];
+                 // Get selected plants from plant selector
+                 const plantList = typeof plantSelector !== 'undefined' ? plantSelector.getSelectedPlants() : ['peashooter'];
 
                  // Draw 2x3 grid
                  for (let row = 0; row < gridRows; row++) {
@@ -674,7 +675,8 @@ function initGame(level) {
                      return true;
                  });
 
-                 const plantList = ['peashooter'];
+                 // Get selected plants from plant selector
+                 const plantList = typeof plantSelector !== 'undefined' ? plantSelector.getSelectedPlants() : ['peashooter'];
                  const menuX = PLANT_MENU_X;
                  const menuY = PLANT_MENU_Y;
                  const slotWidth = 60;
@@ -923,6 +925,10 @@ function initGame(level) {
                          if (typeof plantSelector !== 'undefined') {
                              plantSelector.completeLevel(0); // Level 0 is level 1
                              plantSelector.unlockPlant('sunflower');
+                             // Regenerate levels grid to reflect unlocked level 2
+                             if (typeof regenerateLevels === 'function') {
+                                 regenerateLevels();
+                             }
                          }
                          returnToLevels();
                          return;
@@ -1368,7 +1374,8 @@ function initGame(level) {
                  ctx.textAlign = 'center';
                  ctx.fillText('Plants', menuX + menuWidth / 2, menuY - 20);
 
-                 const plantList = ['peashooter', 'sunflower'];
+                 // Get selected plants from plant selector
+                 const plantList = typeof plantSelector !== 'undefined' ? plantSelector.getSelectedPlants() : ['peashooter', 'sunflower'];
 
                  // Draw 2x3 grid
                  for (let row = 0; row < gridRows; row++) {
@@ -1586,7 +1593,8 @@ function initGame(level) {
                      return true;
                  });
 
-                 const plantList = ['peashooter', 'sunflower'];
+                 // Get selected plants from plant selector
+                 const plantList = typeof plantSelector !== 'undefined' ? plantSelector.getSelectedPlants() : ['peashooter', 'sunflower'];
                  const menuX = PLANT_MENU_X;
                  const menuY = PLANT_MENU_Y;
                  const slotWidth = 60;

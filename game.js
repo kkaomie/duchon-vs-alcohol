@@ -173,7 +173,7 @@ function initGame(level) {
                      width: 50,
                      height: 50,
                      collisionRadius: 25,
-                     cooldown: 10000
+                     placementCooldown: 10000
                  }
              };
 
@@ -209,7 +209,6 @@ function initGame(level) {
                      this.lastAttack = 0;
                      this.isShooting = false;
                      this.shootStartTime = 0;
-                     this.plantedTime = Date.now();
                  }
 
                  draw() {
@@ -238,7 +237,7 @@ function initGame(level) {
 
                  canAttack() {
                      const now = Date.now();
-                     return (now - this.plantedTime >= this.type.cooldown) && (now - this.lastAttack >= this.type.attackSpeed);
+                     return (now - this.lastAttack >= this.type.attackSpeed);
                  }
 
                  attack(enemies) {
@@ -1023,6 +1022,9 @@ function initGame(level) {
              const PLANT_MENU_Y = TOP_PADDING;
              const LEVEL_DURATION = 120000;
              const TWO_MINUTE_MARK = 120000;
+             
+             // Track when plants can be placed (placement cooldown)
+             let lastPlacementTime = 0;
 
              // Game state
              let suns = 50;
@@ -1062,7 +1064,7 @@ function initGame(level) {
                      width: 50,
                      height: 50,
                      collisionRadius: 25,
-                     cooldown: 5000
+                     placementCooldown: 5000
                  },
                  sunflower: {
                      name: 'Sunflower',
@@ -1074,7 +1076,7 @@ function initGame(level) {
                      width: 50,
                      height: 50,
                      collisionRadius: 25,
-                     cooldown: 3000
+                     placementCooldown: 3000
                  }
              };
 
@@ -1109,7 +1111,6 @@ function initGame(level) {
                      this.lastAttack = 0;
                      this.isShooting = false;
                      this.shootStartTime = 0;
-                     this.plantedTime = Date.now();
                      this.lastSunSpawn = 0;
                  }
 
@@ -1139,7 +1140,7 @@ function initGame(level) {
 
                  canAttack() {
                      const now = Date.now();
-                     return (now - this.plantedTime >= this.type.cooldown) && (now - this.lastAttack >= this.type.attackSpeed);
+                     return (now - this.lastAttack >= this.type.attackSpeed);
                  }
 
                  attack(enemies) {
@@ -1162,7 +1163,7 @@ function initGame(level) {
 
                  produceSun() {
                      const now = Date.now();
-                     if (now - this.plantedTime >= this.type.cooldown && now - this.lastSunSpawn >= this.type.sunSpawnInterval) {
+                     if (now - this.lastSunSpawn >= this.type.sunSpawnInterval) {
                          suns_on_screen.push(new Sun(this.x, true));
                          this.lastSunSpawn = now;
                      }
@@ -1624,18 +1625,24 @@ function initGame(level) {
                  }
 
                  if (selectedPlant && suns >= PLANT_TYPES[selectedPlant].cost) {
-                     const relX = mouseX - GRID_START_X;
-                     const relY = mouseY - GRID_START_Y;
+                     const now = Date.now();
+                     const cooldown = PLANT_TYPES[selectedPlant].placementCooldown;
+                     
+                     if (now - lastPlacementTime >= cooldown) {
+                         const relX = mouseX - GRID_START_X;
+                         const relY = mouseY - GRID_START_Y;
 
-                     if (relX >= 0 && relX < GRID_WIDTH && relY >= 0 && relY < GRID_HEIGHT) {
-                         const gridX = Math.floor(relX / GRID_CELL_WIDTH);
-                         const gridY = Math.floor(relY / GRID_CELL_HEIGHT);
+                         if (relX >= 0 && relX < GRID_WIDTH && relY >= 0 && relY < GRID_HEIGHT) {
+                             const gridX = Math.floor(relX / GRID_CELL_WIDTH);
+                             const gridY = Math.floor(relY / GRID_CELL_HEIGHT);
 
-                         if (gridY < UNLOCKED_ROWS) {
-                             const occupied = plants.some(p => p.gridX === gridX && p.gridY === gridY);
-                             if (!occupied) {
-                                 plants.push(new Plant(selectedPlant, gridX, gridY));
-                                 suns -= PLANT_TYPES[selectedPlant].cost;
+                             if (gridY < UNLOCKED_ROWS) {
+                                 const occupied = plants.some(p => p.gridX === gridX && p.gridY === gridY);
+                                 if (!occupied) {
+                                     plants.push(new Plant(selectedPlant, gridX, gridY));
+                                     suns -= PLANT_TYPES[selectedPlant].cost;
+                                     lastPlacementTime = now;
+                                 }
                              }
                          }
                      }

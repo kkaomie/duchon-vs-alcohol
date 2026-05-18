@@ -1825,6 +1825,14 @@ function initGame(level) {
                      }
                      if (Date.now() - gameOverTime > 3000) {
                          isTransitioning = true;
+                         // Unlock level 2 when level 2 is completed
+                         if (typeof plantSelector !== 'undefined') {
+                             plantSelector.completeLevel(1); // Level 1 is level 2
+                             // Regenerate levels grid to reflect unlocked level 3
+                             if (typeof regenerateLevels === 'function') {
+                                 regenerateLevels();
+                             }
+                         }
                          returnToLevels();
                          return;
                      }

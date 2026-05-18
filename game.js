@@ -838,14 +838,7 @@ function initGame(level) {
                             'alkohol neprospieva pečeni',
                             'ZABIL SI JEHO PEČEŇ!!!',
                             'tak tebe to teda fakt nejde',
-                            'bruchoň je sklamaný (a mrtvý)',
-                            'pusti si dúhoňove sväté piesne a neplač'
-                            'smrdíš'
-                            'ak by si bol malinová zmrzlina tak by som ťa olízal'
-                            'ak by si bol mangová zmrzlina tak by som ťa neolízal (nechutí mi)'
-                            'smrť grckoňa je tvoja vina'
-                            'neni som expert na hry, ale asi si prehral'
-                            '0951767600'
+                            'bruchoň je sklamaný'
                         ];
                         loseScreenSubtitle = subtitles[Math.floor(Math.random() * subtitles.length)];
                     }

@@ -2,6 +2,31 @@ function initGame(level) {
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     
+    // Game paused state
+    let gamePaused = false;
+    
+    // Handle visibility changes - freeze game when window loses focus
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            gamePaused = true;
+            console.log('Game paused - window lost focus');
+        } else {
+            gamePaused = false;
+            console.log('Game resumed - window regained focus');
+        }
+    });
+    
+    // Also handle focus events for better coverage
+    window.addEventListener('blur', () => {
+        gamePaused = true;
+        console.log('Game paused - window blurred');
+    });
+    
+    window.addEventListener('focus', () => {
+        gamePaused = false;
+        console.log('Game resumed - window focused');
+    });
+    
     // Set initial canvas size
     function resizeCanvas() {
         canvas.width = window.innerWidth;
@@ -85,7 +110,7 @@ function initGame(level) {
             const GRID_START_Y = TOP_PADDING;
             const GRID_END_X = GRID_START_X + GRID_WIDTH;
             const DESTINATION_X = GRID_START_X - 40; // Closer to the finish line
-            let PLANT_MENU_X = canvas.width - 150;
+            let PLANT_MENU_X = canvas.width - 150 - 200; // Moved 200px to the left
             const PLANT_MENU_Y = TOP_PADDING;
             const LEVEL_DURATION = 120000;
             const TWO_MINUTE_MARK = 120000;
@@ -377,8 +402,8 @@ function initGame(level) {
                 const menuY = PLANT_MENU_Y;
                 const slotWidth = 60;
                 const slotHeight = 60;
-                const gridCols = 3;
-                const gridRows = 2;
+                const gridCols = 2;
+                const gridRows = 3;
                 const spacing = 5;
                 const menuWidth = gridCols * slotWidth + (gridCols - 1) * spacing;
                 const menuHeight = gridRows * slotHeight + (gridRows - 1) * spacing;
@@ -395,7 +420,7 @@ function initGame(level) {
 
                 const plantList = ['peashooter'];
 
-                // Draw 3x2 grid
+                // Draw 2x3 grid
                 for (let row = 0; row < gridRows; row++) {
                     for (let col = 0; col < gridCols; col++) {
                         const index = row * gridCols + col;
@@ -434,7 +459,7 @@ function initGame(level) {
                     }
                 }
 
-                // Back button - positioned right next to plant menu
+                // Back button - positioned right next to plant menu, moved 200px left
                 const backBtnX = menuX + menuWidth + 20;
                 const backBtnY = menuY + menuHeight / 2;
                 const backBtnWidth = 30;
@@ -620,10 +645,10 @@ function initGame(level) {
                 const menuY = PLANT_MENU_Y;
                 const slotWidth = 60;
                 const slotHeight = 60;
-                const gridCols = 3;
+                const gridCols = 2;
                 const spacing = 5;
                 const menuWidth = gridCols * slotWidth + (gridCols - 1) * spacing;
-                const menuHeight = 2 * slotHeight + 1 * spacing; // 2 rows
+                const menuHeight = 3 * slotHeight + 2 * spacing; // 3 rows
 
                 // Back button hit detection
                 const backBtnX = menuX + menuWidth + 20;
@@ -637,10 +662,10 @@ function initGame(level) {
                     return;
                 }
 
-                // Plant slot click handling - 3x2 grid
-                for (let row = 0; row < 2; row++) {
-                    for (let col = 0; col < 3; col++) {
-                        const index = row * 3 + col;
+                // Plant slot click handling - 2x3 grid
+                for (let row = 0; row < 3; row++) {
+                    for (let col = 0; col < 2; col++) {
+                        const index = row * 2 + col;
                         if (index < plantList.length) {
                             const slotX = menuX + col * (slotWidth + spacing);
                             const slotY = menuY + row * (slotHeight + spacing);
@@ -684,28 +709,37 @@ function initGame(level) {
 
             function gameLoop() {
                 if (isTransitioning) return;
-
+                
+                // Skip game logic if paused, but still draw the frame
                 const now = Date.now();
-                gametime = now - startTime;
+                
+                if (!gamePaused) {
+                    gametime = now - startTime;
+                }
 
                 drawBackground();
                 drawProgressBar();
                 drawSunCounter();
                 drawGrid();
 
-                if (now - lastSunSpawn > 8000) {
+                if (!gamePaused && now - lastSunSpawn > 8000) {
                     suns_on_screen.push(new Sun(GRID_START_X + Math.random() * GRID_WIDTH));
                     lastSunSpawn = now;
                 }
 
                 suns_on_screen = suns_on_screen.filter(sun => {
-                    const shouldKeep = !sun.update();
-                    if (shouldKeep) sun.draw();
-                    return shouldKeep;
+                    if (!gamePaused) {
+                        const shouldKeep = !sun.update();
+                        if (shouldKeep) sun.draw();
+                        return shouldKeep;
+                    } else {
+                        sun.draw();
+                        return true;
+                    }
                 });
 
-                // Spawn enemies for first 2 minutes
-                if (gametime > 20000 && now - lastEnemySpawn > 5000 && gametime < TWO_MINUTE_MARK) {
+                // Spawn enemies for first 2 minutes - only if not paused
+                if (!gamePaused && gametime > 20000 && now - lastEnemySpawn > 5000 && gametime < TWO_MINUTE_MARK) {
                     const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
                     enemies.push(new Enemy(randomRow));
                     lastEnemySpawn = now;
@@ -715,7 +749,7 @@ function initGame(level) {
                 }
 
                 // Show warning and trigger final wave at 2 minutes
-                if (gametime >= TWO_MINUTE_MARK && !finalWaveWarningTriggered) {
+                if (!gamePaused && gametime >= TWO_MINUTE_MARK && !finalWaveWarningTriggered) {
                     finalWaveWarningTriggered = true;
                     finalWaveWarningTime = now;
                 }
@@ -725,7 +759,7 @@ function initGame(level) {
                     drawFinalWaveWarning();
                 }
 
-                // Spawn final wave after 5 seconds, over a 4 second period
+                // Spawn final wave after 5 seconds, over an 8 second period
                 if (finalWaveWarningTriggered && !finalWaveTriggered && (now - finalWaveWarningTime) >= 5000) {
                     finalWaveTriggered = true;
                     finalWaveSpawningTime = now;
@@ -733,34 +767,45 @@ function initGame(level) {
                     // Calculate final wave count: 0.5x enemies (rounded down)
                     const finalWaveCount = Math.floor((totalEnemiesSpawned['ealc1'] || 0) * 0.5);
                     
-                    // Schedule enemies to spawn over 4 seconds
+                    // Schedule enemies to spawn over 8 seconds
                     for (let i = 0; i < finalWaveCount; i++) {
                         setTimeout(() => {
-                            const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
-                            enemies.push(new Enemy(randomRow));
-                            finalWaveEnemiesSpawned++;
-                        }, (i / finalWaveCount) * 4000);
+                            if (!gamePaused) {
+                                const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
+                                enemies.push(new Enemy(randomRow));
+                                finalWaveEnemiesSpawned++;
+                            }
+                        }, (i / finalWaveCount) * 8000);
                     }
                 }
 
                 plants = plants.filter(plant => {
                     plant.draw();
-                    plant.attack(enemies);
+                    if (!gamePaused) {
+                        plant.attack(enemies);
+                    }
                     return plant.isAlive();
                 });
 
                 projectiles = projectiles.filter(p => {
-                    const shouldKeep = p.update();
-                    if (shouldKeep) p.draw();
-                    return shouldKeep;
+                    if (!gamePaused) {
+                        const shouldKeep = p.update();
+                        if (shouldKeep) p.draw();
+                        return shouldKeep;
+                    } else {
+                        p.draw();
+                        return true;
+                    }
                 });
 
                 enemies = enemies.filter(enemy => {
-                    const reachedEnd = enemy.update(plants);
-                    if (reachedEnd) {
-                        gameOver = true;
-                        gameOverTime = Date.now();
-                        return false;
+                    if (!gamePaused) {
+                        const reachedEnd = enemy.update(plants);
+                        if (reachedEnd) {
+                            gameOver = true;
+                            gameOverTime = Date.now();
+                            return false;
+                        }
                     }
                     if (!enemy.isAlive()) {
                         return false;
@@ -773,7 +818,7 @@ function initGame(level) {
                 drawPlantMenu();
 
                 // Win logic: check enemies only after final wave completes
-                if (finalWaveTriggered && (now - finalWaveSpawningTime) >= 4000 && enemies.length === 0) {
+                if (finalWaveTriggered && !gamePaused && (now - finalWaveSpawningTime) >= 8000 && enemies.length === 0) {
                     levelWon = true;
                 }
 

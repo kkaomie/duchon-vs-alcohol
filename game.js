@@ -107,6 +107,7 @@ function initGame(level) {
             let finalWaveTriggered = false;
             let finalWaveWarningTriggered = false;
             let finalWaveWarningTime = null;
+            let loseScreenSubtitle = null; // Store the selected subtitle
 
             const startTime = Date.now();
 
@@ -421,27 +422,6 @@ function initGame(level) {
                     }
                 }
 
-                const deselectX = menuX + slotWidth - 12;
-                const deselectY = menuY - 10;
-                const deselectSize = 20;
-
-                ctx.fillStyle = '#ff0000';
-                ctx.fillRect(deselectX - deselectSize / 2, deselectY, deselectSize, deselectSize);
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(deselectX - deselectSize / 2, deselectY, deselectSize, deselectSize);
-
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(deselectX - 6, deselectY + 4);
-                ctx.lineTo(deselectX + 6, deselectY + 16);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(deselectX + 6, deselectY + 4);
-                ctx.lineTo(deselectX - 6, deselectY + 16);
-                ctx.stroke();
-
                 // Back button moved to TOP RIGHT
                 const backBtnX = canvas.width - 60;
                 const backBtnY = 20;
@@ -543,7 +523,7 @@ function initGame(level) {
             function drawSunCounter() {
                 const sunImg = imageCache['sun.png'];
                 const sunX = 20;
-                const sunY = 40;
+                const sunY = -10;
                 const sunSize = 30;
 
                 if (sunImg) {
@@ -609,15 +589,7 @@ function initGame(level) {
                 const menuX = PLANT_MENU_X;
                 const menuY = PLANT_MENU_Y;
                 const slotWidth = 80;
-                const deselectX = menuX + slotWidth - 12;
-                const deselectY = menuY - 10;
-                const deselectSize = 20;
-
-                if (mouseX >= deselectX - deselectSize / 2 && mouseX <= deselectX + deselectSize / 2 &&
-                    mouseY >= deselectY && mouseY <= deselectY + deselectSize) {
-                    selectedPlant = null;
-                    return;
-                }
+                const slotHeight = 80;
 
                 // Back button in TOP RIGHT
                 const backBtnX = canvas.width - 60;
@@ -631,14 +603,20 @@ function initGame(level) {
                     return;
                 }
 
-                const slotHeight = 80;
+                // Plant slot click handling
                 for (let i = 0; i < plantList.length; i++) {
                     const slotX = menuX;
                     const slotY = menuY + i * (slotHeight + 5);
 
                     if (mouseX >= slotX && mouseX <= slotX + slotWidth &&
                         mouseY >= slotY && mouseY <= slotY + slotHeight) {
-                        selectedPlant = plantList[i];
+                        // If clicking the same plant, deselect it
+                        if (selectedPlant === plantList[i]) {
+                            selectedPlant = null;
+                        } else {
+                            // Otherwise select the new plant
+                            selectedPlant = plantList[i];
+                        }
                         return;
                     }
                 }
@@ -764,19 +742,22 @@ function initGame(level) {
                     ctx.textBaseline = 'middle';
                     ctx.fillText('mojko prehral si či ako sa tomu nadáva', canvas.width / 2, canvas.height / 2 - 30);
                     
-                    const subtitles = [
-                        'duchoňotrón by sa hneval',
-                        'alkohol neprospieva pečeni',
-                        'ZABIL SI JEHO PEČEŇ!!!',
-                        'tak tebe to teda fakt nejde',
-                        'bruchoň je sklamaný',
-                        'pusti si dúhoňové sväté piesne a neplač'
-                    ];
-                    const randomSubtitle = subtitles[Math.floor(Math.random() * subtitles.length)];
+                    // Select subtitle only on first game over
+                    if (!loseScreenSubtitle) {
+                        const subtitles = [
+                            'duchoňotrón by sa hneval',
+                            'alkohol neprospieva pečeni',
+                            'ZABIL SI JEHO PEČEŇ!!!',
+                            'tak tebe to teda fakt nejde',
+                            'bruchoň je sklamaný',
+                            'pusti si dúhoňové sväté piesne a neplač'
+                        ];
+                        loseScreenSubtitle = subtitles[Math.floor(Math.random() * subtitles.length)];
+                    }
                     
                     ctx.fillStyle = '#ffffff';
                     ctx.font = '18px Arial';
-                    ctx.fillText(randomSubtitle, canvas.width / 2, canvas.height / 2 + 40);
+                    ctx.fillText(loseScreenSubtitle, canvas.width / 2, canvas.height / 2 + 40);
 
                     if (Date.now() - gameOverTime > 3000) {
                         isTransitioning = true;

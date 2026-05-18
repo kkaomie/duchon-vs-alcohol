@@ -919,6 +919,11 @@ function initGame(level) {
                      }
                      if (Date.now() - gameOverTime > 3000) {
                          isTransitioning = true;
+                         // Unlock sunflower and level 2 when level 1 is completed
+                         if (typeof plantSelector !== 'undefined') {
+                             plantSelector.completeLevel(0); // Level 0 is level 1
+                             plantSelector.unlockPlant('sunflower');
+                         }
                          returnToLevels();
                          return;
                      }

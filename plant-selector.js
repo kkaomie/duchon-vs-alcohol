@@ -55,15 +55,15 @@ class PlantSelector {
             <div class="plant-selector-container">
                 <div class="plant-selector-info-panel">
                     <div class="plant-info-label">
-                        <div class="plant-info-name" id="plant-info-name">Select a plant</div>
-                        <div class="plant-info-description" id="plant-info-description">Click on plants from the codex to select or view them</div>
+                        <div class="plant-info-name" id="plant-info-name">vyber rastlichoňa</div>
+                        <div class="plant-info-description" id="plant-info-description">klikni na rastlichoňov a prečítaj si</div>
                         <div class="plant-info-stats" id="plant-info-stats">Výber duchoňov</div>
                     </div>
                 </div>
                 <div class="plant-selector-content">
                     <div class="plant-codex" id="plant-codex"></div>
                     <div class="plant-selected-list">
-                        <div class="selected-count" id="selected-count">0 / 5 Selected</div>
+                        <div class="selected-count" id="selected-count">0 / 5 rastlichoňov</div>
                         <div class="selected-plants" id="selected-plants-list"></div>
                     </div>
                 </div>
@@ -103,7 +103,7 @@ class PlantSelector {
                     <img src="./assets/${plant.image}" alt="${plant.name}" onerror="this.style.display='none'">
                 </div>
                 <div class="plant-card-name">${plant.name}</div>
-                <div class="plant-card-cost">💰 ${plant.cost}</div>
+                <div class="plant-card-cost">☀️ ${plant.cost}</div>
             `;
             codex.appendChild(card);
         });

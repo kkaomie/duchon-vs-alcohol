@@ -1,6 +1,6 @@
 {
-    "name": "Duchon vs Alcohol",
-    "short_name": "Duchon Game",
+    "name": "Duchoň vs Alkohol",
+    "short_name": "Duchoň vs Alkohol",
     "description": "An offline installable HTML game for mobile",
     "start_url": "./index.html",
     "scope": "./",

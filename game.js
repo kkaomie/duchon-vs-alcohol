@@ -88,6 +88,7 @@ function initGame(level) {
             let PLANT_MENU_X = canvas.width - 150;
             const PLANT_MENU_Y = TOP_PADDING;
             const LEVEL_DURATION = 120000;
+            const TWO_MINUTE_MARK = 120000;
 
             // Game state
             let suns = 50;
@@ -102,6 +103,10 @@ function initGame(level) {
             let lastSunSpawn = 0;
             let gameOverTime = null;
             let isTransitioning = false;
+            let totalEnemiesSpawned = {}; // Track enemies by type
+            let finalWaveTriggered = false;
+            let finalWaveWarningTriggered = false;
+            let finalWaveWarningTime = null;
 
             const startTime = Date.now();
 
@@ -123,20 +128,25 @@ function initGame(level) {
                 }
             };
 
-            // Enemy type
-            const ENEMY_TYPE = {
-                name: 'Basic Zombie',
-                image: 'ealc1.png',
-                lowHealthImage: 'ealc1low.png',
-                health: 300,
-                speed: 0.15,
-                damage: 20,
-                damageInterval: 1000,
-                width: 50,
-                height: 50,
-                collisionRadius: 25,
-                lowHealthThreshold: 0.5
+            // Enemy type - use ealc1 as default, can be expanded
+            const ENEMY_TYPES = {
+                ealc1: {
+                    name: 'Basic Zombie',
+                    image: 'ealc1.png',
+                    lowHealthImage: 'ealc1low.png',
+                    health: 300,
+                    speed: 0.15,
+                    damage: 20,
+                    damageInterval: 1000,
+                    width: 50,
+                    height: 50,
+                    collisionRadius: 25,
+                    lowHealthThreshold: 0.5
+                }
+                // Can easily add ealc2, ealc3, etc. here for future expansion
             };
+
+            const ENEMY_TYPE = ENEMY_TYPES.ealc1; // Default enemy type for this level
 
             // Plant class
             class Plant {
@@ -551,6 +561,28 @@ function initGame(level) {
                 ctx.fillText(`${suns}`, sunX + sunSize + 10, sunY + sunSize / 2 + 8);
             }
 
+            function drawFinalWaveWarning() {
+                // Draw warning banner
+                const bannerHeight = 60;
+                const bannerY = canvas.height / 2 - bannerHeight / 2;
+                
+                // Pulsing effect
+                const pulseAlpha = 0.7 + 0.3 * Math.sin(Date.now() / 100);
+                
+                ctx.fillStyle = `rgba(255, 165, 0, ${pulseAlpha})`;
+                ctx.fillRect(0, bannerY, canvas.width, bannerHeight);
+                
+                ctx.strokeStyle = '#ff0000';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(0, bannerY, canvas.width, bannerHeight);
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 48px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('⚠️ VÝSTRAHA: NADMERNÝ ALKOHOL ⚠️', canvas.width / 2, canvas.height / 2);
+            }
+
             function handleGameInput(e) {
                 if (gameOver || levelWon || isTransitioning) return;
 
@@ -655,10 +687,38 @@ function initGame(level) {
                     return shouldKeep;
                 });
 
-                if (gametime > 20000 && now - lastEnemySpawn > 5000 && gametime < 120000) {
+                // Spawn enemies for first 2 minutes
+                if (gametime > 20000 && now - lastEnemySpawn > 5000 && gametime < TWO_MINUTE_MARK) {
                     const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
                     enemies.push(new Enemy(randomRow));
                     lastEnemySpawn = now;
+                    
+                    // Track enemy count for final wave
+                    totalEnemiesSpawned['ealc1'] = (totalEnemiesSpawned['ealc1'] || 0) + 1;
+                }
+
+                // Show warning and trigger final wave at 2 minutes
+                if (gametime >= TWO_MINUTE_MARK && !finalWaveWarningTriggered) {
+                    finalWaveWarningTriggered = true;
+                    finalWaveWarningTime = now;
+                }
+
+                // Display warning for 5 seconds
+                if (finalWaveWarningTriggered && !finalWaveTriggered && (now - finalWaveWarningTime) < 5000) {
+                    drawFinalWaveWarning();
+                }
+
+                // Spawn final wave after 5 seconds
+                if (finalWaveWarningTriggered && !finalWaveTriggered && (now - finalWaveWarningTime) >= 5000) {
+                    finalWaveTriggered = true;
+                    
+                    // Calculate final wave: 0.5x enemies (rounded down)
+                    const finalWaveCount = Math.floor((totalEnemiesSpawned['ealc1'] || 0) * 0.5);
+                    
+                    for (let i = 0; i < finalWaveCount; i++) {
+                        const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
+                        enemies.push(new Enemy(randomRow));
+                    }
                 }
 
                 plants = plants.filter(plant => {
@@ -690,7 +750,8 @@ function initGame(level) {
                 drawDestination();
                 drawPlantMenu();
 
-                if (gametime >= LEVEL_DURATION && enemies.length === 0) {
+                // Win logic: all enemies killed (no time requirement)
+                if (enemies.length === 0 && finalWaveTriggered) {
                     levelWon = true;
                 }
 

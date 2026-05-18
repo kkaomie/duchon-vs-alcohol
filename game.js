@@ -424,8 +424,8 @@ function initGame(level) {
                     }
                 }
 
-                // Back button - vertical, positioned behind plant selector
-                const backBtnX = menuX + 40; // Center of menu width
+                // Back button - vertical, positioned behind plant selector, moved 50px to the right
+                const backBtnX = menuX + 40 + 50; // Center of menu width + 50px offset
                 const backBtnY = menuY; // Start from top of plant menu
                 const backBtnWidth = 40;
                 const backBtnHeight = slotHeight * slots + 20; // Full height of plant menu
@@ -612,8 +612,8 @@ function initGame(level) {
                 const slotHeight = 80;
                 const slots = 5;
 
-                // Back button - vertical behind plant selector
-                const backBtnX = menuX + 40;
+                // Back button - vertical behind plant selector, moved 50px to the right
+                const backBtnX = menuX + 40 + 50; // Center of menu width + 50px offset
                 const backBtnY = menuY;
                 const backBtnWidth = 40;
                 const backBtnHeight = slotHeight * slots + 20;
@@ -757,8 +757,8 @@ function initGame(level) {
                 drawDestination();
                 drawPlantMenu();
 
-                // Win logic: all enemies killed (no time requirement)
-                if (enemies.length === 0 && finalWaveTriggered) {
+                // Win logic: check enemies only after 4 seconds after final wave initialization
+                if (finalWaveTriggered && (now - finalWaveSpawningTime) >= 4000 && enemies.length === 0) {
                     levelWon = true;
                 }
 

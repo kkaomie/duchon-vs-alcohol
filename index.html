@@ -41,7 +41,7 @@
 </head>
 <body>
     <div id="warning-banner">
-        ⚠️🥵🦶🏿🦄 hej inac kvoli nedostatocnym eurofondom (prioritu ma jachta) hra nefunguje V CHROME, MUSIS SI JU STIAHNUT (ako nainstalovat PWA)
+         ⚠️🥵🦶🏿🦄 hej inac kvoli nedostatocnym eurofondom (prioritu ma jachta) hra nefunguje V CHROME, MUSIS SI JU STIAHNUT (ako nainstalovat PWA)
     </div>
 
     <div id="home-screen" class="screen" style="display: flex !important;">
@@ -74,7 +74,7 @@
         </div>
     </div>
     
-    <script src="game.js?v=2"></script>
+    <script src="game.js?v=3"></script>
     <script>
         // Check if running in browser vs installed app
         function isInstalledApp() {
@@ -132,12 +132,12 @@
 
             for (let i = 1; i <= 15; i++) {
                 const levelItem = document.createElement('div');
-                levelItem.className = i === 1 ? 'level-item unlocked' : 'level-item locked';
+                levelItem.className = i <= 2 ? 'level-item unlocked' : 'level-item locked';
                 levelItem.setAttribute('data-level', i);
                 
                 const levelIcon = document.createElement('div');
                 levelIcon.className = 'level-icon';
-                levelIcon.textContent = i === 1 ? i : '🔒';
+                levelIcon.textContent = i <= 2 ? i : '🔒';
                 
                 const levelLabel = document.createElement('div');
                 levelLabel.className = 'level-label';
@@ -148,7 +148,7 @@
                 levelsGrid.appendChild(levelItem);
 
                 // Add click handler
-                if (i === 1) {
+                if (i <= 2) {
                     levelItem.addEventListener('click', () => {
                         showScreen('game');
                         console.log('Starting game...');

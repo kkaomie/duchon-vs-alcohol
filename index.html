@@ -13,8 +13,37 @@
     <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
     <link rel="stylesheet" href="style.css">
     <title>Duchon vs Alcohol</title>
+    <style>
+        #warning-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #ff4444;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        body.show-warning {
+            padding-top: 60px;
+        }
+        
+        body.show-warning #warning-banner {
+            display: block;
+        }
+    </style>
 </head>
 <body>
+    <div id="warning-banner">
+        ⚠️ hej inac kvoli nedostatocnym eurofondom (prioritu ma jachta) hra nefunguje V CHROME, MUSIS SI JU STIAHNUT
+    </div>
+
     <div id="home-screen" class="screen" style="display: flex !important;">
         <div class="background"></div>
         <div class="button-container">
@@ -47,6 +76,22 @@
     
     <script src="game.js"></script>
     <script>
+        // Check if running in browser vs installed app
+        function isInstalledApp() {
+            // Check if PWA is installed/running as standalone app
+            if (window.navigator.standalone === true) return true; // iOS
+            if (window.matchMedia('(display-mode: standalone)').matches) return true; // Android
+            if (window.matchMedia('(display-mode: fullscreen)').matches) return true; // Fullscreen
+            return false;
+        }
+
+        // Show warning if not installed
+        window.addEventListener('load', () => {
+            if (!isInstalledApp()) {
+                document.body.classList.add('show-warning');
+            }
+        });
+
         // Lock to landscape orientation
         if (screen.orientation && screen.orientation.lock) {
             screen.orientation.lock('landscape').catch(err => console.log('Cannot lock orientation:', err));

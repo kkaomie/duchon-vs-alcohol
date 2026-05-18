@@ -87,8 +87,10 @@ function initGame(level) {
             const DESTINATION_X = GRID_START_X - 40; // Closer to the finish line
             let PLANT_MENU_X = canvas.width - 150;
             const PLANT_MENU_Y = TOP_PADDING;
+            const PLANT_MENU_WIDTH = 100;
             const LEVEL_DURATION = 120000;
             const TWO_MINUTE_MARK = 120000;
+            const BACK_BTN_OFFSET = 50; // Offset from edge of plant menu
 
             // Game state
             let suns = 50;
@@ -380,7 +382,7 @@ function initGame(level) {
                 const slots = 5;
 
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                ctx.fillRect(menuX - 10, menuY - 10, 100, slotHeight * slots + 20);
+                ctx.fillRect(menuX - 10, menuY - 10, PLANT_MENU_WIDTH, slotHeight * slots + 20);
 
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 14px Arial';
@@ -424,8 +426,8 @@ function initGame(level) {
                     }
                 }
 
-                // Back button - positioned to the right of plant menu, moved 50px to the right
-                const backBtnX = menuX + 100 + 50; // To the right of menu + 50px offset
+                // Back button - positioned dynamically to the right of plant menu edge + offset
+                const backBtnX = menuX + PLANT_MENU_WIDTH + BACK_BTN_OFFSET; // Right edge of menu + offset
                 const backBtnY = menuY; // Start from top of plant menu
                 const backBtnWidth = 40;
                 const backBtnHeight = slotHeight * slots + 20; // Full height of plant menu
@@ -612,8 +614,8 @@ function initGame(level) {
                 const slotHeight = 80;
                 const slots = 5;
 
-                // Back button - positioned to the right of plant menu, moved 50px to the right
-                const backBtnX = menuX + 120; // To the right of menu + 50px offset
+                // Back button - positioned dynamically to the right of plant menu edge + offset
+                const backBtnX = menuX + PLANT_MENU_WIDTH + BACK_BTN_OFFSET; // Right edge of menu + offset
                 const backBtnY = menuY;
                 const backBtnWidth = 40;
                 const backBtnHeight = slotHeight * slots + 20;

@@ -422,23 +422,29 @@ function initGame(level) {
                     }
                 }
 
-                // Back button moved to TOP RIGHT
-                const backBtnX = canvas.width - 60;
-                const backBtnY = 20;
-                const backBtnWidth = 100;
-                const backBtnHeight = 40;
+                // Back button - vertical, positioned behind plant selector
+                const backBtnX = menuX + 40; // Center of menu width
+                const backBtnY = menuY; // Start from top of plant menu
+                const backBtnWidth = 40;
+                const backBtnHeight = slotHeight * slots + 20; // Full height of plant menu
 
                 ctx.fillStyle = '#8b5411';
-                ctx.fillRect(backBtnX - backBtnWidth / 2, backBtnY, backBtnWidth, backBtnHeight);
+                ctx.fillRect(backBtnX - backBtnWidth / 2, backBtnY - 10, backBtnWidth, backBtnHeight);
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(backBtnX - backBtnWidth / 2, backBtnY, backBtnWidth, backBtnHeight);
+                ctx.strokeRect(backBtnX - backBtnWidth / 2, backBtnY - 10, backBtnWidth, backBtnHeight);
 
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 12px Arial';
+                ctx.font = 'bold 10px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('← Back', backBtnX, backBtnY + backBtnHeight / 2);
+                
+                // Write text vertically
+                ctx.save();
+                ctx.translate(backBtnX, backBtnY - 10 + backBtnHeight / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.fillText('← Back', 0, 0);
+                ctx.restore();
             }
 
             function drawDestination() {
@@ -523,7 +529,7 @@ function initGame(level) {
             function drawSunCounter() {
                 const sunImg = imageCache['sun.png'];
                 const sunX = 20;
-                const sunY = -10;
+                const sunY = 20;
                 const sunSize = 30;
 
                 if (sunImg) {
@@ -590,15 +596,16 @@ function initGame(level) {
                 const menuY = PLANT_MENU_Y;
                 const slotWidth = 80;
                 const slotHeight = 80;
+                const slots = 5;
 
-                // Back button in TOP RIGHT
-                const backBtnX = canvas.width - 60;
-                const backBtnY = 20;
-                const backBtnWidth = 100;
-                const backBtnHeight = 40;
+                // Back button - vertical behind plant selector
+                const backBtnX = menuX + 40;
+                const backBtnY = menuY;
+                const backBtnWidth = 40;
+                const backBtnHeight = slotHeight * slots + 20;
 
                 if (mouseX >= backBtnX - backBtnWidth / 2 && mouseX <= backBtnX + backBtnWidth / 2 &&
-                    mouseY >= backBtnY && mouseY <= backBtnY + backBtnHeight) {
+                    mouseY >= backBtnY - 10 && mouseY <= backBtnY - 10 + backBtnHeight) {
                     returnToLevels();
                     return;
                 }

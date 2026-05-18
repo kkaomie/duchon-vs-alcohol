@@ -424,8 +424,8 @@ function initGame(level) {
                     }
                 }
 
-                // Back button - vertical, positioned behind plant selector, moved 50px to the right
-                const backBtnX = menuX + 40 + 50; // Center of menu width + 50px offset
+                // Back button - positioned to the right of plant menu, moved 50px to the right
+                const backBtnX = menuX + 100 + 50; // To the right of menu + 50px offset
                 const backBtnY = menuY; // Start from top of plant menu
                 const backBtnWidth = 40;
                 const backBtnHeight = slotHeight * slots + 20; // Full height of plant menu
@@ -612,8 +612,8 @@ function initGame(level) {
                 const slotHeight = 80;
                 const slots = 5;
 
-                // Back button - vertical behind plant selector, moved 50px to the right
-                const backBtnX = menuX + 40 + 50; // Center of menu width + 50px offset
+                // Back button - positioned to the right of plant menu, moved 50px to the right
+                const backBtnX = menuX + 100 + 50; // To the right of menu + 50px offset
                 const backBtnY = menuY;
                 const backBtnWidth = 40;
                 const backBtnHeight = slotHeight * slots + 20;

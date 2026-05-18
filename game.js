@@ -87,11 +87,8 @@ function initGame(level) {
             const DESTINATION_X = GRID_START_X - 40; // Closer to the finish line
             let PLANT_MENU_X = canvas.width - 150;
             const PLANT_MENU_Y = TOP_PADDING;
-            const PLANT_MENU_WIDTH = 180;
-            const PLANT_MENU_HEIGHT = 180;
             const LEVEL_DURATION = 120000;
             const TWO_MINUTE_MARK = 120000;
-            const BACK_BTN_OFFSET = 5; // Very close to plant menu
 
             // Game state
             let suns = 50;
@@ -383,16 +380,18 @@ function initGame(level) {
                 const gridCols = 3;
                 const gridRows = 2;
                 const spacing = 5;
+                const menuWidth = gridCols * slotWidth + (gridCols - 1) * spacing;
+                const menuHeight = gridRows * slotHeight + (gridRows - 1) * spacing;
 
                 // Draw menu background
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                ctx.fillRect(menuX - 10, menuY - 35, PLANT_MENU_WIDTH, PLANT_MENU_HEIGHT + 35);
+                ctx.fillRect(menuX - 10, menuY - 35, menuWidth + 20, menuHeight + 45);
 
                 // Draw title
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 14px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText('Plants', menuX + PLANT_MENU_WIDTH / 2, menuY - 20);
+                ctx.fillText('Plants', menuX + menuWidth / 2, menuY - 20);
 
                 const plantList = ['peashooter'];
 
@@ -435,11 +434,11 @@ function initGame(level) {
                     }
                 }
 
-                // Back button - positioned very close to the right edge of plant menu
-                const backBtnX = menuX + PLANT_MENU_WIDTH + BACK_BTN_OFFSET + 15;
-                const backBtnY = menuY + PLANT_MENU_HEIGHT / 2;
+                // Back button - positioned right next to plant menu
+                const backBtnX = menuX + menuWidth + 20;
+                const backBtnY = menuY + menuHeight / 2;
                 const backBtnWidth = 30;
-                const backBtnHeight = PLANT_MENU_HEIGHT;
+                const backBtnHeight = menuHeight;
 
                 ctx.fillStyle = '#8b5411';
                 ctx.fillRect(backBtnX - backBtnWidth / 2, backBtnY - backBtnHeight / 2, backBtnWidth, backBtnHeight);
@@ -623,12 +622,14 @@ function initGame(level) {
                 const slotHeight = 60;
                 const gridCols = 3;
                 const spacing = 5;
+                const menuWidth = gridCols * slotWidth + (gridCols - 1) * spacing;
+                const menuHeight = 2 * slotHeight + 1 * spacing; // 2 rows
 
                 // Back button hit detection
-                const backBtnX = menuX + PLANT_MENU_WIDTH + BACK_BTN_OFFSET + 15;
-                const backBtnY = menuY + PLANT_MENU_HEIGHT / 2;
+                const backBtnX = menuX + menuWidth + 20;
+                const backBtnY = menuY + menuHeight / 2;
                 const backBtnWidth = 30;
-                const backBtnHeight = PLANT_MENU_HEIGHT;
+                const backBtnHeight = menuHeight;
 
                 if (mouseX >= backBtnX - backBtnWidth / 2 && mouseX <= backBtnX + backBtnWidth / 2 &&
                     mouseY >= backBtnY - backBtnHeight / 2 && mouseY <= backBtnY + backBtnHeight / 2) {
@@ -732,16 +733,13 @@ function initGame(level) {
                     // Calculate final wave count: 0.5x enemies (rounded down)
                     const finalWaveCount = Math.floor((totalEnemiesSpawned['ealc1'] || 0) * 0.5);
                     
-                    // Store for later spawning
-                    const finalWaveEnemyCount = finalWaveCount;
-                    
                     // Schedule enemies to spawn over 4 seconds
-                    for (let i = 0; i < finalWaveEnemyCount; i++) {
+                    for (let i = 0; i < finalWaveCount; i++) {
                         setTimeout(() => {
                             const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
                             enemies.push(new Enemy(randomRow));
                             finalWaveEnemiesSpawned++;
-                        }, (i / finalWaveEnemyCount) * 4000);
+                        }, (i / finalWaveCount) * 4000);
                     }
                 }
 
@@ -774,7 +772,7 @@ function initGame(level) {
                 drawDestination();
                 drawPlantMenu();
 
-                // Win logic: check enemies only after 4 seconds after final wave initialization
+                // Win logic: check enemies only after final wave completes
                 if (finalWaveTriggered && (now - finalWaveSpawningTime) >= 4000 && enemies.length === 0) {
                     levelWon = true;
                 }

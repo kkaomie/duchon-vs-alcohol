@@ -130,12 +130,12 @@ function initGame(level) {
                 lowHealthImage: 'ealc1low.png',
                 health: 300,
                 speed: 0.15,
-                damage: 25,
+                damage: 20,
                 damageInterval: 1000,
                 width: 50,
                 height: 50,
                 collisionRadius: 25,
-                lowHealthThreshold: 0.1
+                lowHealthThreshold: 0.5
             };
 
             // Plant class

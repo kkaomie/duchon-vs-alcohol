@@ -110,7 +110,7 @@ function initGame(level) {
             const GRID_START_Y = TOP_PADDING;
             const GRID_END_X = GRID_START_X + GRID_WIDTH;
             const DESTINATION_X = GRID_START_X - 40; // Closer to the finish line
-            let PLANT_MENU_X = canvas.width - 150 - 200; // Moved 200px to the left
+            let PLANT_MENU_X = canvas.width - 150 - 160; // Moved 200px to the left
             const PLANT_MENU_Y = TOP_PADDING;
             const LEVEL_DURATION = 120000;
             const TWO_MINUTE_MARK = 120000;
@@ -838,8 +838,14 @@ function initGame(level) {
                             'alkohol neprospieva pečeni',
                             'ZABIL SI JEHO PEČEŇ!!!',
                             'tak tebe to teda fakt nejde',
-                            'bruchoň je sklamaný',
-                            'pusti si dúhoňové sväté piesne a neplač'
+                            'bruchoň je sklamaný (a mrtvý)',
+                            'pusti si dúhoňove sväté piesne a neplač'
+                            'smrdíš'
+                            'ak by si bol malinová zmrzlina tak by som ťa olízal'
+                            'ak by si bol mangová zmrzlina tak by som ťa neolízal (nechutí mi)'
+                            'smrť grckoňa je tvoja vina'
+                            'neni som expert na hry, ale asi si prehral'
+                            '0951767600'
                         ];
                         loseScreenSubtitle = subtitles[Math.floor(Math.random() * subtitles.length)];
                     }
@@ -858,10 +864,10 @@ function initGame(level) {
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                     ctx.fillStyle = '#00ff00';
-                    ctx.font = 'bold 48px Arial';
+                    ctx.font = 'bold 30px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText('LEVEL CLEARED!', canvas.width / 2, canvas.height / 2);
+                    ctx.fillText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2);
 
                     if (!gameOverTime) {
                         gameOverTime = Date.now();

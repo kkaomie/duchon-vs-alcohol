@@ -4,12 +4,13 @@ function initGame(level) {
     
     // Game paused state
     let gamePaused = false;
-    let gameActive = true;
+    let gameActive = true; // Track if game should still be running
     
+    // Handle visibility changes - freeze game when window loses focus
     const handleVisibilityChange = () => {
         if (document.hidden) {
             gamePaused = true;
-            gameActive = false;
+            gameActive = false; // Mark as failed
             console.log('Game paused and marked as failed - window lost focus');
         } else {
             gamePaused = false;
@@ -17,19 +18,22 @@ function initGame(level) {
         }
     };
     
+    // Handle window/tab blur - user switched away
     const handleBlur = () => {
         gamePaused = true;
-        gameActive = false;
+        gameActive = false; // Mark as failed
         console.log('Game paused and marked as failed - window blurred');
     };
     
+    // Handle window/tab focus - user came back
     const handleFocus = () => {
         gamePaused = false;
         console.log('Game resumed - window focused');
     };
     
+    // Handle beforeunload - app/window closing
     const handleBeforeUnload = () => {
-        gameActive = false;
+        gameActive = false; // Mark as failed
         console.log('Game marked as failed - app/window closing');
     };
     
@@ -38,71 +42,27 @@ function initGame(level) {
     window.addEventListener('focus', handleFocus);
     window.addEventListener('beforeunload', handleBeforeUnload);
     
+    // Set initial canvas size
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     }
     
     resizeCanvas();
+    
+    // Handle window resize and orientation change
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('orientationchange', () => {
         setTimeout(resizeCanvas, 100);
     });
 
-    // Level configurations
-    const LEVEL_CONFIG = {
-        1: {
-            unlocked_rows: 2,
-            available_plants: ['peashooter'],
-            win_message: 'zachránil si Veľkého Duchoňa (aspoň pred alkoholom)',
-            unlock_message: 'slnecnicoň odomknutý',
-            unlock_image: 'dsunflower.png'
-        },
-        2: {
-            unlocked_rows: 4,
-            available_plants: ['peashooter', 'sunflower'],
-            win_message: 'zachránil si Veľkého Duchoňa (aspoň pred alkoholom)'
-        }
-    };
+    playLevel1();
 
-    // Plant definitions
-    const PLANT_DEFINITIONS = {
-        peashooter: {
-            name: 'Peashooter',
-            image: 'dpea1.png',
-            shootImage: 'dpea1shoot.png',
-            cost: 100,
-            health: 50,
-            attackDamage: 50,
-            attackSpeed: 1000,
-            shootDuration: 200,
-            cooldown: 10000,
-            width: 50,
-            height: 50,
-            collisionRadius: 25
-        },
-        sunflower: {
-            name: 'Sunflower',
-            image: 'dsunflower.png',
-            cost: 50,
-            health: 20,
-            cooldown: 6000,
-            sunSpawnInterval: 15000,
-            width: 50,
-            height: 50,
-            collisionRadius: 25
-        }
-    };
-
-    const config = LEVEL_CONFIG[level];
-    
-    playLevel(level, config);
-
-    function playLevel(levelNum, levelConfig) {
+    function playLevel1() {
+        // Image preloader
         const preloadImages = [
             'dpea1.png',
             'dpea1shoot.png',
-            'dsunflower.png',
             'ealc1.png',
             'ealc1low.png',
             'pecen.png',
@@ -133,20 +93,25 @@ function initGame(level) {
             });
         }
 
+        // Preload all images
         Promise.all(preloadImages.map(preloadImage)).then(() => {
             console.log('All images preloaded');
             startGame();
         });
 
         function startGame() {
+            // Responsive game constants based on screen size
+            const isLandscape = window.innerWidth > window.innerHeight;
+            
             let GRID_COLS = 10;
             let GRID_ROWS = 6;
-            let UNLOCKED_ROWS = levelConfig.unlocked_rows;
+            let UNLOCKED_ROWS = 2;
             let GRID_CELL_WIDTH = 60;
             let GRID_CELL_HEIGHT = 60;
-            let SIDE_PADDING = 200;
+            let SIDE_PADDING = 200; // Moved arena to the right
             let TOP_PADDING = 100;
             
+            // Adjust for small screens (mobile landscape)
             if (window.innerHeight < 500) {
                 GRID_CELL_WIDTH = 45;
                 GRID_CELL_HEIGHT = 45;
@@ -159,12 +124,13 @@ function initGame(level) {
             const GRID_START_X = SIDE_PADDING;
             const GRID_START_Y = TOP_PADDING;
             const GRID_END_X = GRID_START_X + GRID_WIDTH;
-            const DESTINATION_X = GRID_START_X - 40;
-            let PLANT_MENU_X = canvas.width - 150 - 160;
+            const DESTINATION_X = GRID_START_X - 40; // Closer to the finish line
+            let PLANT_MENU_X = canvas.width - 150 - 160; // Moved 200px to the left
             const PLANT_MENU_Y = TOP_PADDING;
             const LEVEL_DURATION = 120000;
             const TWO_MINUTE_MARK = 120000;
 
+            // Game state
             let suns = 50;
             let selectedPlant = null;
             let plants = [];
@@ -177,22 +143,35 @@ function initGame(level) {
             let lastSunSpawn = 0;
             let gameOverTime = null;
             let isTransitioning = false;
-            let totalEnemiesSpawned = {};
+            let totalEnemiesSpawned = {}; // Track enemies by type
             let finalWaveTriggered = false;
             let finalWaveWarningTriggered = false;
             let finalWaveWarningTime = null;
-            let loseScreenSubtitle = null;
-            let finalWaveSpawningTime = null;
-            let finalWaveEnemiesSpawned = 0;
+            let loseScreenSubtitle = null; // Store the selected subtitle
+            let finalWaveSpawningTime = null; // Time when final wave spawning started
+            let finalWaveEnemiesSpawned = 0; // Track how many enemies spawned in final wave
 
             const startTime = Date.now();
 
-            // Build plant types for this level
-            const PLANT_TYPES = {};
-            levelConfig.available_plants.forEach(plantKey => {
-                PLANT_TYPES[plantKey] = PLANT_DEFINITIONS[plantKey];
-            });
+            // Plant types
+            const PLANT_TYPES = {
+                peashooter: {
+                    name: 'Peashooter',
+                    image: 'dpea1.png',
+                    shootImage: 'dpea1shoot.png',
+                    cost: 100,
+                    health: 50,
+                    attackRange: 300,
+                    attackDamage: 50,
+                    attackSpeed: 1000,
+                    shootDuration: 200,
+                    width: 50,
+                    height: 50,
+                    collisionRadius: 25
+                }
+            };
 
+            // Enemy type - use ealc1 as default, can be expanded
             const ENEMY_TYPES = {
                 ealc1: {
                     name: 'Basic Zombie',
@@ -207,10 +186,12 @@ function initGame(level) {
                     collisionRadius: 25,
                     lowHealthThreshold: 0.5
                 }
+                // Can easily add ealc2, ealc3, etc. here for future expansion
             };
 
-            const ENEMY_TYPE = ENEMY_TYPES.ealc1;
+            const ENEMY_TYPE = ENEMY_TYPES.ealc1; // Default enemy type for this level
 
+            // Plant class
             class Plant {
                 constructor(type, gridX, gridY) {
                     this.type = PLANT_TYPES[type];
@@ -222,8 +203,6 @@ function initGame(level) {
                     this.lastAttack = 0;
                     this.isShooting = false;
                     this.shootStartTime = 0;
-                    this.plantedTime = Date.now();
-                    this.lastSunSpawn = 0;
                 }
 
                 draw() {
@@ -250,13 +229,7 @@ function initGame(level) {
                     ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2 - 10, this.type.width * (this.health / this.type.health), 5);
                 }
 
-                isOnCooldown() {
-                    return Date.now() - this.plantedTime < this.type.cooldown;
-                }
-
                 attack(enemies) {
-                    if (this.isOnCooldown() || !this.type.attackSpeed) return;
-
                     const now = Date.now();
                     if (now - this.lastAttack < this.type.attackSpeed) return;
 
@@ -269,20 +242,6 @@ function initGame(level) {
                             break;
                         }
                     }
-                }
-
-                spawnSun() {
-                    if (!this.type.sunSpawnInterval) return false;
-                    
-                    const now = Date.now();
-                    if (now - this.lastSunSpawn >= this.type.sunSpawnInterval) {
-                        const sun = new Sun(this.x);
-                        sun.sourcePlant = this;
-                        suns_on_screen.push(sun);
-                        this.lastSunSpawn = now;
-                        return true;
-                    }
-                    return false;
                 }
 
                 collidesWith(x, y) {
@@ -300,6 +259,7 @@ function initGame(level) {
                 }
             }
 
+            // Projectile class
             class Projectile {
                 constructor(x, y, target) {
                     this.x = x;
@@ -341,6 +301,7 @@ function initGame(level) {
                 }
             }
 
+            // Enemy class
             class Enemy {
                 constructor(rowIndex) {
                     this.x = GRID_END_X;
@@ -349,6 +310,7 @@ function initGame(level) {
                     this.health = ENEMY_TYPE.health;
                     this.speed = ENEMY_TYPE.speed;
                     this.lastDamage = 0;
+                    this.desiredX = this.x;
                 }
 
                 update(plants) {
@@ -407,6 +369,7 @@ function initGame(level) {
                 }
             }
 
+            // Sun class
             class Sun {
                 constructor(x) {
                     this.x = x;
@@ -415,7 +378,6 @@ function initGame(level) {
                     this.radius = 25;
                     this.speed = 1;
                     this.targetY = GRID_START_Y + Math.random() * (GRID_ROWS * GRID_CELL_HEIGHT);
-                    this.sourcePlant = null;
                 }
 
                 update() {
@@ -461,24 +423,28 @@ function initGame(level) {
                 const menuWidth = gridCols * slotWidth + (gridCols - 1) * spacing;
                 const menuHeight = gridRows * slotHeight + (gridRows - 1) * spacing;
 
+                // Draw menu background
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
                 ctx.fillRect(menuX - 10, menuY - 35, menuWidth + 20, menuHeight + 45);
 
+                // Draw title
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 14px Arial';
                 ctx.textAlign = 'center';
                 ctx.fillText('Plants', menuX + menuWidth / 2, menuY - 20);
 
+                const plantList = ['peashooter'];
+
+                // Draw 2x3 grid
                 for (let row = 0; row < gridRows; row++) {
                     for (let col = 0; col < gridCols; col++) {
                         const index = row * gridCols + col;
                         const slotX = menuX + col * (slotWidth + spacing);
                         const slotY = menuY + row * (slotHeight + spacing);
 
-                        if (index < levelConfig.available_plants.length) {
-                            const plantKey = levelConfig.available_plants[index];
-                            const plant = PLANT_TYPES[plantKey];
-                            const isSelected = selectedPlant === plantKey;
+                        if (index < plantList.length) {
+                            const plant = PLANT_TYPES[plantList[index]];
+                            const isSelected = selectedPlant === plantList[index];
 
                             ctx.fillStyle = isSelected ? '#00ff00' : '#1a7e28';
                             ctx.strokeStyle = '#ffffff';
@@ -486,11 +452,13 @@ function initGame(level) {
                             ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
                             ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
 
+                            // Draw plant image
                             const img = imageCache[plant.image];
                             if (img) {
                                 ctx.drawImage(img, slotX + 5, slotY + 5, 50, 50);
                             }
 
+                            // Draw cost
                             ctx.fillStyle = '#ffff00';
                             ctx.font = 'bold 10px Arial';
                             ctx.textAlign = 'right';
@@ -506,6 +474,7 @@ function initGame(level) {
                     }
                 }
 
+                // Back button - positioned right next to plant menu, moved 200px left
                 const backBtnX = menuX + menuWidth + 20;
                 const backBtnY = menuY + menuHeight / 2;
                 const backBtnWidth = 30;
@@ -522,6 +491,7 @@ function initGame(level) {
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 
+                // Write text vertically
                 ctx.save();
                 ctx.translate(backBtnX, backBtnY);
                 ctx.rotate(-Math.PI / 2);
@@ -552,12 +522,20 @@ function initGame(level) {
 
                         if (row < UNLOCKED_ROWS) {
                             const isEvenSquare = (row + col) % 2 === 0;
-                            ctx.fillStyle = isEvenSquare ? '#228b22' : '#1a6b1a';
+                            if (isEvenSquare) {
+                                ctx.fillStyle = '#228b22';
+                            } else {
+                                ctx.fillStyle = '#1a6b1a';
+                            }
                             ctx.fillRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
                             ctx.strokeStyle = '#ffffff';
                         } else {
                             const isEvenSquare = (row + col) % 2 === 0;
-                            ctx.fillStyle = isEvenSquare ? '#8b6914' : '#6b5411';
+                            if (isEvenSquare) {
+                                ctx.fillStyle = '#8b6914';
+                            } else {
+                                ctx.fillStyle = '#6b5411';
+                            }
                             ctx.fillRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
                             ctx.strokeStyle = '#665544';
                         }
@@ -586,6 +564,7 @@ function initGame(level) {
                 ctx.fillStyle = '#333333';
                 ctx.fillRect(barX, barY, barWidth, barHeight);
 
+                // Change bar color and text during final wave
                 if (finalWaveTriggered) {
                     ctx.fillStyle = '#ff0000';
                     ctx.fillRect(barX, barY, barWidth, barHeight);
@@ -603,6 +582,7 @@ function initGame(level) {
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 
+                // Only show timer if final wave hasn't been triggered
                 if (!finalWaveTriggered) {
                     ctx.fillText(`${Math.ceil((LEVEL_DURATION - gametime) / 1000)}s`, barX + barWidth / 2, barY + barHeight / 2);
                 } else {
@@ -632,8 +612,11 @@ function initGame(level) {
             }
 
             function drawFinalWaveWarning() {
+                // Draw warning banner
                 const bannerHeight = 60;
                 const bannerY = canvas.height / 2 - bannerHeight / 2;
+                
+                // Pulsing effect
                 const pulseAlpha = 0.7 + 0.3 * Math.sin(Date.now() / 100);
                 
                 ctx.fillStyle = `rgba(255, 165, 0, ${pulseAlpha})`;
@@ -667,14 +650,12 @@ function initGame(level) {
                 suns_on_screen = suns_on_screen.filter(sun => {
                     if (sun.isClicked(mouseX, mouseY)) {
                         suns += sun.value;
-                        if (sun.sourcePlant) {
-                            sun.sourcePlant.lastSunSpawn = Date.now();
-                        }
                         return false;
                     }
                     return true;
                 });
 
+                const plantList = ['peashooter'];
                 const menuX = PLANT_MENU_X;
                 const menuY = PLANT_MENU_Y;
                 const slotWidth = 60;
@@ -682,8 +663,9 @@ function initGame(level) {
                 const gridCols = 2;
                 const spacing = 5;
                 const menuWidth = gridCols * slotWidth + (gridCols - 1) * spacing;
-                const menuHeight = 3 * slotHeight + 2 * spacing;
+                const menuHeight = 3 * slotHeight + 2 * spacing; // 3 rows
 
+                // Back button hit detection
                 const backBtnX = menuX + menuWidth + 20;
                 const backBtnY = menuY + menuHeight / 2;
                 const backBtnWidth = 30;
@@ -695,20 +677,22 @@ function initGame(level) {
                     return;
                 }
 
+                // Plant slot click handling - 2x3 grid
                 for (let row = 0; row < 3; row++) {
                     for (let col = 0; col < 2; col++) {
                         const index = row * 2 + col;
-                        if (index < levelConfig.available_plants.length) {
+                        if (index < plantList.length) {
                             const slotX = menuX + col * (slotWidth + spacing);
                             const slotY = menuY + row * (slotHeight + spacing);
 
                             if (mouseX >= slotX && mouseX <= slotX + slotWidth &&
                                 mouseY >= slotY && mouseY <= slotY + slotHeight) {
-                                const plantKey = levelConfig.available_plants[index];
-                                if (selectedPlant === plantKey) {
+                                // If clicking the same plant, deselect it
+                                if (selectedPlant === plantList[index]) {
                                     selectedPlant = null;
                                 } else {
-                                    selectedPlant = plantKey;
+                                    // Otherwise select the new plant
+                                    selectedPlant = plantList[index];
                                 }
                                 return;
                             }
@@ -741,6 +725,7 @@ function initGame(level) {
             function gameLoop() {
                 if (isTransitioning) return;
                 
+                // Check if game was marked as failed (closed/switched away)
                 if (!gameActive && !gameOver && !levelWon) {
                     gameOver = true;
                     gameOverTime = Date.now();
@@ -748,6 +733,7 @@ function initGame(level) {
                     console.log('Level failed - user closed/switched away');
                 }
                 
+                // Skip game logic if paused, but still draw the frame
                 const now = Date.now();
                 
                 if (!gamePaused) {
@@ -775,35 +761,36 @@ function initGame(level) {
                     }
                 });
 
-                // Sunflower spawning
-                for (let plant of plants) {
-                    if (plant.type === PLANT_DEFINITIONS.sunflower && !gamePaused) {
-                        plant.spawnSun();
-                    }
-                }
-
+                // Spawn enemies for first 2 minutes - only if not paused
                 if (!gamePaused && gametime > 20000 && now - lastEnemySpawn > 5000 && gametime < TWO_MINUTE_MARK) {
                     const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
                     enemies.push(new Enemy(randomRow));
                     lastEnemySpawn = now;
+                    
+                    // Track enemy count for final wave
                     totalEnemiesSpawned['ealc1'] = (totalEnemiesSpawned['ealc1'] || 0) + 1;
                 }
 
+                // Show warning and trigger final wave at 2 minutes
                 if (!gamePaused && gametime >= TWO_MINUTE_MARK && !finalWaveWarningTriggered) {
                     finalWaveWarningTriggered = true;
                     finalWaveWarningTime = now;
                 }
 
+                // Display warning for 5 seconds
                 if (finalWaveWarningTriggered && !finalWaveTriggered && (now - finalWaveWarningTime) < 5000) {
                     drawFinalWaveWarning();
                 }
 
+                // Spawn final wave after 5 seconds, over an 8 second period
                 if (finalWaveWarningTriggered && !finalWaveTriggered && (now - finalWaveWarningTime) >= 5000) {
                     finalWaveTriggered = true;
                     finalWaveSpawningTime = now;
                     
+                    // Calculate final wave count: 0.5x enemies (rounded down)
                     const finalWaveCount = Math.floor((totalEnemiesSpawned['ealc1'] || 0) * 0.5);
                     
+                    // Schedule enemies to spawn over 8 seconds
                     for (let i = 0; i < finalWaveCount; i++) {
                         setTimeout(() => {
                             if (!gamePaused) {
@@ -817,7 +804,7 @@ function initGame(level) {
 
                 plants = plants.filter(plant => {
                     plant.draw();
-                    if (!gamePaused && plant.type === PLANT_DEFINITIONS.peashooter) {
+                    if (!gamePaused) {
                         plant.attack(enemies);
                     }
                     return plant.isAlive();
@@ -853,6 +840,7 @@ function initGame(level) {
                 drawDestination();
                 drawPlantMenu();
 
+                // Win logic: check enemies only after final wave completes
                 if (finalWaveTriggered && !gamePaused && (now - finalWaveSpawningTime) >= 8000 && enemies.length === 0) {
                     levelWon = true;
                 }
@@ -866,6 +854,7 @@ function initGame(level) {
                     ctx.textBaseline = 'middle';
                     ctx.fillText('mojko prehral si či ako sa tomu nadáva', canvas.width / 2, canvas.height / 2 - 30);
                     
+                    // Select subtitle only on first game over
                     if (!loseScreenSubtitle) {
                         const subtitles = [
                             'duchoňotrón by sa hneval',
@@ -894,20 +883,7 @@ function initGame(level) {
                     ctx.font = 'bold 30px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText(levelConfig.win_message, canvas.width / 2, canvas.height / 2 - 60);
-
-                    if (levelConfig.unlock_message) {
-                        ctx.fillStyle = '#ffff00';
-                        ctx.font = 'bold 24px Arial';
-                        ctx.fillText(levelConfig.unlock_message, canvas.width / 2, canvas.height / 2 + 20);
-
-                        if (levelConfig.unlock_image) {
-                            const unlockImg = imageCache[levelConfig.unlock_image];
-                            if (unlockImg) {
-                                ctx.drawImage(unlockImg, canvas.width / 2 - 40, canvas.height / 2 + 50, 80, 80);
-                            }
-                        }
-                    }
+                    ctx.fillText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2);
 
                     if (!gameOverTime) {
                         gameOverTime = Date.now();

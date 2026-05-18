@@ -220,8 +220,7 @@
                 for (let registration of registrations) {
                     await registration.unregister();
                 }
-
-                // Clear all caches
+                                // Clear all caches
                 const cacheNames = await caches.keys();
                 for (let cacheName of cacheNames) {
                     await caches.delete(cacheName);

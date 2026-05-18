@@ -239,6 +239,7 @@ class PlantSelector {
     completeLevel(levelNumber) {
         this.completedLevels.add(levelNumber);
         this.checkAndUnlockPlants();
+        this.selectedPlants = []; // Clear selected plants when level completes
         this.saveToStorage();
     }
 

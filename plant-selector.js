@@ -9,14 +9,18 @@ const PLANT_DATABASE = {
         description: 'Strieľa alkohol s uhorkami, čo sa dá povedať',
         image: 'dpea1.png',
         cost: 100,
-        stats: 'utočík: 50 | dosah: riadok | životík: 50'
+        stats: 'utočík: 50 | dosah: riadok | životík: 50',
+        unlocked: true, // Unlocked by default
+        unlockedByLevel: null
     },
     sunflower: {
         name: 'Slnkoň',
         description: 'je to naše slniečko (produkuje ich)',
         image: 'dsunflower.png',
         cost: 50,
-        stats: 'slniečko/8s | nemá dosah, si sprostý? | životík: 20'
+        stats: 'slniečko/8s | nemá dosah, si sprostý? | životík: 20',
+        unlocked: false,
+        unlockedByLevel: 1 // Unlocked after completing level 1
     }
 };
 
@@ -26,11 +30,13 @@ class PlantSelector {
         this.unlockedPlants = new Set(['peashooter']); // Start with peashooter
         this.currentHoveredPlant = null;
         this.maxSelections = 5;
+        this.completedLevels = new Set(); // Track completed levels
         this.init();
     }
 
     init() {
         this.loadFromStorage();
+        this.checkAndUnlockPlants();
         this.createUI();
         this.attachEventListeners();
     }
@@ -91,19 +97,33 @@ class PlantSelector {
         const codex = document.getElementById('plant-codex');
         codex.innerHTML = '';
 
-        this.unlockedPlants.forEach(plantKey => {
-            const plant = PLANT_DATABASE[plantKey];
+        // Get all plants and sort by unlock status
+        const plantEntries = Object.entries(PLANT_DATABASE).sort((a, b) => {
+            const aUnlocked = this.unlockedPlants.has(a[0]);
+            const bUnlocked = this.unlockedPlants.has(b[0]);
+            return bUnlocked - aUnlocked; // Unlocked plants first
+        });
+
+        plantEntries.forEach(([plantKey, plant]) => {
+            const isUnlocked = this.unlockedPlants.has(plantKey);
             const isSelected = this.selectedPlants.includes(plantKey);
             
             const card = document.createElement('div');
-            card.className = `plant-card ${isSelected ? 'selected' : ''}`;
+            card.className = `plant-card ${isSelected ? 'selected' : ''} ${!isUnlocked ? 'locked' : ''}`;
             card.dataset.plant = plantKey;
+            
+            let lockInfo = '';
+            if (!isUnlocked && plant.unlockedByLevel !== null) {
+                lockInfo = `<div class="plant-card-lock">🔒 Level ${plant.unlockedByLevel + 1}</div>`;
+            }
+            
             card.innerHTML = `
                 <div class="plant-card-image">
                     <img src="./assets/${plant.image}" alt="${plant.name}" onerror="this.style.display='none'">
                 </div>
                 <div class="plant-card-name">${plant.name}</div>
                 <div class="plant-card-cost">☀️ ${plant.cost}</div>
+                ${lockInfo}
             `;
             codex.appendChild(card);
         });
@@ -135,6 +155,12 @@ class PlantSelector {
 
         const plantKey = card.dataset.plant;
         
+        // Can only select unlocked plants
+        if (!this.unlockedPlants.has(plantKey)) {
+            this.showPlantInfo(plantKey);
+            return;
+        }
+        
         if (this.selectedPlants.includes(plantKey)) {
             this.deselectPlant(plantKey);
         } else {
@@ -156,7 +182,7 @@ class PlantSelector {
     }
 
     selectPlant(plantKey) {
-        if (!this.selectedPlants.includes(plantKey) && this.selectedPlants.length < this.maxSelections) {
+        if (!this.selectedPlants.includes(plantKey) && this.selectedPlants.length < this.maxSelections && this.unlockedPlants.has(plantKey)) {
             this.selectedPlants.push(plantKey);
             this.saveToStorage();
             this.renderCodex();
@@ -210,6 +236,27 @@ class PlantSelector {
         }
     }
 
+    completeLevel(levelNumber) {
+        this.completedLevels.add(levelNumber);
+        this.checkAndUnlockPlants();
+        this.saveToStorage();
+    }
+
+    checkAndUnlockPlants() {
+        Object.entries(PLANT_DATABASE).forEach(([plantKey, plant]) => {
+            if (plant.unlockedByLevel !== null && this.completedLevels.has(plant.unlockedByLevel)) {
+                this.unlockPlant(plantKey);
+            }
+        });
+    }
+
+    isLevelUnlocked(levelNumber) {
+        // Level 0 (first level) is always unlocked
+        if (levelNumber === 0) return true;
+        // All other levels unlock when the previous level is completed
+        return this.completedLevels.has(levelNumber - 1);
+    }
+
     getSelectedPlants() {
         return [...this.selectedPlants];
     }
@@ -217,14 +264,17 @@ class PlantSelector {
     saveToStorage() {
         localStorage.setItem('selectedPlants', JSON.stringify(this.selectedPlants));
         localStorage.setItem('unlockedPlants', JSON.stringify([...this.unlockedPlants]));
+        localStorage.setItem('completedLevels', JSON.stringify([...this.completedLevels]));
     }
 
     loadFromStorage() {
         const saved = localStorage.getItem('selectedPlants');
         const unlockedSaved = localStorage.getItem('unlockedPlants');
+        const completedSaved = localStorage.getItem('completedLevels');
         
         if (saved) this.selectedPlants = JSON.parse(saved);
         if (unlockedSaved) this.unlockedPlants = new Set(JSON.parse(unlockedSaved));
+        if (completedSaved) this.completedLevels = new Set(JSON.parse(completedSaved).map(Number));
     }
 }
 

@@ -5,18 +5,18 @@
 
 const PLANT_DATABASE = {
     peashooter: {
-        name: 'Peashooter',
-        description: 'Strikes enemies with sharp peas from distance',
+        name: 'Uhorkoň',
+        description: 'Strieľa alkohol s uhorkami, čo sa dá povedať',
         image: 'dpea1.png',
         cost: 100,
-        stats: '⚔️ ATK: 50 | 🎯 RNG: 10000 | ❤️ HP: 50'
+        stats: 'utočík: 50 | dosah: riadok | životík: 50'
     },
     sunflower: {
-        name: 'Sunflower',
-        description: 'Produces suns for extra resources',
+        name: 'Slnkoň',
+        description: 'je to naše slniečko (produkuje ich)',
         image: 'dsunflower.png',
         cost: 50,
-        stats: '☀️ SUN/8s | 💰 Support | ❤️ HP: 20'
+        stats: 'slniečko/8s | nemá dosah, si sprostý? | životík: 20'
     }
 };
 

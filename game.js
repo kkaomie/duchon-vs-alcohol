@@ -1062,7 +1062,7 @@ function initGame(level) {
                      width: 50,
                      height: 50,
                      collisionRadius: 25,
-                     cooldown: 10000
+                     cooldown: 5000
                  },
                  sunflower: {
                      name: 'Sunflower',
@@ -1070,11 +1070,11 @@ function initGame(level) {
                      cost: 50,
                      health: 20,
                      attackDamage: 0,
-                     sunSpawnInterval: 15000,
+                     sunSpawnInterval: 8000,
                      width: 50,
                      height: 50,
                      collisionRadius: 25,
-                     cooldown: 6000
+                     cooldown: 3000
                  }
              };
 

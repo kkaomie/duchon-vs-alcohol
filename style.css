@@ -25,22 +25,6 @@ body {
     zoom: 1 !important;
 }
 
-/* Force landscape mode for portrait devices */
-@media (orientation: portrait) {
-    html, body {
-        width: 100vh;
-        height: 100vw;
-    }
-    
-    body {
-        transform: rotate(90deg);
-        transform-origin: 0 0;
-        position: fixed;
-        top: 0;
-        left: 0;
-    }
-}
-
 .screen {
     width: 100vw;
     height: 100vh;

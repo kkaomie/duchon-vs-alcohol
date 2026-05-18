@@ -124,12 +124,9 @@
         const levelsGrid = document.getElementById('levelsGrid');
         const warningBanner = document.getElementById('warning-banner');
 
-        let levelsGenerated = false;
-
         // Generate 15 levels
         function generateLevels() {
-            if (levelsGenerated) return; // Prevent duplicate generation
-            levelsGenerated = true;
+            levelsGrid.innerHTML = '';
 
             for (let i = 1; i <= 15; i++) {
                 const levelIndex = i - 1; // 0-indexed for progression checking
@@ -259,6 +256,11 @@
                 alert('Chyba pri obnove Service Workera');
             }
         });
+
+        // Expose regenerateLevels globally so game.js can call it
+        function regenerateLevels() {
+            generateLevels();
+        }
     </script>
 </body>
 </html>

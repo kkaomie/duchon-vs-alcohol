@@ -208,6 +208,275 @@ body {
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
 }
 
+/* Plant Selector Button */
+.plant-selector-button {
+    position: absolute;
+    top: 60px;
+    right: 15px;
+    z-index: 25;
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    background-color: rgba(26, 126, 40, 0.8);
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.plant-selector-button:hover {
+    background-color: rgba(26, 126, 40, 1);
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 1);
+}
+
+.plant-selector-button:active {
+    transform: scale(0.95);
+}
+
+/* Plant Selector Screen */
+#plant-selector-screen {
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%);
+    padding: 60px 15px 15px 15px;
+    gap: 15px;
+    overflow: hidden;
+}
+
+.plant-selector-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 15px;
+    overflow: hidden;
+}
+
+.plant-selector-info-panel {
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plant-info-label {
+    width: 100%;
+    color: white;
+    text-align: center;
+}
+
+.plant-info-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #90ee90;
+    margin-bottom: 8px;
+}
+
+.plant-info-description {
+    font-size: 14px;
+    color: #ffffff;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.plant-info-stats {
+    font-size: 12px;
+    color: #ffff99;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.plant-selector-content {
+    display: flex;
+    gap: 15px;
+    height: 100%;
+    overflow: hidden;
+    flex: 1;
+}
+
+.plant-codex {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+    overflow-y: auto;
+    padding-right: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.plant-codex::-webkit-scrollbar {
+    width: 8px;
+}
+
+.plant-codex::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.plant-codex::-webkit-scrollbar-thumb {
+    background: rgba(26, 126, 40, 0.7);
+    border-radius: 4px;
+}
+
+.plant-codex::-webkit-scrollbar-thumb:hover {
+    background: rgba(26, 126, 40, 1);
+}
+
+.plant-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 10px;
+    background-color: rgba(26, 126, 40, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 110px;
+    justify-content: space-between;
+}
+
+.plant-card:hover {
+    background-color: rgba(26, 126, 40, 0.8);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.05);
+}
+
+.plant-card.selected {
+    background-color: rgba(144, 238, 144, 0.8);
+    border-color: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 10px rgba(144, 238, 144, 0.6);
+}
+
+.plant-card-image {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.plant-card-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.plant-card-name {
+    font-size: 11px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+}
+
+.plant-card-cost {
+    font-size: 10px;
+    color: #ffff99;
+    font-weight: bold;
+}
+
+.plant-selected-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 200px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.selected-count {
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    padding: 5px;
+    background-color: rgba(26, 126, 40, 0.5);
+    border-radius: 4px;
+}
+
+.selected-plants {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.selected-plants::-webkit-scrollbar {
+    width: 6px;
+}
+
+.selected-plants::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.selected-plants::-webkit-scrollbar-thumb {
+    background: rgba(26, 126, 40, 0.7);
+    border-radius: 3px;
+}
+
+.selected-plant-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+    background-color: rgba(144, 238, 144, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #1a3a1a;
+}
+
+.selected-plant-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.deselect-btn {
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 3px;
+    background-color: rgba(255, 76, 76, 0.8);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.deselect-btn:hover {
+    background-color: rgba(255, 76, 76, 1);
+    transform: scale(1.1);
+}
+
+.deselect-btn:active {
+    transform: scale(0.95);
+}
+
 /* Game Screen */
 #gameCanvas {
     display: block;
@@ -280,5 +549,16 @@ body {
         padding-right: max(0px, env(safe-area-inset-right));
         padding-top: max(0px, env(safe-area-inset-top));
         padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .plant-selected-list {
+        width: 150px;
+    }
+    
+    .plant-codex {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
     }
 }

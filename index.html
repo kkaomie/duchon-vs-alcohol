@@ -85,7 +85,7 @@
             return false;
         }
 
-        // Show warning if not installed
+        // Show warning only on home screen and if not installed
         window.addEventListener('load', () => {
             if (!isInstalledApp()) {
                 document.body.classList.add('show-warning');
@@ -121,6 +121,7 @@
         const backBtn = document.getElementById('back-btn');
         const backFromLevelsBtn = document.getElementById('back-from-levels-btn');
         const levelsGrid = document.getElementById('levelsGrid');
+        const warningBanner = document.getElementById('warning-banner');
 
         let levelsGenerated = false;
 
@@ -172,6 +173,18 @@
             levelsScreen.classList.add('hidden');
             gameScreen.classList.add('hidden');
             installScreen.classList.add('hidden');
+
+            // Hide warning banner when leaving home screen
+            if (screenName !== 'home') {
+                warningBanner.style.display = 'none';
+                document.body.classList.remove('show-warning');
+            } else {
+                // Show warning banner only on home screen if not installed
+                if (!isInstalledApp()) {
+                    warningBanner.style.display = 'block';
+                    document.body.classList.add('show-warning');
+                }
+            }
 
             if (screenName === 'home') {
                 homeScreen.style.display = 'flex';

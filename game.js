@@ -108,6 +108,8 @@ function initGame(level) {
             let finalWaveWarningTriggered = false;
             let finalWaveWarningTime = null;
             let loseScreenSubtitle = null; // Store the selected subtitle
+            let finalWaveSpawningTime = null; // Time when final wave spawning started
+            let finalWaveEnemiesSpawned = 0; // Track how many enemies spawned in final wave
 
             const startTime = Date.now();
 
@@ -512,8 +514,14 @@ function initGame(level) {
                 ctx.fillStyle = '#333333';
                 ctx.fillRect(barX, barY, barWidth, barHeight);
 
-                ctx.fillStyle = '#00ff00';
-                ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+                // Change bar color and text during final wave
+                if (finalWaveTriggered) {
+                    ctx.fillStyle = '#ff0000';
+                    ctx.fillRect(barX, barY, barWidth, barHeight);
+                } else {
+                    ctx.fillStyle = '#00ff00';
+                    ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+                }
 
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
@@ -523,7 +531,13 @@ function initGame(level) {
                 ctx.font = 'bold 14px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(`${Math.ceil((LEVEL_DURATION - gametime) / 1000)}s`, barX + barWidth / 2, barY + barHeight / 2);
+                
+                // Only show timer if final wave hasn't been triggered
+                if (!finalWaveTriggered) {
+                    ctx.fillText(`${Math.ceil((LEVEL_DURATION - gametime) / 1000)}s`, barX + barWidth / 2, barY + barHeight / 2);
+                } else {
+                    ctx.fillText('PEČEŇ V OHROZENÍ', barX + barWidth / 2, barY + barHeight / 2);
+                }
             }
 
             function drawSunCounter() {
@@ -693,16 +707,24 @@ function initGame(level) {
                     drawFinalWaveWarning();
                 }
 
-                // Spawn final wave after 5 seconds
+                // Spawn final wave after 5 seconds, over a 4 second period
                 if (finalWaveWarningTriggered && !finalWaveTriggered && (now - finalWaveWarningTime) >= 5000) {
                     finalWaveTriggered = true;
+                    finalWaveSpawningTime = now;
                     
-                    // Calculate final wave: 0.5x enemies (rounded down)
+                    // Calculate final wave count: 0.5x enemies (rounded down)
                     const finalWaveCount = Math.floor((totalEnemiesSpawned['ealc1'] || 0) * 0.5);
                     
-                    for (let i = 0; i < finalWaveCount; i++) {
-                        const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
-                        enemies.push(new Enemy(randomRow));
+                    // Store for later spawning
+                    const finalWaveEnemyCount = finalWaveCount;
+                    
+                    // Schedule enemies to spawn over 4 seconds
+                    for (let i = 0; i < finalWaveEnemyCount; i++) {
+                        setTimeout(() => {
+                            const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
+                            enemies.push(new Enemy(randomRow));
+                            finalWaveEnemiesSpawned++;
+                        }, (i / finalWaveEnemyCount) * 4000);
                     }
                 }
 

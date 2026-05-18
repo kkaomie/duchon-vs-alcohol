@@ -8,13 +8,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Duchon Game">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" type="image/png" href="./assets/icons/icon-192.png">
     <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css">
     <title>Duchon vs Alcohol</title>
 </head>
 <body>
@@ -48,20 +45,16 @@
         </div>
     </div>
     
-    <script src="game.js?v=2"></script>
+    <script src="game.js"></script>
     <script>
-        // Lock to landscape orientation (this is the proper way for mobile)
+        // Lock to landscape orientation
         if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('landscape-primary').catch(err => {
-                console.log('Cannot lock orientation:', err);
-                // Fallback: try landscape without specific orientation
-                screen.orientation.lock('landscape').catch(() => console.log('Landscape lock failed'));
-            });
+            screen.orientation.lock('landscape').catch(err => console.log('Cannot lock orientation:', err));
         }
 
         // Service Worker Registration
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./service-worker.js?v=5')
+            navigator.serviceWorker.register('./service-worker.js')
                 .then(() => console.log('Service Worker registered'))
                 .catch(err => console.log('Service Worker failed:', err));
         }
@@ -190,7 +183,7 @@
                 }
 
                 // Re-register service worker
-                await navigator.serviceWorker.register('./service-worker.js?v=5');
+                await navigator.serviceWorker.register('./service-worker.js');
                 
                 alert('Service Worker obnovený! Aplikácia sa bude obnovovať.');
                 location.reload();

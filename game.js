@@ -87,10 +87,11 @@ function initGame(level) {
             const DESTINATION_X = GRID_START_X - 40; // Closer to the finish line
             let PLANT_MENU_X = canvas.width - 150;
             const PLANT_MENU_Y = TOP_PADDING;
-            const PLANT_MENU_WIDTH = 100;
+            const PLANT_MENU_WIDTH = 180;
+            const PLANT_MENU_HEIGHT = 180;
             const LEVEL_DURATION = 120000;
             const TWO_MINUTE_MARK = 120000;
-            const BACK_BTN_OFFSET = 50; // Offset from edge of plant menu
+            const BACK_BTN_OFFSET = 5; // Very close to plant menu
 
             // Game state
             let suns = 50;
@@ -377,75 +378,83 @@ function initGame(level) {
             function drawPlantMenu() {
                 const menuX = PLANT_MENU_X;
                 const menuY = PLANT_MENU_Y;
-                const slotWidth = 80;
-                const slotHeight = 80;
-                const slots = 5;
+                const slotWidth = 60;
+                const slotHeight = 60;
+                const gridCols = 3;
+                const gridRows = 2;
+                const spacing = 5;
 
+                // Draw menu background
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                ctx.fillRect(menuX - 10, menuY - 10, PLANT_MENU_WIDTH, slotHeight * slots + 20);
+                ctx.fillRect(menuX - 10, menuY - 35, PLANT_MENU_WIDTH, PLANT_MENU_HEIGHT + 35);
 
+                // Draw title
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 14px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText('Plants', menuX + 40, menuY - 25);
+                ctx.fillText('Plants', menuX + PLANT_MENU_WIDTH / 2, menuY - 20);
 
                 const plantList = ['peashooter'];
 
-                for (let i = 0; i < slots; i++) {
-                    const slotX = menuX;
-                    const slotY = menuY + i * (slotHeight + 5);
+                // Draw 3x2 grid
+                for (let row = 0; row < gridRows; row++) {
+                    for (let col = 0; col < gridCols; col++) {
+                        const index = row * gridCols + col;
+                        const slotX = menuX + col * (slotWidth + spacing);
+                        const slotY = menuY + row * (slotHeight + spacing);
 
-                    if (i < plantList.length) {
-                        const plant = PLANT_TYPES[plantList[i]];
-                        const isSelected = selectedPlant === plantList[i];
+                        if (index < plantList.length) {
+                            const plant = PLANT_TYPES[plantList[index]];
+                            const isSelected = selectedPlant === plantList[index];
 
-                        ctx.fillStyle = isSelected ? '#00ff00' : '#1a7e28';
-                        ctx.strokeStyle = '#ffffff';
-                        ctx.lineWidth = 2;
-                        ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
-                        ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
+                            ctx.fillStyle = isSelected ? '#00ff00' : '#1a7e28';
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 2;
+                            ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
+                            ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
 
-                        // Draw plant image - BIGGER (60x60)
-                        const img = imageCache[plant.image];
-                        if (img) {
-                            ctx.drawImage(img, slotX + 10, slotY + 10, 60, 60);
+                            // Draw plant image
+                            const img = imageCache[plant.image];
+                            if (img) {
+                                ctx.drawImage(img, slotX + 5, slotY + 5, 50, 50);
+                            }
+
+                            // Draw cost
+                            ctx.fillStyle = '#ffff00';
+                            ctx.font = 'bold 10px Arial';
+                            ctx.textAlign = 'right';
+                            ctx.textBaseline = 'bottom';
+                            ctx.fillText(plant.cost, slotX + slotWidth - 3, slotY + slotHeight - 3);
+                        } else {
+                            ctx.fillStyle = '#333333';
+                            ctx.strokeStyle = '#666666';
+                            ctx.lineWidth = 1;
+                            ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
+                            ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
                         }
-
-                        // Draw cost (will overlap with bigger image)
-                        ctx.fillStyle = '#ffff00';
-                        ctx.font = 'bold 12px Arial';
-                        ctx.textAlign = 'right';
-                        ctx.textBaseline = 'bottom';
-                        ctx.fillText(plant.cost, slotX + slotWidth - 5, slotY + slotHeight - 5);
-                    } else {
-                        ctx.fillStyle = '#333333';
-                        ctx.strokeStyle = '#666666';
-                        ctx.lineWidth = 1;
-                        ctx.fillRect(slotX, slotY, slotWidth, slotHeight);
-                        ctx.strokeRect(slotX, slotY, slotWidth, slotHeight);
                     }
                 }
 
-                // Back button - positioned dynamically to the right of plant menu edge + offset
-                const backBtnX = menuX + PLANT_MENU_WIDTH + BACK_BTN_OFFSET; // Right edge of menu + offset
-                const backBtnY = menuY; // Start from top of plant menu
-                const backBtnWidth = 40;
-                const backBtnHeight = slotHeight * slots + 20; // Full height of plant menu
+                // Back button - positioned very close to the right edge of plant menu
+                const backBtnX = menuX + PLANT_MENU_WIDTH + BACK_BTN_OFFSET + 15;
+                const backBtnY = menuY + PLANT_MENU_HEIGHT / 2;
+                const backBtnWidth = 30;
+                const backBtnHeight = PLANT_MENU_HEIGHT;
 
                 ctx.fillStyle = '#8b5411';
-                ctx.fillRect(backBtnX - backBtnWidth / 2, backBtnY - 10, backBtnWidth, backBtnHeight);
+                ctx.fillRect(backBtnX - backBtnWidth / 2, backBtnY - backBtnHeight / 2, backBtnWidth, backBtnHeight);
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(backBtnX - backBtnWidth / 2, backBtnY - 10, backBtnWidth, backBtnHeight);
+                ctx.strokeRect(backBtnX - backBtnWidth / 2, backBtnY - backBtnHeight / 2, backBtnWidth, backBtnHeight);
 
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 10px Arial';
+                ctx.font = 'bold 9px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 
                 // Write text vertically
                 ctx.save();
-                ctx.translate(backBtnX, backBtnY - 10 + backBtnHeight / 2);
+                ctx.translate(backBtnX, backBtnY);
                 ctx.rotate(-Math.PI / 2);
                 ctx.fillText('← Back', 0, 0);
                 ctx.restore();
@@ -610,37 +619,43 @@ function initGame(level) {
                 const plantList = ['peashooter'];
                 const menuX = PLANT_MENU_X;
                 const menuY = PLANT_MENU_Y;
-                const slotWidth = 80;
-                const slotHeight = 80;
-                const slots = 5;
+                const slotWidth = 60;
+                const slotHeight = 60;
+                const gridCols = 3;
+                const spacing = 5;
 
-                // Back button - positioned dynamically to the right of plant menu edge + offset
-                const backBtnX = menuX + PLANT_MENU_WIDTH + BACK_BTN_OFFSET; // Right edge of menu + offset
-                const backBtnY = menuY;
-                const backBtnWidth = 40;
-                const backBtnHeight = slotHeight * slots + 20;
+                // Back button hit detection
+                const backBtnX = menuX + PLANT_MENU_WIDTH + BACK_BTN_OFFSET + 15;
+                const backBtnY = menuY + PLANT_MENU_HEIGHT / 2;
+                const backBtnWidth = 30;
+                const backBtnHeight = PLANT_MENU_HEIGHT;
 
                 if (mouseX >= backBtnX - backBtnWidth / 2 && mouseX <= backBtnX + backBtnWidth / 2 &&
-                    mouseY >= backBtnY - 10 && mouseY <= backBtnY - 10 + backBtnHeight) {
+                    mouseY >= backBtnY - backBtnHeight / 2 && mouseY <= backBtnY + backBtnHeight / 2) {
                     returnToLevels();
                     return;
                 }
 
-                // Plant slot click handling
-                for (let i = 0; i < plantList.length; i++) {
-                    const slotX = menuX;
-                    const slotY = menuY + i * (slotHeight + 5);
+                // Plant slot click handling - 3x2 grid
+                for (let row = 0; row < 2; row++) {
+                    for (let col = 0; col < 3; col++) {
+                        const index = row * 3 + col;
+                        if (index < plantList.length) {
+                            const slotX = menuX + col * (slotWidth + spacing);
+                            const slotY = menuY + row * (slotHeight + spacing);
 
-                    if (mouseX >= slotX && mouseX <= slotX + slotWidth &&
-                        mouseY >= slotY && mouseY <= slotY + slotHeight) {
-                        // If clicking the same plant, deselect it
-                        if (selectedPlant === plantList[i]) {
-                            selectedPlant = null;
-                        } else {
-                            // Otherwise select the new plant
-                            selectedPlant = plantList[i];
+                            if (mouseX >= slotX && mouseX <= slotX + slotWidth &&
+                                mouseY >= slotY && mouseY <= slotY + slotHeight) {
+                                // If clicking the same plant, deselect it
+                                if (selectedPlant === plantList[index]) {
+                                    selectedPlant = null;
+                                } else {
+                                    // Otherwise select the new plant
+                                    selectedPlant = plantList[index];
+                                }
+                                return;
+                            }
                         }
-                        return;
                     }
                 }
 

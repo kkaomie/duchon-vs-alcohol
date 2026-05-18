@@ -729,7 +729,7 @@ function initGame(level) {
                 if (!gameActive && !gameOver && !levelWon) {
                     gameOver = true;
                     gameOverTime = Date.now();
-                    loseScreenSubtitle = 'nosratá si to keď si išiel preč 😬';
+                    loseScreenSubtitle = 'beda ti ze ides het z appky 🚨‼️';
                     console.log('Level failed - user closed/switched away');
                 }
                 

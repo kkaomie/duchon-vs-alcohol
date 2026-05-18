@@ -75,7 +75,7 @@
     </div>
     
     <script src="plant-selector.js"></script>
-    <script src="game.js?v=3"></script>
+    <script src="game.js?v=4"></script>
     <script>
         // Check if running in browser vs installed app
         function isInstalledApp() {
@@ -132,13 +132,22 @@
             levelsGenerated = true;
 
             for (let i = 1; i <= 15; i++) {
+                const levelIndex = i - 1; // 0-indexed for progression checking
+                const isUnlocked = plantSelector.isLevelUnlocked(levelIndex);
+                const isCompleted = plantSelector.completedLevels.has(levelIndex);
+                
                 const levelItem = document.createElement('div');
-                levelItem.className = i <= 2 ? 'level-item unlocked' : 'level-item locked';
+                levelItem.className = isUnlocked ? 'level-item unlocked' : 'level-item locked';
+                if (isCompleted) levelItem.classList.add('completed');
                 levelItem.setAttribute('data-level', i);
                 
                 const levelIcon = document.createElement('div');
                 levelIcon.className = 'level-icon';
-                levelIcon.textContent = i <= 2 ? i : '🔒';
+                if (isCompleted) {
+                    levelIcon.textContent = '✓';
+                } else {
+                    levelIcon.textContent = isUnlocked ? i : '🔒';
+                }
                 
                 const levelLabel = document.createElement('div');
                 levelLabel.className = 'level-label';
@@ -148,8 +157,8 @@
                 levelItem.appendChild(levelLabel);
                 levelsGrid.appendChild(levelItem);
 
-                // Add click handler
-                if (i <= 2) {
+                // Add click handler only if unlocked
+                if (isUnlocked) {
                     levelItem.addEventListener('click', () => {
                         showScreen('game');
                         console.log('Starting game...');

@@ -205,5 +205,15 @@ const Level2 = {
         });
 
         return Math.floor(expectedCount);
+    },
+
+    /**
+     * Check if all main waves are complete
+     */
+    areWavesComplete(gametime) {
+        const schedule = this.getWaveSchedule();
+        if (schedule.length === 0) return false;
+        const lastWave = schedule[schedule.length - 1];
+        return gametime >= lastWave.endTime;
     }
 };

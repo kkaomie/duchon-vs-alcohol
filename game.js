@@ -156,6 +156,7 @@ function initGame(level) {
              let finalWaveSpawningTime = null; // Time when final wave spawning started
              let finalWaveEnemiesSpawned = 0; // Track how many enemies spawned in final wave
              let waveEnemyConfig = null; // Current wave configuration
+             let plantPlacementCooldowns = {}; // Track individual plant type cooldowns
 
              const startTime = Date.now();
 
@@ -720,8 +721,16 @@ function initGame(level) {
                          if (gridY < UNLOCKED_ROWS) {
                              const occupied = plants.some(p => p.gridX === gridX && p.gridY === gridY);
                              if (!occupied) {
-                                 plants.push(new Plant(selectedPlant, gridX, gridY));
-                                 suns -= PLANT_TYPES[selectedPlant].cost;
+                                 // Check plant-specific cooldown
+                                 const now = Date.now();
+                                 const plantCooldown = PLANT_TYPES[selectedPlant].placementCooldown || 0;
+                                 const lastPlacement = plantPlacementCooldowns[selectedPlant] || 0;
+                                 
+                                 if (now - lastPlacement >= plantCooldown) {
+                                     plants.push(new Plant(selectedPlant, gridX, gridY));
+                                     suns -= PLANT_TYPES[selectedPlant].cost;
+                                     plantPlacementCooldowns[selectedPlant] = now;
+                                 }
                              }
                          }
                      }

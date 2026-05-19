@@ -83,11 +83,24 @@ const Level2 = {
             cost: 50,
             health: 20,
             attackDamage: 0,
-            sunSpawnInterval: 8000,
+            sunSpawnInterval: 12000,
             width: 50,
             height: 50,
             collisionRadius: 25,
             placementCooldown: 3000
+        },
+        orechon: {
+            name: 'Orechoň',
+            image: 'dnut1.png',
+            lowHealthImage: 'dnut1low.png',
+            cost: 75,
+            health: 5000,
+            attackDamage: 0,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            placementCooldown: 18000,
+            lowHealthThreshold: 0.5
         }
     },
 

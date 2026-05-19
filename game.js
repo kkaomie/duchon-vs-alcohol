@@ -372,7 +372,7 @@ function initGame(level) {
                      this.speed = 1;
                      this.stationary = stationary;
                      if (stationary) {
-                         this.targetY = this.y;
+                         this.targetY = this.y + 100;
                      } else {
                          this.targetY = GRID_START_Y + Math.random() * (GRID_ROWS * GRID_CELL_HEIGHT);
                      }

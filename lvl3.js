@@ -92,13 +92,15 @@ const Level3 = {
         orechon: {
             name: 'Orechoň',
             image: 'dnut1.png',
+            lowHealthImage: 'dnut1low.png',
             cost: 75,
             health: 5000,
             attackDamage: 0,
             width: 50,
             height: 50,
             collisionRadius: 25,
-            placementCooldown: 18000
+            placementCooldown: 18000,
+            lowHealthThreshold: 0.5
         }
     },
 
@@ -116,6 +118,19 @@ const Level3 = {
             height: 50,
             collisionRadius: 25,
             lowHealthThreshold: 0.5
+        },
+        ealc2: {
+            name: 'Strong Zombie',
+            image: 'ealc2.png',
+            lowHealthImage: 'ealc2low.png',
+            health: 500,
+            speed: 0.01,
+            damage: 20,
+            damageInterval: 1000,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            lowHealthThreshold: 0.5
         }
     },
 
@@ -125,10 +140,13 @@ const Level3 = {
         'dpea1shoot.png',
         'dsunflower.png',
         'dnut1.png',
+        'dnut1low.png',
         'dlawnmowerO.png',
         'dlawnmowerC.png',
         'ealc1.png',
         'ealc1low.png',
+        'ealc2.png',
+        'ealc2low.png',
         'pecen.png',
         'projectile.png',
         'sun.png',

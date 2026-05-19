@@ -118,7 +118,10 @@ const Level2 = {
         'pecen.png',
         'projectile.png',
         'sun.png',
-        'lvl1bcg.png'
+        'lvl1bcg.png',
+        'dnut1.png',
+        'dlawnmowerO.png',
+        'dlawnmowerC.png'
     ],
 
     /**

@@ -134,8 +134,9 @@ function initGame(level) {
               let PLANT_MENU_X = canvas.width - 150 - 160; // Moved 200px to the left
               const PLANT_MENU_Y = TOP_PADDING;
               
-              // Calculate level duration from waves
+              // Calculate level duration from waves and enemy wait time
               const LEVEL_DURATION = levelData.getLevelDuration();
+              const firstWaveDelay = levelData.waves[0].startDelay;
 
               // Game state
               let suns = 50;
@@ -161,6 +162,8 @@ function initGame(level) {
               let plantPlacementCooldowns = {}; // Track individual plant type cooldowns
               let lawnMowerUsedRows = new Set(); // Track which rows have been mowed
               let selectedLawnMowerRow = null; // Track selected lawn mower row
+              let kosackonActiveRows = new Set(); // Track which rows have kosackon activated
+              let kosackonAnimationState = {}; // Track state for each row
 
               const startTime = Date.now();
 
@@ -189,6 +192,16 @@ function initGame(level) {
 
                   draw() {
                       const now = Date.now();
+                      let imageToUse = this.type.image;
+                      
+                      // Check for low health state
+                      if (this.type.lowHealthImage) {
+                          const healthPercent = this.health / this.type.health;
+                          if (healthPercent <= this.type.lowHealthThreshold) {
+                              imageToUse = this.type.lowHealthImage;
+                          }
+                      }
+                      
                       if (this.type.shootImage && this.isShooting && now - this.shootStartTime < this.type.shootDuration) {
                           const img = imageCache[this.type.shootImage];
                           if (img) {
@@ -199,7 +212,7 @@ function initGame(level) {
                           }
                       } else {
                           this.isShooting = false;
-                          const img = imageCache[this.type.image];
+                          const img = imageCache[imageToUse];
                           if (img) {
                               ctx.drawImage(img, this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
                           } else {
@@ -306,12 +319,13 @@ function initGame(level) {
 
               // Enemy class
               class Enemy {
-                  constructor(rowIndex) {
+                  constructor(rowIndex, enemyType = null) {
                       this.x = GRID_END_X;
                       this.rowIndex = rowIndex;
                       this.y = GRID_START_Y + rowIndex * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
-                      this.health = ENEMY_TYPE.health;
-                      this.speed = ENEMY_TYPE.speed;
+                      this.type = enemyType || ENEMY_TYPE;
+                      this.health = this.type.health;
+                      this.speed = this.type.speed;
                       this.lastDamage = 0;
                       this.desiredX = this.x;
                   }
@@ -337,8 +351,8 @@ function initGame(level) {
                       for (let plant of plants) {
                           if (plant.gridY === this.rowIndex) {
                               if (plant.isNearby(this.x, this.y)) {
-                                  if (now - this.lastDamage > ENEMY_TYPE.damageInterval) {
-                                      plant.health -= ENEMY_TYPE.damage;
+                                  if (now - this.lastDamage > this.type.damageInterval) {
+                                      plant.health -= this.type.damage;
                                       this.lastDamage = now;
                                   }
                               }
@@ -349,22 +363,22 @@ function initGame(level) {
                   }
 
                   draw() {
-                      const healthPercent = this.health / ENEMY_TYPE.health;
-                      let imageToUse = ENEMY_TYPE.image;
+                      const healthPercent = this.health / this.type.health;
+                      let imageToUse = this.type.image;
                       
-                      if (healthPercent <= ENEMY_TYPE.lowHealthThreshold) {
-                          imageToUse = ENEMY_TYPE.lowHealthImage;
+                      if (healthPercent <= this.type.lowHealthThreshold) {
+                          imageToUse = this.type.lowHealthImage;
                       }
 
                       const img = imageCache[imageToUse];
                       if (img) {
-                          ctx.drawImage(img, this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2, ENEMY_TYPE.width, ENEMY_TYPE.height);
+                          ctx.drawImage(img, this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
                       } else {
                           ctx.fillStyle = '#ff6600';
-                          ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2, ENEMY_TYPE.width, ENEMY_TYPE.height);
+                          ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
                       }
                       ctx.fillStyle = '#ff0000';
-                      ctx.fillRect(this.x - ENEMY_TYPE.width / 2, this.y - ENEMY_TYPE.height / 2 - 10, ENEMY_TYPE.width * healthPercent, 5);
+                      ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2 - 10, this.type.width * healthPercent, 5);
                   }
 
                   isAlive() {
@@ -420,20 +434,27 @@ function initGame(level) {
 
               let suns_on_screen = [];
 
-              function drawLawnMower(gridX, gridY) {
-                  const mowerX = GRID_START_X + gridX * GRID_CELL_WIDTH + GRID_CELL_WIDTH / 2;
-                  const mowerY = GRID_START_Y + gridY * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
+              function drawKosackon(gridX, gridY) {
+                  const kosackonX = GRID_START_X + gridX * GRID_CELL_WIDTH + GRID_CELL_WIDTH / 2;
+                  const kosackonY = GRID_START_Y + gridY * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
+                  const kosackonSize = GRID_CELL_WIDTH / 4;
+                  
+                  // Initialize animation state if needed
+                  if (!kosackonAnimationState[gridY]) {
+                      kosackonAnimationState[gridY] = { startTime: Date.now() };
+                  }
                   
                   const now = Date.now();
-                  const animationFrame = Math.floor((now / 200) % 2); // Alternate every 200ms
-                  const mowerImage = animationFrame === 0 ? 'dlawnmowerO.png' : 'dlawnmowerC.png';
+                  const timeSinceStart = now - kosackonAnimationState[gridY].startTime;
+                  const animationFrame = Math.floor((timeSinceStart / 200) % 2); // Alternate every 200ms
+                  const kosackonImage = animationFrame === 0 ? 'dlawnmowerO.png' : 'dlawnmowerC.png';
                   
-                  const img = imageCache[mowerImage];
+                  const img = imageCache[kosackonImage];
                   if (img) {
-                      ctx.drawImage(img, mowerX - 25, mowerY - 25, 50, 50);
+                      ctx.drawImage(img, kosackonX - kosackonSize / 2, kosackonY - kosackonSize / 2, kosackonSize, kosackonSize);
                   } else {
                       ctx.fillStyle = '#888888';
-                      ctx.fillRect(mowerX - 25, mowerY - 25, 50, 50);
+                      ctx.fillRect(kosackonX - kosackonSize / 2, kosackonY - kosackonSize / 2, kosackonSize, kosackonSize);
                   }
               }
 
@@ -536,9 +557,9 @@ function initGame(level) {
                   for (let row = 0; row < UNLOCKED_ROWS; row++) {
                       const destY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
                       
-                      // Draw lawn mower on levels 3+ before pecen
-                      if (level >= 3 && !lawnMowerUsedRows.has(row)) {
-                          drawLawnMower(0, row);
+                      // Draw kosackon (1/4 grid size) before pecen on levels 3+ if activated
+                      if (level >= 3 && kosackonActiveRows.has(row)) {
+                          drawKosackon(0, row);
                       }
                       
                       const img = imageCache['pecen.png'];
@@ -598,7 +619,8 @@ function initGame(level) {
                   const barHeight = 20;
                   const barX = GRID_START_X;
                   const barY = 30;
-                  const progress = gametime / LEVEL_DURATION;
+                  const totalDuration = LEVEL_DURATION + firstWaveDelay;
+                  const progress = gametime / totalDuration;
 
                   ctx.fillStyle = '#333333';
                   ctx.fillRect(barX, barY, barWidth, barHeight);
@@ -623,7 +645,7 @@ function initGame(level) {
                   
                   // Only show timer if final wave hasn't been triggered
                   if (!finalWaveTriggered) {
-                      ctx.fillText(`${Math.ceil((LEVEL_DURATION - gametime) / 1000)}s`, barX + barWidth / 2, barY + barHeight / 2);
+                      ctx.fillText(`${Math.ceil((totalDuration - gametime) / 1000)}s`, barX + barWidth / 2, barY + barHeight / 2);
                   } else {
                       ctx.fillText('PEČEŇ V OHROZENÍ', barX + barWidth / 2, barY + barHeight / 2);
                   }
@@ -694,18 +716,19 @@ function initGame(level) {
                       return true;
                   });
 
-                  // Handle lawn mower clicks (level 3+)
+                  // Handle kosackon clicks (level 3+)
                   if (level >= 3) {
                       for (let row = 0; row < UNLOCKED_ROWS; row++) {
-                          if (!lawnMowerUsedRows.has(row)) {
-                              const mowerX = GRID_START_X + 0 * GRID_CELL_WIDTH + GRID_CELL_WIDTH / 2;
-                              const mowerY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
-                              const dist = Math.hypot(mouseX - mowerX, mouseY - mowerY);
+                          if (!kosackonActiveRows.has(row)) {
+                              const kosackonX = GRID_START_X + 0 * GRID_CELL_WIDTH + GRID_CELL_WIDTH / 2;
+                              const kosackonY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
+                              const kosackonSize = GRID_CELL_WIDTH / 4;
+                              const dist = Math.hypot(mouseX - kosackonX, mouseY - kosackonY);
                               
-                              if (dist < 30) {
-                                  // Mow the entire row
+                              if (dist < kosackonSize / 2) {
+                                  // Activate kosackon: mow the entire row
                                   enemies = enemies.filter(enemy => enemy.rowIndex !== row);
-                                  lawnMowerUsedRows.add(row);
+                                  kosackonActiveRows.add(row);
                                   return;
                               }
                           }
@@ -868,7 +891,12 @@ function initGame(level) {
                           setTimeout(() => {
                               if (!gamePaused) {
                                   const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
-                                  enemies.push(new Enemy(randomRow));
+                                  // Check if this should be a special enemy type (ealc2 for level 3)
+                                  let enemyType = ENEMY_TYPE;
+                                  if (level === 3 && ENEMY_TYPES.ealc2 && Math.random() < 0.5) {
+                                      enemyType = ENEMY_TYPES.ealc2;
+                                  }
+                                  enemies.push(new Enemy(randomRow, enemyType));
                                   finalWaveEnemiesSpawned++;
                               }
                           }, (i / finalWaveCount) * levelData.finalWave.duration);
@@ -964,7 +992,17 @@ function initGame(level) {
                       if (level === 1) {
                           ctx.fillText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2 - 50);
                       } else if (level === 2) {
-                          ctx.fillText('zachránil si velkeho duchona', canvas.width / 2, canvas.height / 2 - 50);
+                          ctx.fillText('odomkol si Orechoňa, nuz hlavne Kosackona, ktory zachrani riadok raz za hru ked nanho kliknes', canvas.width / 2, canvas.height / 2 - 50);
+                          
+                          const orechonImg = imageCache['dnut1.png'];
+                          if (orechonImg) {
+                              ctx.drawImage(orechonImg, canvas.width / 2 - 40, canvas.height / 2 + 20, 80, 80);
+                          }
+                          
+                          const kosackonImg = imageCache['dlawnmowerO.png'];
+                          if (kosackonImg) {
+                              ctx.drawImage(kosackonImg, canvas.width / 2 + 60, canvas.height / 2 + 20, 80, 80);
+                          }
                       } else if (level === 3) {
                           ctx.fillText('zachránil si velkeho duchona', canvas.width / 2, canvas.height / 2 - 70);
                           ctx.font = '24px Arial';

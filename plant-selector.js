@@ -49,11 +49,15 @@ class PlantSelector {
             return; // Already created, don't create again
         }
         
-        // Create plant selector button
+        // Create plant selector button - make it bigger
         const btn = document.createElement('button');
         btn.className = 'plant-selector-button';
         btn.textContent = '🌿';
         btn.id = 'plant-selector-btn';
+        btn.title = 'výber rastlichoňov';
+        btn.style.width = '80px';
+        btn.style.height = '80px';
+        btn.style.fontSize = '40px';
         levelsScreen.appendChild(btn);
 
         // Create plant selector screen
@@ -66,7 +70,7 @@ class PlantSelector {
             <div class="plant-selector-container">
                 <div class="plant-selector-info-panel">
                     <div class="plant-info-label">
-                        <div class="plant-info-name" id="plant-info-name">vyber rastlichoňa</div>
+                        <div class="plant-info-name" id="plant-info-name">výber rastlichoňa</div>
                         <div class="plant-info-description" id="plant-info-description">klikni na rastlichoňov a prečítaj si</div>
                         <div class="plant-info-stats" id="plant-info-stats">Výber duchoňov</div>
                     </div>
@@ -76,6 +80,7 @@ class PlantSelector {
                     <div class="plant-selected-list">
                         <div class="selected-count" id="selected-count">0 / 5 rastlichoňov</div>
                         <div class="selected-plants" id="selected-plants-list"></div>
+                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: 20px; padding: 10px 20px; background-color: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold;">Resetovať Progres</button>
                     </div>
                 </div>
             </div>
@@ -91,6 +96,7 @@ class PlantSelector {
         const btn = document.getElementById('plant-selector-btn');
         const backBtn = document.getElementById('plant-selector-back-btn');
         const codex = document.getElementById('plant-codex');
+        const resetBtn = document.getElementById('reset-progression-btn');
 
         if (btn) btn.addEventListener('click', () => this.show());
         if (backBtn) backBtn.addEventListener('click', () => this.hide());
@@ -98,6 +104,7 @@ class PlantSelector {
             codex.addEventListener('click', (e) => this.handlePlantClick(e));
             codex.addEventListener('mouseover', (e) => this.handlePlantHover(e));
         }
+        if (resetBtn) resetBtn.addEventListener('click', () => this.showResetConfirmation());
     }
 
     renderCodex() {
@@ -157,6 +164,13 @@ class PlantSelector {
             badge.querySelector('.deselect-btn').addEventListener('click', () => this.deselectPlant(plantKey));
             list.appendChild(badge);
         });
+
+        // Re-attach reset button listener
+        const resetBtn = document.getElementById('reset-progression-btn');
+        if (resetBtn) {
+            resetBtn.removeEventListener('click', () => this.showResetConfirmation());
+            resetBtn.addEventListener('click', () => this.showResetConfirmation());
+        }
     }
 
     handlePlantClick(e) {
@@ -276,6 +290,28 @@ class PlantSelector {
 
     getSelectedPlants() {
         return [...this.selectedPlants];
+    }
+
+    showResetConfirmation() {
+        const confirmReset = confirm('Naozaj chceš resetovať celý progres? Zadaj náhodné čísla ako CAPTCHA.');
+        if (confirmReset) {
+            const captchaPrompt = prompt('Zadaj náhodné 4-ciferné číslo ako overenie:');
+            if (captchaPrompt && captchaPrompt.length === 4 && /^\d+$/.test(captchaPrompt)) {
+                this.resetProgression();
+            } else {
+                alert('Nesprávny CAPTCHA! Progres resetovaný NIE JE.');
+            }
+        }
+    }
+
+    resetProgression() {
+        this.selectedPlants = [];
+        this.unlockedPlants = new Set(['peashooter']);
+        this.completedLevels = new Set();
+        this.saveToStorage();
+        this.renderCodex();
+        this.renderSelectedList();
+        alert('Progres bol resetovaný!');
     }
 
     saveToStorage() {

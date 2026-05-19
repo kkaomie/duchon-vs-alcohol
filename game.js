@@ -476,6 +476,30 @@ function initGame(level) {
 
               let suns_on_screen = [];
 
+              function drawKosackonStatic(rowIndex) {
+                  const kosackonX = GRID_START_X - 50;
+                  const kosackonY = GRID_START_Y + rowIndex * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
+                  const kosackonSize = (GRID_CELL_WIDTH / 4) * 2; // 2x bigger
+                  
+                  // Initialize animation state if needed
+                  if (!kosackonAnimationState[rowIndex]) {
+                      kosackonAnimationState[rowIndex] = { startTime: Date.now() };
+                  }
+                  
+                  const now = Date.now();
+                  const timeSinceStart = now - kosackonAnimationState[rowIndex].startTime;
+                  const animationFrame = Math.floor((timeSinceStart / 200) % 2); // Alternate every 200ms
+                  const kosackonImage = animationFrame === 0 ? 'dlawnmowerO.png' : 'dlawnmowerC.png';
+                  
+                  const img = imageCache[kosackonImage];
+                  if (img) {
+                      ctx.drawImage(img, kosackonX - kosackonSize / 2, kosackonY - kosackonSize / 2, kosackonSize, kosackonSize);
+                  } else {
+                      ctx.fillStyle = '#888888';
+                      ctx.fillRect(kosackonX - kosackonSize / 2, kosackonY - kosackonSize / 2, kosackonSize, kosackonSize);
+                  }
+              }
+
               function drawPlantMenu() {
                   const menuX = PLANT_MENU_X;
                   const menuY = PLANT_MENU_Y;
@@ -574,6 +598,11 @@ function initGame(level) {
               function drawDestination() {
                   for (let row = 0; row < UNLOCKED_ROWS; row++) {
                       const destY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
+                      
+                      // Draw kosackon (2x bigger) before pecen on levels 3+ ALWAYS if not used
+                      if (level >= 3 && !kosackonActiveRows.has(row)) {
+                          drawKosackonStatic(row);
+                      }
                       
                       const img = imageCache['pecen.png'];
                       if (img) {

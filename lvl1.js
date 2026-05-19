@@ -74,21 +74,32 @@ const Level1 = {
             width: 50,
             height: 50,
             collisionRadius: 25,
-            placementCooldown: 6000
+            placementCooldown: 5000
         },
         sunflower: {
             name: 'Sunflower',
             image: 'dsunflower.png',
             cost: 50,
             health: 20,
-            attackRange: 0,
             attackDamage: 0,
-            attackSpeed: 0,
-            shootDuration: 0,
+            sunSpawnInterval: 8000,
             width: 50,
             height: 50,
             collisionRadius: 25,
-            sunSpawnInterval: 14000
+            placementCooldown: 3000
+        },
+        orechon: {
+            name: 'Orechoň',
+            image: 'dnut1.png',
+            lowHealthImage: 'dnut1low.png',
+            cost: 75,
+            health: 5000,
+            attackDamage: 0,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            placementCooldown: 18000,
+            lowHealthThreshold: 0.5
         }
     },
 

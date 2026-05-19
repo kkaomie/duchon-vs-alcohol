@@ -164,6 +164,7 @@ function initGame(level) {
               let selectedLawnMowerRow = null; // Track selected lawn mower row
               let kosackonActiveRows = new Set(); // Track which rows have kosackon activated
               let kosackonAnimationState = {}; // Track state for each row
+              let activeKosackons = []; // Track active kosackons traveling
 
               const startTime = Date.now();
 
@@ -173,6 +174,47 @@ function initGame(level) {
               // Enemy types from level configuration
               const ENEMY_TYPES = levelData.enemyTypes;
               const ENEMY_TYPE = ENEMY_TYPES.ealc1; // Default enemy type for this level
+
+              // Kosackon class
+              class Kosackon {
+                  constructor(rowIndex) {
+                      this.rowIndex = rowIndex;
+                      this.x = GRID_START_X - 50; // Start outside arena to the left
+                      this.y = GRID_START_Y + rowIndex * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
+                      this.speed = 3;
+                      this.size = (GRID_CELL_WIDTH / 4) * 2; // 2x bigger
+                      this.startTime = Date.now();
+                      this.animationState = 0;
+                  }
+
+                  update() {
+                      this.x += this.speed;
+                      
+                      // Update animation
+                      const now = Date.now();
+                      const timeSinceStart = now - this.startTime;
+                      this.animationState = Math.floor((timeSinceStart / 200) % 2); // Alternate every 200ms
+                      
+                      // Return true if still traveling, false if reached end
+                      return this.x < GRID_END_X + 100;
+                  }
+
+                  draw() {
+                      const kosackonImage = this.animationState === 0 ? 'dlawnmowerO.png' : 'dlawnmowerC.png';
+                      const img = imageCache[kosackonImage];
+                      if (img) {
+                          ctx.drawImage(img, this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+                      } else {
+                          ctx.fillStyle = '#888888';
+                          ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+                      }
+                  }
+
+                  collidesWith(enemy) {
+                      const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
+                      return dist < this.size / 2 + enemy.type.collisionRadius;
+                  }
+              }
 
               // Plant class
               class Plant {
@@ -434,30 +476,6 @@ function initGame(level) {
 
               let suns_on_screen = [];
 
-              function drawKosackon(gridX, gridY) {
-                  const kosackonX = GRID_START_X + gridX * GRID_CELL_WIDTH + GRID_CELL_WIDTH / 2;
-                  const kosackonY = GRID_START_Y + gridY * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
-                  const kosackonSize = GRID_CELL_WIDTH / 4;
-                  
-                  // Initialize animation state if needed
-                  if (!kosackonAnimationState[gridY]) {
-                      kosackonAnimationState[gridY] = { startTime: Date.now() };
-                  }
-                  
-                  const now = Date.now();
-                  const timeSinceStart = now - kosackonAnimationState[gridY].startTime;
-                  const animationFrame = Math.floor((timeSinceStart / 200) % 2); // Alternate every 200ms
-                  const kosackonImage = animationFrame === 0 ? 'dlawnmowerO.png' : 'dlawnmowerC.png';
-                  
-                  const img = imageCache[kosackonImage];
-                  if (img) {
-                      ctx.drawImage(img, kosackonX - kosackonSize / 2, kosackonY - kosackonSize / 2, kosackonSize, kosackonSize);
-                  } else {
-                      ctx.fillStyle = '#888888';
-                      ctx.fillRect(kosackonX - kosackonSize / 2, kosackonY - kosackonSize / 2, kosackonSize, kosackonSize);
-                  }
-              }
-
               function drawPlantMenu() {
                   const menuX = PLANT_MENU_X;
                   const menuY = PLANT_MENU_Y;
@@ -556,11 +574,6 @@ function initGame(level) {
               function drawDestination() {
                   for (let row = 0; row < UNLOCKED_ROWS; row++) {
                       const destY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
-                      
-                      // Draw kosackon (1/4 grid size) before pecen on levels 3+ ALWAYS if not used
-                      if (level >= 3 && !kosackonActiveRows.has(row)) {
-                          drawKosackon(0, row);
-                      }
                       
                       const img = imageCache['pecen.png'];
                       if (img) {
@@ -720,14 +733,14 @@ function initGame(level) {
                   if (level >= 3) {
                       for (let row = 0; row < UNLOCKED_ROWS; row++) {
                           if (!kosackonActiveRows.has(row)) {
-                              const kosackonX = GRID_START_X + 0 * GRID_CELL_WIDTH + GRID_CELL_WIDTH / 2;
+                              const kosackonX = GRID_START_X - 50;
                               const kosackonY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
-                              const kosackonSize = GRID_CELL_WIDTH / 4;
+                              const kosackonSize = (GRID_CELL_WIDTH / 4) * 2; // 2x bigger
                               const dist = Math.hypot(mouseX - kosackonX, mouseY - kosackonY);
                               
                               if (dist < kosackonSize / 2) {
-                                  // Activate kosackon: mow the entire row
-                                  enemies = enemies.filter(enemy => enemy.rowIndex !== row);
+                                  // Activate kosackon: start it traveling down the row
+                                  activeKosackons.push(new Kosackon(row));
                                   kosackonActiveRows.add(row);
                                   return;
                               }
@@ -849,6 +862,26 @@ function initGame(level) {
                           return shouldKeep;
                       } else {
                           sun.draw();
+                          return true;
+                      }
+                  });
+
+                  // Update and draw active kosackons
+                  activeKosackons = activeKosackons.filter(kosackon => {
+                      if (!gamePaused) {
+                          // Remove enemies in this kosackon's row that it collides with
+                          enemies = enemies.filter(enemy => {
+                              if (enemy.rowIndex === kosackon.rowIndex && kosackon.collidesWith(enemy)) {
+                                  return false; // Remove enemy
+                              }
+                              return true;
+                          });
+
+                          const isStillTraveling = kosackon.update();
+                          kosackon.draw();
+                          return isStillTraveling;
+                      } else {
+                          kosackon.draw();
                           return true;
                       }
                   });

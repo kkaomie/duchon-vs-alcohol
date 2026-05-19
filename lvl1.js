@@ -22,7 +22,7 @@ const Level1 = {
             enemies: {
                 ealc1: {
                     spawnChance: 0.8,    // 80% chance to spawn a zombie
-                    spawnInterval: 5000  // Every 5 seconds
+                    spawnInterval: 7000  // Every 5 seconds
                 }
             },
             startDelay: 20000 // Start after 20 seconds
@@ -33,7 +33,7 @@ const Level1 = {
             duration: 40000, // 40 seconds
             enemies: {
                 ealc1: {
-                    spawnChance: 0.9,    // 90% chance
+                    spawnChance: 0.8,    // 90% chance
                     spawnInterval: 4000  // Every 4 seconds
                 }
             },
@@ -74,7 +74,7 @@ const Level1 = {
             width: 50,
             height: 50,
             collisionRadius: 25,
-            placementCooldown: 10000
+            placementCooldown: 6000
         },
         sunflower: {
             name: 'Sunflower',
@@ -88,7 +88,7 @@ const Level1 = {
             width: 50,
             height: 50,
             collisionRadius: 25,
-            sunSpawnInterval: 8000
+            sunSpawnInterval: 14000
         }
     },
 

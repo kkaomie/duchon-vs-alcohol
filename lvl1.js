@@ -75,6 +75,20 @@ const Level1 = {
             height: 50,
             collisionRadius: 25,
             placementCooldown: 10000
+        },
+        sunflower: {
+            name: 'Sunflower',
+            image: 'dsunflower.png',
+            cost: 50,
+            health: 20,
+            attackRange: 0,
+            attackDamage: 0,
+            attackSpeed: 0,
+            shootDuration: 0,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            sunSpawnInterval: 8000
         }
     },
 

@@ -62,6 +62,8 @@ function initGame(level) {
           levelConfig = Level1;
       } else if (level === 2) {
           levelConfig = Level2;
+      } else if (level === 3) {
+          levelConfig = Level3;
       }
 
       if (!levelConfig) {
@@ -157,6 +159,8 @@ function initGame(level) {
               let finalWaveEnemiesSpawned = 0; // Track how many enemies spawned in final wave
               let waveEnemyConfig = null; // Current wave configuration
               let plantPlacementCooldowns = {}; // Track individual plant type cooldowns
+              let lawnMowerUsedRows = new Set(); // Track which rows have been mowed
+              let selectedLawnMowerRow = null; // Track selected lawn mower row
 
               const startTime = Date.now();
 
@@ -416,6 +420,23 @@ function initGame(level) {
 
               let suns_on_screen = [];
 
+              function drawLawnMower(gridX, gridY) {
+                  const mowerX = GRID_START_X + gridX * GRID_CELL_WIDTH + GRID_CELL_WIDTH / 2;
+                  const mowerY = GRID_START_Y + gridY * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
+                  
+                  const now = Date.now();
+                  const animationFrame = Math.floor((now / 200) % 2); // Alternate every 200ms
+                  const mowerImage = animationFrame === 0 ? 'dlawnmowerO.png' : 'dlawnmowerC.png';
+                  
+                  const img = imageCache[mowerImage];
+                  if (img) {
+                      ctx.drawImage(img, mowerX - 25, mowerY - 25, 50, 50);
+                  } else {
+                      ctx.fillStyle = '#888888';
+                      ctx.fillRect(mowerX - 25, mowerY - 25, 50, 50);
+                  }
+              }
+
               function drawPlantMenu() {
                   const menuX = PLANT_MENU_X;
                   const menuY = PLANT_MENU_Y;
@@ -514,6 +535,12 @@ function initGame(level) {
               function drawDestination() {
                   for (let row = 0; row < UNLOCKED_ROWS; row++) {
                       const destY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
+                      
+                      // Draw lawn mower on levels 3+ before pecen
+                      if (level >= 3 && !lawnMowerUsedRows.has(row)) {
+                          drawLawnMower(0, row);
+                      }
+                      
                       const img = imageCache['pecen.png'];
                       if (img) {
                           ctx.drawImage(img, DESTINATION_X - 25, destY - 25, 50, 50);
@@ -666,6 +693,24 @@ function initGame(level) {
                       }
                       return true;
                   });
+
+                  // Handle lawn mower clicks (level 3+)
+                  if (level >= 3) {
+                      for (let row = 0; row < UNLOCKED_ROWS; row++) {
+                          if (!lawnMowerUsedRows.has(row)) {
+                              const mowerX = GRID_START_X + 0 * GRID_CELL_WIDTH + GRID_CELL_WIDTH / 2;
+                              const mowerY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
+                              const dist = Math.hypot(mouseX - mowerX, mouseY - mowerY);
+                              
+                              if (dist < 30) {
+                                  // Mow the entire row
+                                  enemies = enemies.filter(enemy => enemy.rowIndex !== row);
+                                  lawnMowerUsedRows.add(row);
+                                  return;
+                              }
+                          }
+                      }
+                  }
 
                   // Get selected plants from plant selector
                   const plantList = typeof plantSelector !== 'undefined' ? plantSelector.getSelectedPlants() : Object.keys(PLANT_TYPES);
@@ -914,7 +959,23 @@ function initGame(level) {
                       ctx.font = 'bold 30px Arial';
                       ctx.textAlign = 'center';
                       ctx.textBaseline = 'middle';
-                      ctx.fillText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2 - 50);
+                      
+                      // Different messages based on level
+                      if (level === 1) {
+                          ctx.fillText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2 - 50);
+                      } else if (level === 2) {
+                          ctx.fillText('zachránil si velkeho duchona', canvas.width / 2, canvas.height / 2 - 50);
+                      } else if (level === 3) {
+                          ctx.fillText('zachránil si velkeho duchona', canvas.width / 2, canvas.height / 2 - 70);
+                          ctx.font = '24px Arial';
+                          ctx.fillText('získal si Orechoňa, nuž hlavne Kosačkoňa, ktorý ťa zachráni pred vstupom', canvas.width / 2, canvas.height / 2 - 20);
+                          ctx.fillText('alkoholu do pečene práve raz za hru.', canvas.width / 2, canvas.height / 2 + 10);
+                          
+                          const orechonImg = imageCache['dnut1.png'];
+                          if (orechonImg) {
+                              ctx.drawImage(orechonImg, canvas.width / 2 - 40, canvas.height / 2 + 50, 80, 80);
+                          }
+                      }
                       
                       // Show unlocked message with sunflower image if applicable
                       if (level === 1) {
@@ -938,6 +999,8 @@ function initGame(level) {
                               plantSelector.completeLevel(level - 1); // 0-indexed
                               if (level === 1) {
                                   plantSelector.unlockPlant('sunflower');
+                              } else if (level === 2) {
+                                  plantSelector.unlockPlant('orechon');
                               }
                               // Regenerate levels grid to reflect unlocked levels
                               if (typeof regenerateLevels === 'function') {

@@ -179,7 +179,7 @@ function initGame(level) {
                      this.lastAttack = 0;
                      this.isShooting = false;
                      this.shootStartTime = 0;
-                     this.lastSunSpawn = 0;
+                     this.lastSunSpawn = Date.now(); // Start timer immediately on placement
                  }
 
                  draw() {
@@ -232,7 +232,7 @@ function initGame(level) {
                  produceSun() {
                      const now = Date.now();
                      if (this.type.sunSpawnInterval && now - this.lastSunSpawn >= this.type.sunSpawnInterval) {
-                         suns_on_screen.push(new Sun(this.x, true));
+                         suns_on_screen.push(new Sun(this.x, this.y, true));
                          this.lastSunSpawn = now;
                      }
                  }
@@ -364,25 +364,17 @@ function initGame(level) {
 
              // Sun class
              class Sun {
-                 constructor(x, stationary = false) {
+                 constructor(x, y, stationary = false) {
                      this.x = x;
-                     this.y = -40;
+                     this.y = y;
                      this.value = 25;
                      this.radius = 25;
-                     this.speed = 1;
                      this.stationary = stationary;
-                     if (stationary) {
-                         this.targetY = this.y + 100;
-                     } else {
-                         this.targetY = GRID_START_Y + Math.random() * (GRID_ROWS * GRID_CELL_HEIGHT);
-                     }
                  }
 
                  update() {
-                     if (this.y < this.targetY) {
-                         this.y += this.speed;
-                     }
-                     return this.y > canvas.height + 50;
+                     // Stationary suns don't move
+                     return false;
                  }
 
                  draw() {

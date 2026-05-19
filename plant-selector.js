@@ -21,6 +21,15 @@ const PLANT_DATABASE = {
         stats: 'slniečko/8s | nemá dosah, si sprostý? | životík: 20',
         unlocked: false,
         unlockedByLevel: 1 // Unlocked after completing level 1
+    },
+    orechon: {
+        name: 'Orechoň',
+        description: 'Kosačkoň ťa bude chrániť, ale len raz za hru',
+        image: 'dnut1.png',
+        cost: 75,
+        stats: 'pasívny | bez útoku | životík: 5000 | návrat: 18s',
+        unlocked: false,
+        unlockedByLevel: 2 // Unlocked after completing level 2
     }
 };
 
@@ -80,7 +89,7 @@ class PlantSelector {
                     <div class="plant-selected-list">
                         <div class="selected-count" id="selected-count">0 / 5 rastlichoňov</div>
                         <div class="selected-plants" id="selected-plants-list"></div>
-                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: 20px; padding: 10px 20px; background-color: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold;">Resetovať Progres</button>
+                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: 20px; padding: 10px 20px; background-color: #ff4444; color: white; border: none; border-radius: 5px;[...]
                     </div>
                 </div>
             </div>

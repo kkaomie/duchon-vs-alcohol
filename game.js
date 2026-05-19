@@ -557,8 +557,8 @@ function initGame(level) {
                   for (let row = 0; row < UNLOCKED_ROWS; row++) {
                       const destY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
                       
-                      // Draw kosackon (1/4 grid size) before pecen on levels 3+ if activated
-                      if (level >= 3 && kosackonActiveRows.has(row)) {
+                      // Draw kosackon (1/4 grid size) before pecen on levels 3+ ALWAYS if not used
+                      if (level >= 3 && !kosackonActiveRows.has(row)) {
                           drawKosackon(0, row);
                       }
                       

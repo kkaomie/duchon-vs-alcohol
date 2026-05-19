@@ -442,6 +442,13 @@ function initGame(level) {
 
                          if (index < plantList.length) {
                              const plant = PLANT_TYPES[plantList[index]];
+                             
+                             // ✅ SAFETY CHECK: Skip if plant doesn't exist in this level
+                             if (!plant) {
+                                 console.warn(`Plant ${plantList[index]} not found in PLANT_TYPES for level ${level}`);
+                                 continue;
+                             }
+                             
                              const isSelected = selectedPlant === plantList[index];
 
                              ctx.fillStyle = isSelected ? '#00ff00' : '#1a7e28';
@@ -686,12 +693,15 @@ function initGame(level) {
 
                              if (mouseX >= slotX && mouseX <= slotX + slotWidth &&
                                  mouseY >= slotY && mouseY <= slotY + slotHeight) {
-                                 // If clicking the same plant, deselect it
-                                 if (selectedPlant === plantList[index]) {
-                                     selectedPlant = null;
-                                 } else {
-                                     // Otherwise select the new plant
-                                     selectedPlant = plantList[index];
+                                 // ✅ SAFETY CHECK: Only select plants that exist in this level
+                                 if (PLANT_TYPES[plantList[index]]) {
+                                     // If clicking the same plant, deselect it
+                                     if (selectedPlant === plantList[index]) {
+                                         selectedPlant = null;
+                                     } else {
+                                         // Otherwise select the new plant
+                                         selectedPlant = plantList[index];
+                                     }
                                  }
                                  return;
                              }
@@ -699,7 +709,7 @@ function initGame(level) {
                      }
                  }
 
-                 if (selectedPlant && suns >= PLANT_TYPES[selectedPlant].cost) {
+                 if (selectedPlant && PLANT_TYPES[selectedPlant] && suns >= PLANT_TYPES[selectedPlant].cost) {
                      const relX = mouseX - GRID_START_X;
                      const relY = mouseY - GRID_START_Y;
 

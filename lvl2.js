@@ -1,13 +1,209 @@
 /**
- * Level 2 is defined in lvl1.js as part of LEVEL_CONFIG
- * This file exists as a placeholder for future level 2-specific logic
- * All level 2 parameters are defined in LEVEL_CONFIG[2] in lvl1.js
+ * Level 2 Configuration & Logic
+ * Modular, self-contained level implementation
  * 
- * To modify Level 2:
- * 1. Edit waves array in LEVEL_CONFIG[2]
- * 2. Change wavesDuration, spawnChance, spawnInterval, or startDelay
- * 3. No changes needed in game.js or other files
+ * Unlocks sunflower plant, allows 4 rows instead of 2
  */
 
-// Level 2-specific functions can be added here if needed in the future
-// For now, all logic is handled generically in game.js using lvl1.js configuration
+const Level2 = {
+    // Level metadata
+    config: {
+        name: 'Level 2',
+        description: 'Defend with more plant variety',
+        unlockedRows: 4,
+        levelDuration: 93000, // 30+30+30+3 seconds
+    },
+
+    // Wave configuration - easily modifiable
+    waves: [
+        {
+            id: 1,
+            name: 'Wave 1 - Start',
+            duration: 30000,
+            enemies: {
+                ealc1: {
+                    spawnChance: 0.7,
+                    spawnInterval: 5000
+                }
+            },
+            startDelay: 20000
+        },
+        {
+            id: 2,
+            name: 'Wave 2 - Ramp Up',
+            duration: 30000,
+            enemies: {
+                ealc1: {
+                    spawnChance: 0.85,
+                    spawnInterval: 4000
+                }
+            },
+            startDelay: 0
+        },
+        {
+            id: 3,
+            name: 'Wave 3 - Intense',
+            duration: 30000,
+            enemies: {
+                ealc1: {
+                    spawnChance: 1.0,
+                    spawnInterval: 2500
+                }
+            },
+            startDelay: 0
+        }
+    ],
+
+    // Final wave configuration (triggered at 2 minutes)
+    finalWave: {
+        multiplier: 0.5,
+        duration: 8000
+    },
+
+    // Plant types available in this level
+    plantTypes: {
+        peashooter: {
+            name: 'Peashooter',
+            image: 'dpea1.png',
+            shootImage: 'dpea1shoot.png',
+            cost: 100,
+            health: 50,
+            attackRange: 10000,
+            attackDamage: 50,
+            attackSpeed: 1000,
+            shootDuration: 200,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            placementCooldown: 5000
+        },
+        sunflower: {
+            name: 'Sunflower',
+            image: 'dsunflower.png',
+            cost: 50,
+            health: 20,
+            attackDamage: 0,
+            sunSpawnInterval: 8000,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            placementCooldown: 3000
+        }
+    },
+
+    // Enemy types for this level
+    enemyTypes: {
+        ealc1: {
+            name: 'Basic Zombie',
+            image: 'ealc1.png',
+            lowHealthImage: 'ealc1low.png',
+            health: 300,
+            speed: 0.075,
+            damage: 20,
+            damageInterval: 1000,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            lowHealthThreshold: 0.5
+        }
+    },
+
+    // Images to preload
+    preloadImages: [
+        'dpea1.png',
+        'dpea1shoot.png',
+        'dsunflower.png',
+        'ealc1.png',
+        'ealc1low.png',
+        'pecen.png',
+        'projectile.png',
+        'sun.png',
+        'lvl1bcg.png'
+    ],
+
+    /**
+     * Calculate total level duration from waves
+     */
+    getLevelDuration() {
+        const wavesDuration = this.waves.reduce((sum, wave) => sum + wave.duration, 0);
+        return wavesDuration + 3000;
+    },
+
+    /**
+     * Get wave schedule for this level
+     */
+    getWaveSchedule() {
+        const schedule = [];
+        let currentTime = 0;
+
+        this.waves.forEach(wave => {
+            const startTime = currentTime + wave.startDelay;
+            const endTime = startTime + wave.duration;
+
+            schedule.push({
+                waveId: wave.id,
+                name: wave.name,
+                startTime,
+                endTime,
+                duration: wave.duration,
+                config: wave
+            });
+
+            currentTime = endTime;
+        });
+
+        return schedule;
+    },
+
+    /**
+     * Get enemy spawn configuration for current wave
+     */
+    getWaveEnemyConfig(gametime) {
+        const schedule = this.getWaveSchedule();
+
+        for (let waveInfo of schedule) {
+            if (gametime >= waveInfo.startTime && gametime < waveInfo.endTime) {
+                return {
+                    waveId: waveInfo.waveId,
+                    waveName: waveInfo.name,
+                    enemies: waveInfo.config.enemies,
+                    progress: (gametime - waveInfo.startTime) / waveInfo.duration
+                };
+            }
+        }
+
+        return null;
+    },
+
+    /**
+     * Determine if enemy should spawn based on wave configuration
+     */
+    shouldSpawnEnemy(waveEnemyConfig, lastSpawnTime, currentTime) {
+        if (!waveEnemyConfig || !waveEnemyConfig.enemies.ealc1) return false;
+
+        const spawnConfig = waveEnemyConfig.enemies.ealc1;
+        const timeSinceLastSpawn = currentTime - lastSpawnTime;
+
+        if (timeSinceLastSpawn < spawnConfig.spawnInterval) {
+            return false;
+        }
+
+        return Math.random() < spawnConfig.spawnChance;
+    },
+
+    /**
+     * Get total enemies expected to spawn in all main waves
+     */
+    calculateExpectedEnemyCount() {
+        const schedule = this.getWaveSchedule();
+        let expectedCount = 0;
+
+        schedule.forEach(wave => {
+            const spawnConfig = wave.config.enemies.ealc1;
+            const spawnsPerWave = wave.duration / spawnConfig.spawnInterval;
+            expectedCount += spawnsPerWave * spawnConfig.spawnChance;
+        });
+
+        return Math.floor(expectedCount);
+    }
+};

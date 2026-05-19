@@ -82,7 +82,7 @@ const Level1 = {
             cost: 50,
             health: 20,
             attackDamage: 0,
-            sunSpawnInterval: 8000,
+            sunSpawnInterval: 14000,
             width: 50,
             height: 50,
             collisionRadius: 25,

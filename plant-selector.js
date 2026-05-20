@@ -24,10 +24,10 @@ const PLANT_DATABASE = {
     },
     orechon: {
         name: 'Orechoň',
-        description: 'Kosačkoň ťa bude chrániť, ale len raz za hru',
+        description: 'vpodstate ako vilo, len sedí',
         image: 'dnut1.png',
         cost: 75,
-        stats: 'pasívny | bez útoku | životík: 5000 | návrat: 18s',
+        stats: 'útočík: 0 | životík: 4000 | hej ani tento nemá dosah',
         unlocked: false,
         unlockedByLevel: 2 // Unlocked after completing level 2
     }

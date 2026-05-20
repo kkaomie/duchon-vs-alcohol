@@ -147,7 +147,7 @@ function initGame(level) {
               let gameOver = false;
               let levelWon = false;
               let gametime = 0;
-              let lastEnemySpawn = 0;
+              let lastEnemySpawnTimes = {}; // Track spawn timers per enemy type
               let lastSunSpawn = 0;
               let gameOverTime = null;
               let isTransitioning = false;
@@ -933,13 +933,14 @@ function initGame(level) {
                   if (!gamePaused) {
                       waveEnemyConfig = levelData.getWaveEnemyConfig(gametime);
                       
-                      if (waveEnemyConfig && now - lastEnemySpawn > 0) {
-                          const enemyTypeToSpawn = levelData.shouldSpawnEnemy(waveEnemyConfig, lastEnemySpawn, now);
+                      if (waveEnemyConfig) {
+                          const enemyTypeToSpawn = levelData.shouldSpawnEnemy(waveEnemyConfig, lastEnemySpawnTimes, now);
                           if (enemyTypeToSpawn) {
                               const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
                               const enemyType = ENEMY_TYPES[enemyTypeToSpawn];
                               enemies.push(new Enemy(randomRow, enemyType));
-                              lastEnemySpawn = now;
+                              // UPDATE: Track spawn time per enemy type
+                              lastEnemySpawnTimes[enemyTypeToSpawn] = now;
                               totalEnemiesSpawned++;
                           }
                       }

@@ -217,19 +217,21 @@ const Level3 = {
 
     /**
      * Determine which enemy type should spawn and if it should spawn
+     * Takes individual spawn timers for each enemy type
      */
-    shouldSpawnEnemy(waveEnemyConfig, lastSpawnTime, currentTime) {
+    shouldSpawnEnemy(waveEnemyConfig, lastSpawnTimes, currentTime) {
         if (!waveEnemyConfig || !waveEnemyConfig.enemies) return null;
 
-        // Collect all possible enemy types and their configs
+        // Collect all possible enemy types
         const enemyTypes = Object.keys(waveEnemyConfig.enemies);
         
         if (enemyTypes.length === 0) return null;
 
-        // Try to spawn each enemy type in order
+        // Check each enemy type independently with its own timer
         for (let enemyType of enemyTypes) {
             const spawnConfig = waveEnemyConfig.enemies[enemyType];
-            const timeSinceLastSpawn = currentTime - lastSpawnTime;
+            const lastSpawn = lastSpawnTimes[enemyType] || 0;
+            const timeSinceLastSpawn = currentTime - lastSpawn;
 
             // Check if enough time has passed and spawn chance succeeds
             if (timeSinceLastSpawn >= spawnConfig.spawnInterval && 

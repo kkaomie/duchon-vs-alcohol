@@ -131,7 +131,7 @@ function initGame(level) {
               const GRID_START_Y = TOP_PADDING;
               const GRID_END_X = GRID_START_X + GRID_WIDTH;
               const DESTINATION_X = GRID_START_X - 40; // Closer to the finish line
-              let PLANT_MENU_X = canvas.width - 150 - 160; // Moved 200px to the left
+              let PLANT_MENU_X = canvas.width - 150 - 60; // Moved 200px to the left, then 100px to the right
               const PLANT_MENU_Y = TOP_PADDING;
               
               // Calculate level duration from waves and enemy wait time

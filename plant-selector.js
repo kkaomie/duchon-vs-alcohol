@@ -27,7 +27,7 @@ const PLANT_DATABASE = {
         description: 'vpodstate ako vilo, len sedí',
         image: 'dnut1.png',
         cost: 75,
-        stats: 'útočík: 0 | životík: 4000 | hej ani tento nemá dosah',
+        stats: 'útočík: 0 | životík: 3500 | hej ani tento nemá dosah',
         unlocked: false,
         unlockedByLevel: 2 // Unlocked after completing level 2
     }

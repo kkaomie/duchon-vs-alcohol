@@ -33,6 +33,16 @@ const PLANT_DATABASE = {
         unlocked: false,
         unlockedByLevel: 2, // Unlocked after completing level 2
         song: 'assets/orechon.mp3'
+    },
+    shovel: {
+        name: 'Chlopatoň',
+        description: 'nie je to rastlina ale niečo iné (buď ticho)',
+        image: 'dshovel.png',
+        cost: 0,
+        stats: 'na odomknutie: Level 3 | životík: 0 | špeciálny nástroj',
+        unlocked: false,
+        unlockedByLevel: 3, // Unlocked after completing level 3
+        song: 'assets/shovel.mp3'
     }
 };
 

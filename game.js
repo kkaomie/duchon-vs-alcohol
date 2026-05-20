@@ -169,6 +169,12 @@ function initGame(level) {
 
               const startTime = Date.now();
 
+              // Apply secret bonus suns if available
+              if (typeof plantSelector !== 'undefined' && plantSelector.secretBonusSuns) {
+                  suns += plantSelector.secretBonusSuns;
+                  console.log(`Applied secret bonus: +${plantSelector.secretBonusSuns} suns`);
+              }
+
               // Plant types from level configuration
               const PLANT_TYPES = levelData.plantTypes;
 
@@ -1201,5 +1207,5 @@ function initGame(level) {
 
               gameLoop();
           }
-      }
+       }
 }

@@ -124,6 +124,51 @@
             font-size: 24px;
             cursor: pointer;
         }
+
+        /* Plant selector button positioning */
+        .levels-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            position: relative;
+            z-index: 3;
+        }
+
+        .levels-title {
+            color: white;
+            font-size: 22px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            margin: 0;
+        }
+
+        .plant-selector-inline-button {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            background-color: rgba(26, 126, 40, 0.8);
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .plant-selector-inline-button:hover {
+            background-color: rgba(26, 126, 40, 1);
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 1);
+        }
+
+        .plant-selector-inline-button:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body>
@@ -161,7 +206,10 @@
     <div id="levels-screen" class="screen hidden" style="display: none !important;">
         <button id="back-from-levels-btn" class="back-button">← Späť</button>
         <div class="levels-container">
-            <h2 class="levels-title">Vyber si uroven zlatko</h2>
+            <div class="levels-header">
+                <h2 class="levels-title">Vyber si uroven zlatko</h2>
+                <button id="plant-selector-inline-btn" class="plant-selector-inline-button" title="Codex">📖</button>
+            </div>
             <div class="levels-grid" id="levelsGrid"></div>
         </div>
     </div>
@@ -251,6 +299,26 @@
                         } else {
                             secretMessage.textContent = '✗ Error: Plant selector not initialized';
                         }
+                    } else if (command === 'x4Y5suns') {
+                        // Give 2000 suns starting in next level
+                        if (plantSelector) {
+                            plantSelector.secretBonusSuns = 2000;
+                            plantSelector.saveToStorage();
+                            secretMessage.textContent = '✓ +2000 suns bonus applied for next level!';
+                            secretInput.value = '';
+                        } else {
+                            secretMessage.textContent = '✗ Error: Plant selector not initialized';
+                        }
+                    } else if (command === 'allreset') {
+                        // Reset all benefits except progression
+                        if (plantSelector) {
+                            plantSelector.secretBonusSuns = 0;
+                            plantSelector.saveToStorage();
+                            secretMessage.textContent = '✓ All secret benefits reset!';
+                            secretInput.value = '';
+                        } else {
+                            secretMessage.textContent = '✗ Error: Plant selector not initialized';
+                        }
                     } else {
                         secretMessage.textContent = `✗ Unknown command: "${command}"`;
                         secretInput.value = '';
@@ -314,6 +382,7 @@
         const levelsGrid = document.getElementById('levelsGrid');
         const warningBanner = document.getElementById('warning-banner');
         const secretConsoleButton = document.getElementById('secret-console-button');
+        const plantSelectorInlineBtn = document.getElementById('plant-selector-inline-btn');
 
         // Generate 15 levels
         function generateLevels() {
@@ -429,6 +498,17 @@
             e.stopPropagation();
             showScreen('home');
         });
+
+        // Plant selector inline button
+        if (plantSelectorInlineBtn) {
+            plantSelectorInlineBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof plantSelector !== 'undefined' && plantSelector.toggleScreen) {
+                    plantSelector.toggleScreen();
+                }
+            });
+        }
 
         // Refresh Service Worker and Clear Cache
         refreshSwBtn.addEventListener('click', async () => {

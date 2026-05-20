@@ -132,7 +132,7 @@ const Level3 = {
             image: 'ealc2.png',
             lowHealthImage: 'ealc2low.png',
             health: 500,
-            speed: 0.01,
+            speed: 0.1,
             damage: 20,
             damageInterval: 1000,
             width: 50,

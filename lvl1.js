@@ -100,6 +100,18 @@ const Level1 = {
             collisionRadius: 25,
             placementCooldown: 18000,
             lowHealthThreshold: 0.5
+        },
+        shovel: {
+            name: 'Chlopatoň',
+            image: 'dshovel.png',
+            cost: 0, // Special item - not purchased
+            health: 0,
+            attackDamage: 0,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            placementCooldown: 0,
+            isTool: true
         }
     },
 
@@ -130,7 +142,8 @@ const Level1 = {
         'projectile.png',
         'sun.png',
         'lvl1bcg.png',
-        'dsunflower.png'
+        'dsunflower.png',
+        'dshovel.png'
     ],
 
     /**

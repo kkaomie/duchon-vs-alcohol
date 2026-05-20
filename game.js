@@ -179,10 +179,10 @@ function initGame(level) {
               class Kosackon {
                   constructor(rowIndex) {
                       this.rowIndex = rowIndex;
-                      this.x = GRID_START_X - 50; // Start outside arena to the left
+                      this.x = GRID_START_X - 80; // Start outside arena to the left (30px closer to arena)
                       this.y = GRID_START_Y + rowIndex * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
                       this.speed = 3;
-                      this.size = (GRID_CELL_WIDTH / 4) * 2; // 2x bigger
+                      this.size = (GRID_CELL_WIDTH / 4) * 2.5; // Slightly bigger (was 2x)
                       this.startTime = Date.now();
                       this.animationState = 0;
                   }
@@ -477,9 +477,9 @@ function initGame(level) {
               let suns_on_screen = [];
 
               function drawKosackonStatic(rowIndex) {
-                  const kosackonX = GRID_START_X - 50;
+                  const kosackonX = GRID_START_X - 80; // 30px closer to arena
                   const kosackonY = GRID_START_Y + rowIndex * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
-                  const kosackonSize = (GRID_CELL_WIDTH / 4) * 2; // 2x bigger
+                  const kosackonSize = (GRID_CELL_WIDTH / 4) * 2.5; // Slightly bigger
                   
                   // Initialize animation state if needed
                   if (!kosackonAnimationState[rowIndex]) {
@@ -599,17 +599,17 @@ function initGame(level) {
                   for (let row = 0; row < UNLOCKED_ROWS; row++) {
                       const destY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
                       
-                      // Draw kosackon (2x bigger) before pecen on levels 3+ ALWAYS if not used
-                      if (level >= 3 && !kosackonActiveRows.has(row)) {
-                          drawKosackonStatic(row);
-                      }
-                      
                       const img = imageCache['pecen.png'];
                       if (img) {
                           ctx.drawImage(img, DESTINATION_X - 25, destY - 25, 50, 50);
                       } else {
                           ctx.fillStyle = '#ff00ff';
                           ctx.fillRect(DESTINATION_X - 25, destY - 25, 50, 50);
+                      }
+                      
+                      // Draw kosackon (slightly bigger) on top of pecen ALWAYS if not used
+                      if (level >= 3 && !kosackonActiveRows.has(row)) {
+                          drawKosackonStatic(row);
                       }
                   }
               }
@@ -762,9 +762,9 @@ function initGame(level) {
                   if (level >= 3) {
                       for (let row = 0; row < UNLOCKED_ROWS; row++) {
                           if (!kosackonActiveRows.has(row)) {
-                              const kosackonX = GRID_START_X - 50;
+                              const kosackonX = GRID_START_X - 80; // 30px closer
                               const kosackonY = GRID_START_Y + row * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
-                              const kosackonSize = (GRID_CELL_WIDTH / 4) * 2; // 2x bigger
+                              const kosackonSize = (GRID_CELL_WIDTH / 4) * 2.5; // Slightly bigger
                               const dist = Math.hypot(mouseX - kosackonX, mouseY - kosackonY);
                               
                               if (dist < kosackonSize / 2) {
@@ -1004,6 +1004,10 @@ function initGame(level) {
                   });
 
                   drawDestination();
+                  
+                  // Draw sun projectiles on top of everything
+                  suns_on_screen.forEach(sun => sun.draw());
+                  
                   drawPlantMenu();
 
                   // Win logic: check enemies only after final wave completes

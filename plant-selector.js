@@ -89,7 +89,7 @@ class PlantSelector {
                     <div class="plant-selected-list">
                         <div class="selected-count" id="selected-count">0 / 5 rastlichoňov</div>
                         <div class="selected-plants" id="selected-plants-list"></div>
-                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: auto; width: 100%; padding: 12px 20px; background-color: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;">Resetovať progres</button>
+                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: auto; width: 100%; padding: 12px 20px; background-color: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;">sebavražda</button>
                     </div>
                 </div>
             </div>
@@ -302,13 +302,13 @@ class PlantSelector {
     }
 
     showResetConfirmation() {
-        const confirmReset = confirm('Naozaj chceš resetovať celý progres?');
+        const confirmReset = confirm('Naozaj chceš sprsviť sebavraždu (pls)?');
         if (confirmReset) {
-            const captchaPrompt = prompt('Zadaj náhodné 4-ciferné číslo ako overenie (CAPTCHA):');
+            const captchaPrompt = prompt('Zadaj náhodné 4-ciferné číslo ako overenie ze ti to neklikol Kubo:');
             if (captchaPrompt && captchaPrompt.length === 4 && /^\d+$/.test(captchaPrompt)) {
                 this.resetProgression();
             } else {
-                alert('Nesprávny CAPTCHA! Progres resetovaný NIE JE.');
+                alert('Ha ha ha, dostal som ťa! Progres resetovaný NIE JE.');
             }
         }
     }
@@ -320,7 +320,7 @@ class PlantSelector {
         this.saveToStorage();
         this.renderCodex();
         this.renderSelectedList();
-        alert('Progres bol resetovaný!');
+        alert('Zabil si sa! Prajem pekný víkend!');
     }
 
     saveToStorage() {

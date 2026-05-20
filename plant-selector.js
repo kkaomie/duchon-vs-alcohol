@@ -61,12 +61,12 @@ class PlantSelector {
         // Create plant selector button - make it bigger
         const btn = document.createElement('button');
         btn.className = 'plant-selector-button';
-        btn.textContent = '🌿';
+        btn.textContent = 'záhrada duchoňov';
         btn.id = 'plant-selector-btn';
         btn.title = 'výber rastlichoňov';
-        btn.style.width = '80px';
-        btn.style.height = '80px';
-        btn.style.fontSize = '40px';
+        btn.style.width = '250px';
+        btn.style.height = '50px';
+        btn.style.fontSize = '30px';
         levelsScreen.appendChild(btn);
 
         // Create plant selector screen

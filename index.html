@@ -50,6 +50,11 @@
             z-index: 999;
             opacity: 0;
             pointer-events: auto;
+            display: none;
+        }
+
+        #secret-console-button.show {
+            display: block;
         }
 
         #secret-console-modal {
@@ -308,6 +313,7 @@
         const backFromLevelsBtn = document.getElementById('back-from-levels-btn');
         const levelsGrid = document.getElementById('levelsGrid');
         const warningBanner = document.getElementById('warning-banner');
+        const secretConsoleButton = document.getElementById('secret-console-button');
 
         // Generate 15 levels
         function generateLevels() {
@@ -376,6 +382,13 @@
                     warningBanner.style.display = 'block';
                     document.body.classList.add('show-warning');
                 }
+            }
+
+            // Show/hide secret console button based on current screen
+            if (screenName === 'install') {
+                secretConsoleButton.classList.add('show');
+            } else {
+                secretConsoleButton.classList.remove('show');
             }
 
             if (screenName === 'home') {

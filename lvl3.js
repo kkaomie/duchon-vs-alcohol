@@ -19,7 +19,7 @@ const Level3 = {
         {
             id: 1,
             name: 'Wave 1 - Start',
-            duration: 20000,
+            duration: 50000,
             enemies: {
                 ealc1: {
                     spawnChance: 0.7,

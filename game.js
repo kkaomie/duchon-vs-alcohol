@@ -934,9 +934,11 @@ function initGame(level) {
                       waveEnemyConfig = levelData.getWaveEnemyConfig(gametime);
                       
                       if (waveEnemyConfig && now - lastEnemySpawn > 0) {
-                          if (levelData.shouldSpawnEnemy(waveEnemyConfig, lastEnemySpawn, now)) {
+                          const enemyTypeToSpawn = levelData.shouldSpawnEnemy(waveEnemyConfig, lastEnemySpawn, now);
+                          if (enemyTypeToSpawn) {
                               const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
-                              enemies.push(new Enemy(randomRow));
+                              const enemyType = ENEMY_TYPES[enemyTypeToSpawn];
+                              enemies.push(new Enemy(randomRow, enemyType));
                               lastEnemySpawn = now;
                               totalEnemiesSpawned++;
                           }

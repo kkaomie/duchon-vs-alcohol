@@ -19,11 +19,11 @@ const Level3 = {
         {
             id: 1,
             name: 'Wave 1 - Start',
-            duration: 30000,
+            duration: 20000,
             enemies: {
                 ealc1: {
                     spawnChance: 0.7,
-                    spawnInterval: 5000
+                    spawnInterval: 7000
                 }
             },
             startDelay: 20000
@@ -31,11 +31,15 @@ const Level3 = {
         {
             id: 2,
             name: 'Wave 2 - Ramp Up',
-            duration: 30000,
+            duration: 40000,
             enemies: {
                 ealc1: {
                     spawnChance: 0.85,
                     spawnInterval: 4000
+                },
+                ealc2: {
+                    spawnChance: 1.0,
+                    spawnInterval: 10000
                 }
             },
             startDelay: 0
@@ -43,11 +47,15 @@ const Level3 = {
         {
             id: 3,
             name: 'Wave 3 - Intense',
-            duration: 30000,
+            duration: 40000,
             enemies: {
                 ealc1: {
                     spawnChance: 1.0,
                     spawnInterval: 2500
+                },
+                ealc2: {
+                    spawnChance: 0.6,
+                    spawnInterval: 3000
                 }
             },
             startDelay: 0

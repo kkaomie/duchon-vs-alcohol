@@ -141,6 +141,7 @@ function initGame(level) {
               // Game state
               let suns = 50;
               let selectedPlant = null;
+              let shovelMode = false; // Track if shovel is in use
               let plants = [];
               let enemies = [];
               let projectiles = [];
@@ -541,6 +542,7 @@ function initGame(level) {
                               }
                               
                               const isSelected = selectedPlant === plantList[index];
+                              const isShovel = selectedPlant === 'shovel' && plantList[index] === 'shovel';
                               
                               // Check if plant is on cooldown
                               const now = Date.now();
@@ -548,9 +550,11 @@ function initGame(level) {
                               const lastPlacement = plantPlacementCooldowns[plantList[index]] || 0;
                               const isOnCooldown = (now - lastPlacement) < plantCooldown;
 
-                              // Set background color based on cooldown status
+                              // Set background color based on state
                               if (isOnCooldown) {
                                   ctx.fillStyle = '#808080'; // Gray for cooldown
+                              } else if (isShovel || (isSelected && shovelMode)) {
+                                  ctx.fillStyle = '#90EE90'; // Light green for shovel/active mode
                               } else if (isSelected) {
                                   ctx.fillStyle = '#00ff00'; // Green when selected and available
                               } else {
@@ -568,12 +572,14 @@ function initGame(level) {
                                   ctx.drawImage(img, slotX + 5, slotY + 5, 50, 50);
                               }
 
-                              // Draw cost
-                              ctx.fillStyle = '#ffff00';
-                              ctx.font = 'bold 10px Arial';
-                              ctx.textAlign = 'right';
-                              ctx.textBaseline = 'bottom';
-                              ctx.fillText(plant.cost, slotX + slotWidth - 3, slotY + slotHeight - 3);
+                              // Draw cost (don't show for tools like shovel)
+                              if (plant.cost > 0) {
+                                  ctx.fillStyle = '#ffff00';
+                                  ctx.font = 'bold 10px Arial';
+                                  ctx.textAlign = 'right';
+                                  ctx.textBaseline = 'bottom';
+                                  ctx.fillText(plant.cost, slotX + slotWidth - 3, slotY + slotHeight - 3);
+                              }
                           } else {
                               ctx.fillStyle = '#333333';
                               ctx.strokeStyle = '#666666';
@@ -772,6 +778,31 @@ function initGame(level) {
                       return true;
                   });
 
+                  // Handle shovel mode - click on plants to dig them up
+                  if (shovelMode) {
+                      for (let i = plants.length - 1; i >= 0; i--) {
+                          const plant = plants[i];
+                          const dist = Math.hypot(mouseX - plant.x, mouseY - plant.y);
+                          if (dist < plant.type.collisionRadius + 10) {
+                              // Calculate reward: half original cost, rounded down to nearest 25
+                              const halfCost = Math.floor(plant.type.cost / 2);
+                              const reward = Math.floor(halfCost / 25) * 25;
+                              
+                              // Only reward if plant is above 50% health
+                              const healthPercent = plant.health / plant.type.health;
+                              if (healthPercent > 0.5) {
+                                  suns += reward;
+                              }
+                              
+                              // Remove plant
+                              plants.splice(i, 1);
+                              shovelMode = false;
+                              selectedPlant = null;
+                              return;
+                          }
+                      }
+                  }
+
                   // Handle kosackon clicks (level 3+)
                   if (level >= 3) {
                       for (let row = 0; row < UNLOCKED_ROWS; row++) {
@@ -826,12 +857,26 @@ function initGame(level) {
                                   mouseY >= slotY && mouseY <= slotY + slotHeight) {
                                   // ✅ SAFETY CHECK: Only select plants that exist in this level
                                   if (PLANT_TYPES[plantList[index]]) {
-                                      // If clicking the same plant, deselect it
-                                      if (selectedPlant === plantList[index]) {
-                                          selectedPlant = null;
+                                      const plantKey = plantList[index];
+                                      const isShovel = plantKey === 'shovel';
+                                      
+                                      if (isShovel) {
+                                          // Toggle shovel mode
+                                          if (shovelMode && selectedPlant === 'shovel') {
+                                              shovelMode = false;
+                                              selectedPlant = null;
+                                          } else {
+                                              shovelMode = true;
+                                              selectedPlant = 'shovel';
+                                          }
                                       } else {
-                                          // Otherwise select the new plant
-                                          selectedPlant = plantList[index];
+                                          // Normal plant selection
+                                          shovelMode = false;
+                                          if (selectedPlant === plantKey) {
+                                              selectedPlant = null;
+                                          } else {
+                                              selectedPlant = plantKey;
+                                          }
                                       }
                                   }
                                   return;
@@ -840,7 +885,7 @@ function initGame(level) {
                       }
                   }
 
-                  if (selectedPlant && PLANT_TYPES[selectedPlant] && suns >= PLANT_TYPES[selectedPlant].cost) {
+                  if (selectedPlant && !shovelMode && PLANT_TYPES[selectedPlant] && suns >= PLANT_TYPES[selectedPlant].cost) {
                       const relX = mouseX - GRID_START_X;
                       const relY = mouseY - GRID_START_Y;
 
@@ -1087,14 +1132,11 @@ function initGame(level) {
                               ctx.drawImage(kosackonImg, canvas.width / 2 + 60, canvas.height / 2 + 20, 80, 80);
                           }
                       } else if (level === 3) {
-                          ctx.fillText('zachránil si velkeho duchona', canvas.width / 2, canvas.height / 2 - 70);
-                          ctx.font = '24px Arial';
-                          ctx.fillText('získal si Orechoňa, nuž hlavne Kosačkoňa, ktorý ťa zachráni pred vstupom', canvas.width / 2, canvas.height / 2 - 20);
-                          ctx.fillText('alkoholu do pečene práve raz za hru.', canvas.width / 2, canvas.height / 2 + 10);
+                          ctx.fillText('odomkol si chlopatoňa (nie actually rastlina ale buď ticho) (mám rád malé detičky)', canvas.width / 2, canvas.height / 2 - 50);
                           
-                          const orechonImg = imageCache['dnut1.png'];
-                          if (orechonImg) {
-                              ctx.drawImage(orechonImg, canvas.width / 2 - 40, canvas.height / 2 + 50, 80, 80);
+                          const shovelImg = imageCache['dshovel.png'];
+                          if (shovelImg) {
+                              ctx.drawImage(shovelImg, canvas.width / 2 - 40, canvas.height / 2 + 20, 80, 80);
                           }
                       }
                       
@@ -1122,6 +1164,8 @@ function initGame(level) {
                                   plantSelector.unlockPlant('sunflower');
                               } else if (level === 2) {
                                   plantSelector.unlockPlant('orechon');
+                              } else if (level === 3) {
+                                  plantSelector.unlockPlant('shovel');
                               }
                               // Regenerate levels grid to reflect unlocked levels
                               if (typeof regenerateLevels === 'function') {

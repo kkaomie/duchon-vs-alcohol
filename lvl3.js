@@ -2,7 +2,7 @@
  * Level 3 Configuration & Logic
  * Modular, self-contained level implementation
  * 
- * Unlocks Orechoň plant, allows all 6 rows, introduces Lawn Mower tool
+ * Unlocks Orechoň plant, allows all 6 rows, introduces Lawn Mower tool and Shovel tool
  */
 
 const Level3 = {
@@ -109,6 +109,18 @@ const Level3 = {
             collisionRadius: 25,
             placementCooldown: 18000,
             lowHealthThreshold: 0.5
+        },
+        shovel: {
+            name: 'Chlopatoň',
+            image: 'dshovel.png',
+            cost: 0, // Special item - not purchased
+            health: 0,
+            attackDamage: 0,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            placementCooldown: 0,
+            isTool: true
         }
     },
 
@@ -151,6 +163,7 @@ const Level3 = {
         'dnut1low.png',
         'dlawnmowerO.png',
         'dlawnmowerC.png',
+        'dshovel.png',
         'ealc1.png',
         'ealc1low.png',
         'ealc2.png',

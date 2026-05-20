@@ -11,7 +11,8 @@ const PLANT_DATABASE = {
         cost: 100,
         stats: 'utočík: 50 | dosah: riadok | životík: 50',
         unlocked: true, // Unlocked by default
-        unlockedByLevel: null
+        unlockedByLevel: null,
+        song: 'assets/peashooter.mp3'
     },
     sunflower: {
         name: 'Slnkoň',
@@ -20,7 +21,8 @@ const PLANT_DATABASE = {
         cost: 50,
         stats: 'slniečko/8s | nemá dosah, si sprostý? | životík: 20',
         unlocked: false,
-        unlockedByLevel: 1 // Unlocked after completing level 1
+        unlockedByLevel: 1, // Unlocked after completing level 1
+        song: 'assets/sunflower.mp3'
     },
     orechon: {
         name: 'Orechoň',
@@ -29,7 +31,8 @@ const PLANT_DATABASE = {
         cost: 75,
         stats: 'útočík: 0 | životík: 3500 | hej ani tento nemá dosah',
         unlocked: false,
-        unlockedByLevel: 2 // Unlocked after completing level 2
+        unlockedByLevel: 2, // Unlocked after completing level 2
+        song: 'assets/orechon.mp3'
     }
 };
 
@@ -89,7 +92,7 @@ class PlantSelector {
                     <div class="plant-selected-list">
                         <div class="selected-count" id="selected-count">0 / 5 rastlichoňov</div>
                         <div class="selected-plants" id="selected-plants-list"></div>
-                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: auto; width: 100%; padding: 12px 20px; background-color: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;">sebavražda</button>
+                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: auto; width: 100%; padding: 12px 20px; background-color: #ff4444; color: white; border: none; border[...]
                     </div>
                 </div>
             </div>
@@ -265,6 +268,15 @@ class PlantSelector {
             screen.classList.add('hidden');
             levelsScreen.style.display = 'flex';
             levelsScreen.classList.remove('hidden');
+        }
+    }
+
+    toggleScreen() {
+        const screen = document.getElementById('plant-selector-screen');
+        if (screen && screen.classList.contains('hidden')) {
+            this.show();
+        } else {
+            this.hide();
         }
     }
 

@@ -65,8 +65,8 @@ class PlantSelector {
         btn.id = 'plant-selector-btn';
         btn.title = 'výber rastlichoňov';
         btn.style.width = '250px';
-        btn.style.height = '50px';
-        btn.style.fontSize = '30px';
+        btn.style.height = '80px';
+        btn.style.fontSize = '20px';
         levelsScreen.appendChild(btn);
 
         // Create plant selector screen

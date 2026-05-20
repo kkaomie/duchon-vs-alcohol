@@ -89,7 +89,7 @@ class PlantSelector {
                     <div class="plant-selected-list">
                         <div class="selected-count" id="selected-count">0 / 5 rastlichoňov</div>
                         <div class="selected-plants" id="selected-plants-list"></div>
-                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: 20px; padding: 10px 20px; background-color: #ff4444; color: white; border: none; border-radius: 5px;[...]
+                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: auto; width: 100%; padding: 12px 20px; background-color: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;">Resetovať progres</button>
                     </div>
                 </div>
             </div>
@@ -302,9 +302,9 @@ class PlantSelector {
     }
 
     showResetConfirmation() {
-        const confirmReset = confirm('Naozaj chceš resetovať celý progres? Zadaj náhodné čísla ako CAPTCHA.');
+        const confirmReset = confirm('Naozaj chceš resetovať celý progres?');
         if (confirmReset) {
-            const captchaPrompt = prompt('Zadaj náhodné 4-ciferné číslo ako overenie:');
+            const captchaPrompt = prompt('Zadaj náhodné 4-ciferné číslo ako overenie (CAPTCHA):');
             if (captchaPrompt && captchaPrompt.length === 4 && /^\d+$/.test(captchaPrompt)) {
                 this.resetProgression();
             } else {

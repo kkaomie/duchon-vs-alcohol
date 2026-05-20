@@ -208,7 +208,7 @@
         <div class="levels-container">
             <div class="levels-header">
                 <h2 class="levels-title">Vyber si uroven zlatko</h2>
-                <button id="plant-selector-inline-btn" class="plant-selector-inline-button" title="Codex">📖</button>
+                <button id="plant-selector-inline-btn" class="plant-selector-inline-button" title="Codex">🌿</button>
             </div>
             <div class="levels-grid" id="levelsGrid"></div>
         </div>
@@ -231,8 +231,49 @@
     <script src="lvl1.js"></script>
     <script src="lvl2.js"></script>
     <script src="lvl3.js"></script>
-    <script src="game.js?v=6"></script>
+    <script src="game.js?v=7"></script>
     <script>
+        // Background music management
+        let backgroundMusic = null;
+        let gameAudioContext = null;
+
+        function playBackgroundMusic() {
+            // Stop any existing background music
+            if (backgroundMusic) {
+                backgroundMusic.pause();
+                backgroundMusic.currentTime = 0;
+            }
+
+            // Get random mp4 from assets folder (try common naming patterns)
+            const musicFiles = [
+                'assets/music1.mp4',
+                'assets/music2.mp4',
+                'assets/music3.mp4',
+                'assets/bg1.mp4',
+                'assets/bg2.mp4',
+                'assets/background1.mp4',
+                'assets/background2.mp4'
+            ];
+
+            // Try to pick a random one that exists
+            const randomFile = musicFiles[Math.floor(Math.random() * musicFiles.length)];
+            
+            backgroundMusic = new Audio(randomFile);
+            backgroundMusic.loop = true;
+            backgroundMusic.volume = 0.3;
+            backgroundMusic.play().catch(err => {
+                // If this file doesn't exist, try next one
+                console.log('Background music not available:', randomFile);
+            });
+        }
+
+        function stopBackgroundMusic() {
+            if (backgroundMusic) {
+                backgroundMusic.pause();
+                backgroundMusic.currentTime = 0;
+            }
+        }
+
         // Secret Console Handler
         function setupSecretConsole() {
             const secretBtn = document.getElementById('secret-console-button');
@@ -349,6 +390,7 @@
                 document.body.classList.add('show-warning');
             }
             setupSecretConsole();
+            playBackgroundMusic();
         });
 
         // Lock to landscape orientation
@@ -417,6 +459,7 @@
                 // Add click handler only if unlocked
                 if (isUnlocked) {
                     levelItem.addEventListener('click', () => {
+                        stopBackgroundMusic();
                         showScreen('game');
                         console.log('Starting game...');
                         initGame(i);
@@ -450,6 +493,8 @@
                 if (!isInstalledApp()) {
                     warningBanner.style.display = 'block';
                     document.body.classList.add('show-warning');
+                } else {
+                    playBackgroundMusic();
                 }
             }
 
@@ -463,12 +508,15 @@
             if (screenName === 'home') {
                 homeScreen.style.display = 'flex';
                 homeScreen.classList.remove('hidden');
+                playBackgroundMusic();
             } else if (screenName === 'levels') {
                 levelsScreen.style.display = 'flex';
                 levelsScreen.classList.remove('hidden');
+                playBackgroundMusic();
             } else if (screenName === 'game') {
                 gameScreen.style.display = 'block';
                 gameScreen.classList.remove('hidden');
+                stopBackgroundMusic();
             } else if (screenName === 'install') {
                 installScreen.style.display = 'flex';
                 installScreen.classList.remove('hidden');

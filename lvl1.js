@@ -93,7 +93,7 @@ const Level1 = {
             image: 'dnut1.png',
             lowHealthImage: 'dnut1low.png',
             cost: 75,
-            health: 5000,
+            health: 3500,
             attackDamage: 0,
             width: 50,
             height: 50,

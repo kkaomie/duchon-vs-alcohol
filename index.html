@@ -37,11 +37,110 @@
         body.show-warning #warning-banner {
             display: block;
         }
+
+        #secret-console-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 999;
+            opacity: 0;
+        }
+
+        #secret-console-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #secret-console-modal.show {
+            display: flex;
+        }
+
+        .secret-console-box {
+            background-color: #1a1a1a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .secret-console-input {
+            background-color: #0a0a0a;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 15px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .secret-console-input::placeholder {
+            color: #00880088;
+        }
+
+        .secret-console-input:focus {
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+        }
+
+        .secret-console-message {
+            color: #00ff00;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            min-height: 40px;
+            word-wrap: break-word;
+        }
+
+        .secret-console-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #00ff00;
+            font-size: 24px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div id="warning-banner">
          ⚠️🥵🦶🏿🦄 hej inac kvoli nedostatocnym eurofondom (prioritu ma jachta) hra nefunguje V CHROME, MUSIS SI JU STIAHNUT (ako nainstalovat PWA)
+    </div>
+
+    <!-- Secret Console Button (invisible) -->
+    <button id="secret-console-button" title="Secret"></button>
+
+    <!-- Secret Console Modal -->
+    <div id="secret-console-modal">
+        <div class="secret-console-box">
+            <button class="secret-console-close-btn" id="secret-console-close-btn">×</button>
+            <input 
+                type="text" 
+                class="secret-console-input" 
+                id="secret-console-input" 
+                placeholder="zadaj príkaz..."
+                autocomplete="off"
+            >
+            <div class="secret-console-message" id="secret-console-message"></div>
+        </div>
     </div>
 
     <div id="home-screen" class="screen" style="display: flex !important;">
@@ -80,6 +179,87 @@
     <script src="lvl3.js"></script>
     <script src="game.js?v=6"></script>
     <script>
+        // Secret Console Handler
+        function setupSecretConsole() {
+            const secretBtn = document.getElementById('secret-console-button');
+            const secretModal = document.getElementById('secret-console-modal');
+            const secretInput = document.getElementById('secret-console-input');
+            const secretMessage = document.getElementById('secret-console-message');
+            const closeBtn = document.getElementById('secret-console-close-btn');
+
+            // Show console when secret button is clicked
+            secretBtn.addEventListener('click', () => {
+                secretModal.classList.add('show');
+                secretInput.focus();
+                secretMessage.textContent = '';
+            });
+
+            // Close console
+            function closeConsole() {
+                secretModal.classList.remove('show');
+                secretInput.value = '';
+                secretMessage.textContent = '';
+            }
+
+            closeBtn.addEventListener('click', closeConsole);
+
+            // Close when clicking outside the box
+            secretModal.addEventListener('click', (e) => {
+                if (e.target === secretModal) {
+                    closeConsole();
+                }
+            });
+
+            // Handle console input
+            secretInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const command = secretInput.value.trim();
+                    
+                    if (command === 'allprogression') {
+                        // Unlock all levels and plants
+                        if (plantSelector) {
+                            // Complete all 15 levels
+                            for (let i = 0; i < 15; i++) {
+                                plantSelector.completedLevels.add(i);
+                            }
+                            
+                            // Unlock all plants
+                            plantSelector.unlockPlant('sunflower');
+                            plantSelector.unlockPlant('orechon');
+                            
+                            // Select all plants
+                            plantSelector.selectedPlants = ['peashooter', 'sunflower', 'orechon'];
+                            
+                            // Save to storage
+                            plantSelector.saveToStorage();
+                            plantSelector.renderCodex();
+                            plantSelector.renderSelectedList();
+                            
+                            // Regenerate levels if we're on levels screen
+                            if (typeof regenerateLevels === 'function') {
+                                regenerateLevels();
+                            }
+                            
+                            secretMessage.textContent = '✓ All progression unlocked!';
+                            secretInput.value = '';
+                        } else {
+                            secretMessage.textContent = '✗ Error: Plant selector not initialized';
+                        }
+                    } else {
+                        secretMessage.textContent = `✗ Unknown command: "${command}"`;
+                        secretInput.value = '';
+                    }
+                }
+            });
+
+            // Allow closing with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && secretModal.classList.contains('show')) {
+                    closeConsole();
+                }
+            });
+        }
+
         // Check if running in browser vs installed app
         function isInstalledApp() {
             // Check if PWA is installed/running as standalone app
@@ -94,6 +274,7 @@
             if (!isInstalledApp()) {
                 document.body.classList.add('show-warning');
             }
+            setupSecretConsole();
         });
 
         // Lock to landscape orientation

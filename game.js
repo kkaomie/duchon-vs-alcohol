@@ -541,8 +541,22 @@ function initGame(level) {
                               }
                               
                               const isSelected = selectedPlant === plantList[index];
+                              
+                              // Check if plant is on cooldown
+                              const now = Date.now();
+                              const plantCooldown = plant.placementCooldown || 0;
+                              const lastPlacement = plantPlacementCooldowns[plantList[index]] || 0;
+                              const isOnCooldown = (now - lastPlacement) < plantCooldown;
 
-                              ctx.fillStyle = isSelected ? '#00ff00' : '#1a7e28';
+                              // Set background color based on cooldown status
+                              if (isOnCooldown) {
+                                  ctx.fillStyle = '#808080'; // Gray for cooldown
+                              } else if (isSelected) {
+                                  ctx.fillStyle = '#00ff00'; // Green when selected and available
+                              } else {
+                                  ctx.fillStyle = '#1a7e28'; // Default green when available
+                              }
+                              
                               ctx.strokeStyle = '#ffffff';
                               ctx.lineWidth = 2;
                               ctx.fillRect(slotX, slotY, slotWidth, slotHeight);

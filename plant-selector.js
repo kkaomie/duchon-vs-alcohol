@@ -12,7 +12,8 @@ const PLANT_DATABASE = {
         stats: 'utočík: 50 | dosah: riadok | životík: 50',
         unlocked: true, // Unlocked by default
         unlockedByLevel: null,
-        song: 'assets/V dolinách.mp3'
+        song: 'assets/duchonmp3/7.mp3',
+        levelSong: 'assets/duchonmp3/7.mp3'
     },
     sunflower: {
         name: 'Slnkoň',
@@ -22,7 +23,8 @@ const PLANT_DATABASE = {
         stats: 'slniečko/8s | nemá dosah, si sprostý? | životík: 20',
         unlocked: false,
         unlockedByLevel: 1, // Unlocked after completing level 1
-        song: 'assets/S úsmevom.mp3'
+        song: 'assets/S úsmevom.mp3',
+        levelSong: 'assets/duchonmp3/8.mp3'
     },
     orechon: {
         name: 'Orechoň',
@@ -32,7 +34,8 @@ const PLANT_DATABASE = {
         stats: 'útočík: 0 | životík: 3500 | hej ani tento nemá dosah',
         unlocked: false,
         unlockedByLevel: 2, // Unlocked after completing level 2
-        song: 'assets/S úsmevom.mp3'
+        song: 'assets/S úsmevom.mp3',
+        levelSong: 'assets/duchonmp3/2.mp3'
     },
     shovel: {
         name: 'Chlopatoň',
@@ -43,6 +46,43 @@ const PLANT_DATABASE = {
         unlocked: false,
         unlockedByLevel: 3, // Unlocked after completing level 3
         song: 'assets/Karol Duchoň - Čardáš dvoch sŕdc.mp3'
+    }
+};
+
+// Background Music Manager - handles background and level music
+const bgMusicManager = {
+    backgroundAudio: null,
+    currentBackgroundSongIndex: 0,
+    
+    // Get a random duchonmp3 song (1-12)
+    getRandomDuchonSong() {
+        const randomNum = Math.floor(Math.random() * 12) + 1;
+        return `assets/duchonmp3/${randomNum}.mp3`;
+    },
+    
+    // Play random background music (when not in level)
+    playBackgroundMusic() {
+        // Stop any existing background music
+        this.stopBackgroundMusic();
+        
+        // Play random song
+        const songPath = this.getRandomDuchonSong();
+        const audio = new Audio(songPath);
+        audio.loop = true;
+        audio.volume = 0.3;
+        audio.play().catch(err => {
+            console.warn(`Failed to play background music ${songPath}:`, err);
+        });
+        
+        this.backgroundAudio = audio;
+    },
+    
+    stopBackgroundMusic() {
+        if (this.backgroundAudio) {
+            this.backgroundAudio.pause();
+            this.backgroundAudio.currentTime = 0;
+            this.backgroundAudio = null;
+        }
     }
 };
 
@@ -101,6 +141,8 @@ class PlantSelector {
         this.checkAndUnlockPlants();
         this.createUI();
         this.attachEventListeners();
+        // Start background music when on levels screen
+        bgMusicManager.playBackgroundMusic();
     }
 
     createUI() {
@@ -341,6 +383,8 @@ class PlantSelector {
             screen.classList.add('hidden');
             levelsScreen.style.display = 'flex';
             levelsScreen.classList.remove('hidden');
+            // Resume background music when returning to levels screen
+            bgMusicManager.playBackgroundMusic();
         }
     }
 

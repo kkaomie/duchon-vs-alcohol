@@ -209,19 +209,16 @@ const Level1 = {
      * Determine if enemy should spawn based on wave configuration
      * Takes into account spawn chance and interval
      */
-    shouldSpawnEnemy(waveEnemyConfig, lastSpawnTimes, currentTime) {
+    shouldSpawnEnemy(waveEnemyConfig, lastSpawnTime, currentTime) {
         if (!waveEnemyConfig || !waveEnemyConfig.enemies.ealc1) return false;
 
         const spawnConfig = waveEnemyConfig.enemies.ealc1;
-        const lastSpawnTime = lastSpawnTimes.ealc1 || 0;
         const timeSinceLastSpawn = currentTime - lastSpawnTime;
 
-        // Check interval
         if (timeSinceLastSpawn < spawnConfig.spawnInterval) {
             return false;
         }
 
-        // Check spawn chance
         return Math.random() < spawnConfig.spawnChance;
     },
 

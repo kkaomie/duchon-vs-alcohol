@@ -39,10 +39,10 @@ const PLANT_DATABASE = {
     },
     shovel: {
         name: 'Chlopatoň',
-        description: 'nie je to rastlina ale niečo iné (buď ticho)',
+        description: 'teoreticky nie rastlina ale si retard',
         image: 'dshovel.png',
         cost: 0,
-        stats: 'na odomknutie: Level 3 | životík: 0 | špeciálny nástroj',
+        stats: 'smrdíš | životík: 0 | špeci freaky nástroj',
         unlocked: false,
         unlockedByLevel: 3, // Unlocked after completing level 3
         song: 'assets/Karol Duchoň - Čardáš dvoch sŕdc.mp3'
@@ -433,11 +433,11 @@ class PlantSelector {
     showResetConfirmation() {
         const confirmReset = confirm('Naozaj chceš sprsviť sebavraždu (pls)?');
         if (confirmReset) {
-            const captchaPrompt = prompt('Zadaj náhodné 4-ciferné číslo ako overenie ze ti to neklikol Kubo:');
+            const captchaPrompt = prompt('Zadaj náhodné 4-ciferné číslo ako overenie že ti to neklikol Kubo:');
             if (captchaPrompt && captchaPrompt.length === 4 && /^\d+$/.test(captchaPrompt)) {
                 this.resetProgression();
             } else {
-                alert('Ha ha ha, dostal som ťa! Progres resetovaný NIE JE.');
+                alert('Ha ha ha, dostal som ťa ty fiškus! Progres resetovaný NIE JE.');
             }
         }
     }

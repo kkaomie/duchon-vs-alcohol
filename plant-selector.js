@@ -12,7 +12,7 @@ const PLANT_DATABASE = {
         stats: 'utočík: 50 | dosah: riadok | životík: 50',
         unlocked: true, // Unlocked by default
         unlockedByLevel: null,
-        song: 'assets/peashooter.mp3'
+        song: 'assets/V dolinách.mp3'
     },
     sunflower: {
         name: 'Slnkoň',
@@ -22,7 +22,7 @@ const PLANT_DATABASE = {
         stats: 'slniečko/8s | nemá dosah, si sprostý? | životík: 20',
         unlocked: false,
         unlockedByLevel: 1, // Unlocked after completing level 1
-        song: 'assets/sunflower.mp3'
+        song: 'assets/S úsmevom.mp3'
     },
     orechon: {
         name: 'Orechoň',
@@ -32,7 +32,7 @@ const PLANT_DATABASE = {
         stats: 'útočík: 0 | životík: 3500 | hej ani tento nemá dosah',
         unlocked: false,
         unlockedByLevel: 2, // Unlocked after completing level 2
-        song: 'assets/orechon.mp3'
+        song: 'assets/S úsmevom.mp3'
     },
     shovel: {
         name: 'Chlopatoň',
@@ -42,7 +42,46 @@ const PLANT_DATABASE = {
         stats: 'na odomknutie: Level 3 | životík: 0 | špeciálny nástroj',
         unlocked: false,
         unlockedByLevel: 3, // Unlocked after completing level 3
-        song: 'assets/shovel.mp3'
+        song: 'assets/Karol Duchoň - Čardáš dvoch sŕdc.mp3'
+    }
+};
+
+// Plant Audio Manager - handles plant singing system
+const plantAudioManager = {
+    activeSongs: {}, // Track active audio instances
+    
+    playPlantSong(songId, songPath) {
+        // Stop existing song if it exists
+        if (this.activeSongs[songId]) {
+            this.activeSongs[songId].pause();
+            this.activeSongs[songId].currentTime = 0;
+        }
+        
+        // Create new audio instance
+        const audio = new Audio(songPath);
+        audio.loop = true;
+        audio.volume = 0.3;
+        audio.play().catch(err => {
+            console.warn(`Failed to play plant song ${songPath}:`, err);
+        });
+        
+        this.activeSongs[songId] = audio;
+    },
+    
+    stopPlantSongs(songId) {
+        if (this.activeSongs[songId]) {
+            this.activeSongs[songId].pause();
+            this.activeSongs[songId].currentTime = 0;
+            delete this.activeSongs[songId];
+        }
+    },
+    
+    stopAllSongs() {
+        Object.values(this.activeSongs).forEach(audio => {
+            audio.pause();
+            audio.currentTime = 0;
+        });
+        this.activeSongs = {};
     }
 };
 
@@ -53,6 +92,7 @@ class PlantSelector {
         this.currentHoveredPlant = null;
         this.maxSelections = 5;
         this.completedLevels = new Set(); // Track completed levels
+        this.previewSongId = null;
         this.init();
     }
 
@@ -102,7 +142,7 @@ class PlantSelector {
                     <div class="plant-selected-list">
                         <div class="selected-count" id="selected-count">0 / 5 rastlichoňov</div>
                         <div class="selected-plants" id="selected-plants-list"></div>
-                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: auto; width: 100%; padding: 12px 20px; background-color: #ff4444; color: white; border: none; border[...]
+                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: auto; width: 100%; padding: 12px 20px; background-color: #ff4444; color: white; border: none; borde[...]
                     </div>
                 </div>
             </div>
@@ -125,6 +165,7 @@ class PlantSelector {
         if (codex) {
             codex.addEventListener('click', (e) => this.handlePlantClick(e));
             codex.addEventListener('mouseover', (e) => this.handlePlantHover(e));
+            codex.addEventListener('mouseleave', () => this.stopPreviewSong());
         }
         if (resetBtn) resetBtn.addEventListener('click', () => this.showResetConfirmation());
     }
@@ -224,6 +265,26 @@ class PlantSelector {
         if (card) {
             const plantKey = card.dataset.plant;
             this.showPlantInfo(plantKey);
+            this.playPreviewSong(plantKey);
+        }
+    }
+
+    playPreviewSong(plantKey) {
+        const plant = PLANT_DATABASE[plantKey];
+        if (!plant || !plant.song) return;
+        
+        // Stop previous preview song
+        this.stopPreviewSong();
+        
+        // Play new preview song
+        this.previewSongId = `preview_${plantKey}`;
+        plantAudioManager.playPlantSong(this.previewSongId, plant.song);
+    }
+
+    stopPreviewSong() {
+        if (this.previewSongId) {
+            plantAudioManager.stopPlantSongs(this.previewSongId);
+            this.previewSongId = null;
         }
     }
 
@@ -272,6 +333,8 @@ class PlantSelector {
     hide() {
         const screen = document.getElementById('plant-selector-screen');
         const levelsScreen = document.getElementById('levels-screen');
+        
+        this.stopPreviewSong();
         
         if (screen && levelsScreen) {
             screen.style.display = 'none';

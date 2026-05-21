@@ -103,7 +103,7 @@ function initGame(level) {
                         resolve(null);
                     };
                     img.src = './assets/' + src;
-               });
+                });
           }
 
           // Preload all images
@@ -130,8 +130,8 @@ function initGame(level) {
                     GRID_CELL_HEIGHT = 45;
                     SIDE_PADDING = 150;
                     TOP_PADDING = 60;
-               }
-               
+                }
+                
               const GRID_WIDTH = GRID_COLS * GRID_CELL_WIDTH;
               const GRID_HEIGHT = GRID_ROWS * GRID_CELL_HEIGHT;
               const GRID_START_X = SIDE_PADDING;
@@ -180,7 +180,7 @@ function initGame(level) {
               if (typeof plantSelector !== 'undefined' && plantSelector.secretBonusSuns) {
                     suns += plantSelector.secretBonusSuns;
                     console.log(`Applied secret bonus: +${plantSelector.secretBonusSuns} suns`);
-               }
+                }
 
               // Plant types from level configuration
               const PLANT_TYPES = levelData.plantTypes;
@@ -228,7 +228,7 @@ function initGame(level) {
                         const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
                         return dist < this.size / 2 + enemy.type.collisionRadius;
                     }
-               }
+                }
 
               // Plant class
               class Plant {
@@ -346,7 +346,7 @@ function initGame(level) {
                             plantAudioManager.stopPlantSongs(this.songId);
                         }
                     }
-               }
+                }
 
               // Projectile class
               class Projectile {
@@ -388,7 +388,7 @@ function initGame(level) {
                             ctx.fill();
                         }
                     }
-               }
+                }
 
               // Enemy class
               class Enemy {
@@ -457,7 +457,7 @@ function initGame(level) {
                     isAlive() {
                         return this.health > 0;
                     }
-               }
+                }
 
               // Sun class
               class Sun {
@@ -503,7 +503,7 @@ function initGame(level) {
                         const dist = Math.hypot(mouseX - this.x, mouseY - this.y);
                         return dist < this.radius + 5;
                     }
-               }
+                }
 
               let suns_on_screen = [];
 
@@ -529,7 +529,7 @@ function initGame(level) {
                         ctx.fillStyle = '#888888';
                         ctx.fillRect(kosackonX - kosackonSize / 2, kosackonY - kosackonSize / 2, kosackonSize, kosackonSize);
                     }
-               }
+                }
 
               function drawPlantMenu() {
                     const menuX = PLANT_MENU_X;
@@ -643,7 +643,7 @@ function initGame(level) {
                     ctx.rotate(-Math.PI / 2);
                     ctx.fillText('← Back', 0, 0);
                     ctx.restore();
-               }
+                }
 
               function drawDestination() {
                     for (let row = 0; row < UNLOCKED_ROWS; row++) {
@@ -662,7 +662,7 @@ function initGame(level) {
                             drawKosackonStatic(row);
                         }
                     }
-               }
+                }
 
               function drawGrid() {
                     ctx.lineWidth = 1;
@@ -694,7 +694,7 @@ function initGame(level) {
                             ctx.strokeRect(x, y, GRID_CELL_WIDTH, GRID_CELL_HEIGHT);
                         }
                     }
-               }
+                }
 
               function drawBackground() {
                     const bgImg = imageCache['lvl1bcg.png'];
@@ -704,7 +704,7 @@ function initGame(level) {
                         ctx.fillStyle = '#1a7e28';
                         ctx.fillRect(0, 0, canvas.width, canvas.height);
                     }
-               }
+                }
 
               function drawProgressBar() {
                     const barWidth = GRID_WIDTH;
@@ -741,7 +741,7 @@ function initGame(level) {
                     } else {
                         ctx.fillText('PEČEŇ V OHROZENÍ', barX + barWidth / 2, barY + barHeight / 2);
                     }
-               }
+                }
 
               function drawSunCounter() {
                     const sunImg = imageCache['sun.png'];
@@ -762,7 +762,7 @@ function initGame(level) {
                     ctx.font = 'bold 24px Arial';
                     ctx.textAlign = 'left';
                     ctx.fillText(`${suns}`, sunX + sunSize + 10, sunY + sunSize / 2 + 8);
-               }
+                }
 
               function drawFinalWaveWarning() {
                     // Draw warning banner
@@ -784,7 +784,7 @@ function initGame(level) {
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('⚠️ VÝSTRAHA: NADMERNÝ ALKOHOL ⚠️', canvas.width / 2, canvas.height / 2);
-               }
+                }
 
               function handleGameInput(e) {
                     if (gameOver || levelWon || isTransitioning) return;
@@ -941,7 +941,7 @@ function initGame(level) {
                             }
                         }
                     }
-               }
+                }
 
               canvas.addEventListener('click', handleGameInput);
               canvas.addEventListener('touchend', handleGameInput);
@@ -1010,14 +1010,13 @@ function initGame(level) {
                         waveEnemyConfig = levelData.getWaveEnemyConfig(gametime);
                         
                         if (waveEnemyConfig) {
-                            const lastSpawnTime = lastEnemySpawnTimes.ealc1 || 0;
-                            const enemyTypeToSpawn = levelData.shouldSpawnEnemy(waveEnemyConfig, lastSpawnTime, now);
+                            const enemyTypeToSpawn = levelData.shouldSpawnEnemy(waveEnemyConfig, lastEnemySpawnTimes, now);
                             if (enemyTypeToSpawn) {
                                 const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
                                 const enemyType = ENEMY_TYPES[enemyTypeToSpawn];
                                 enemies.push(new Enemy(randomRow, enemyType));
-                                // UPDATE: Track spawn time per enemy type
-                                lastEnemySpawnTimes.ealc1 = now;
+                                // ✅ FIX: Update the correct enemy type's spawn time
+                                lastEnemySpawnTimes[enemyTypeToSpawn] = now;
                                 totalEnemiesSpawned++;
                             }
                         }
@@ -1214,7 +1213,7 @@ function initGame(level) {
                     } else {
                         requestAnimationFrame(gameLoop);
                     }
-               }
+                }
 
               function returnToLevels() {
                     // Stop all plant songs when returning to levels
@@ -1242,9 +1241,9 @@ function initGame(level) {
                     levelsScreen.style.display = 'flex';
                     gameScreen.classList.add('hidden');
                     levelsScreen.classList.remove('hidden');
-               }
+                }
 
               gameLoop();
-          }
-       }
+           }
+        }
 }

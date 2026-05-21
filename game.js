@@ -401,17 +401,42 @@ function initGame(level) {
                         this.speed = this.type.speed;
                         this.lastDamage = 0;
                         this.desiredX = this.x;
+                        
+                        // ealc3 three-state system
+                        this.flyingState = 'flying'; // 'flying', 'normal', or 'low_health'
+                        this.plantSkipped = false; // Track if we've already skipped a plant in flying state
                     }
 
                     update(plants) {
                         let canMove = true;
                         const nextX = this.x - this.speed;
 
-                        for (let plant of plants) {
-                            if (plant.gridY === this.rowIndex) {
-                                if (plant.collidesWith(nextX, this.y)) {
-                                    canMove = false;
-                                    break;
+                        // Check if ealc3 is in flying state
+                        const isEalc3Flying = this.type.isFlyer && this.flyingState === 'flying';
+                        
+                        // Regular collision detection for non-flying enemies or landed ealc3
+                        if (!isEalc3Flying) {
+                            for (let plant of plants) {
+                                if (plant.gridY === this.rowIndex) {
+                                    if (plant.collidesWith(nextX, this.y)) {
+                                        canMove = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            // Flying ealc3: check if next position would cross a plant
+                            for (let plant of plants) {
+                                if (plant.gridY === this.rowIndex && !this.plantSkipped) {
+                                    // If moving from right of plant to left of plant, we're crossing it
+                                    if (this.x > plant.x && nextX <= plant.x) {
+                                        // Plant occupies a grid cell
+                                        this.flyingState = 'normal';
+                                        this.plantSkipped = true;
+                                        // Update speed to normal speed
+                                        this.speed = this.type.speed;
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -432,6 +457,16 @@ function initGame(level) {
                             }
                         }
 
+                        // Check health state transitions for ealc3
+                        if (this.type.isFlyer) {
+                            const healthPercent = this.health / this.type.health;
+                            if (healthPercent <= this.type.lowHealthThreshold && this.flyingState !== 'flying') {
+                                this.flyingState = 'low_health';
+                            } else if (healthPercent > this.type.lowHealthThreshold && this.flyingState === 'low_health') {
+                                this.flyingState = 'normal';
+                            }
+                        }
+
                         return this.x < DESTINATION_X;
                     }
 
@@ -439,8 +474,18 @@ function initGame(level) {
                         const healthPercent = this.health / this.type.health;
                         let imageToUse = this.type.image;
                         
-                        if (healthPercent <= this.type.lowHealthThreshold) {
-                            imageToUse = this.type.lowHealthImage;
+                        // ealc3 specific image selection based on state
+                        if (this.type.isFlyer) {
+                            if (this.flyingState === 'flying') {
+                                imageToUse = this.type.flyImage;
+                            } else if (this.flyingState === 'low_health' && healthPercent <= this.type.lowHealthThreshold) {
+                                imageToUse = this.type.lowHealthImage;
+                            }
+                        } else {
+                            // Regular health-based image selection for other enemies
+                            if (healthPercent <= this.type.lowHealthThreshold) {
+                                imageToUse = this.type.lowHealthImage;
+                            }
                         }
 
                         const img = imageCache[imageToUse];
@@ -1244,6 +1289,6 @@ function initGame(level) {
                 }
 
               gameLoop();
-           }
-        }
+            }
+         }
 }

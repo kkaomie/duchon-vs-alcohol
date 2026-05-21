@@ -143,7 +143,9 @@ const Level1 = {
         'sun.png',
         'lvl1bcg.png',
         'dsunflower.png',
-        'dshovel.png'
+        'dshovel.png',
+        'dnut1.png',
+        'dnut1low.png'
     ],
 
     /**
@@ -207,10 +209,11 @@ const Level1 = {
      * Determine if enemy should spawn based on wave configuration
      * Takes into account spawn chance and interval
      */
-    shouldSpawnEnemy(waveEnemyConfig, lastSpawnTime, currentTime) {
+    shouldSpawnEnemy(waveEnemyConfig, lastSpawnTimes, currentTime) {
         if (!waveEnemyConfig || !waveEnemyConfig.enemies.ealc1) return false;
 
         const spawnConfig = waveEnemyConfig.enemies.ealc1;
+        const lastSpawnTime = lastSpawnTimes.ealc1 || 0;
         const timeSinceLastSpawn = currentTime - lastSpawnTime;
 
         // Check interval

@@ -22,8 +22,12 @@ const Level4 = {
             duration: 50000,
             enemies: {
                 ealc1: {
-                    spawnChance: 0.7,
-                    spawnInterval: 7000
+                    spawnChance: 1,
+                    spawnInterval: 8000
+                },
+                ealc2: {
+                    spawnChance: 1.0,
+                    spawnInterval: 18000
                 }
             },
             startDelay: 20000
@@ -31,7 +35,7 @@ const Level4 = {
         {
             id: 2,
             name: 'Wave 2 - Ramp Up',
-            duration: 40000,
+            duration: 50000,
             enemies: {
                 ealc1: {
                     spawnChance: 0.85,
@@ -43,7 +47,7 @@ const Level4 = {
                 },
                 ealc3: {
                     spawnChance: 0.5,
-                    spawnInterval: 12000
+                    spawnInterval: 15000
                 }
             },
             startDelay: 0
@@ -62,8 +66,8 @@ const Level4 = {
                     spawnInterval: 3000
                 },
                 ealc3: {
-                    spawnChance: 0.7,
-                    spawnInterval: 8000
+                    spawnChance: 1,
+                    spawnInterval: 15000
                 }
             },
             startDelay: 0
@@ -73,7 +77,7 @@ const Level4 = {
     // Final wave configuration (triggered at 2 minutes)
     finalWave: {
         multiplier: 0.5,
-        duration: 8000
+        duration: 14000
     },
 
     // Plant types available in this level

@@ -40,6 +40,10 @@ const Level4 = {
                 ealc2: {
                     spawnChance: 1.0,
                     spawnInterval: 10000
+                },
+                ealc3: {
+                    spawnChance: 0.5,
+                    spawnInterval: 12000
                 }
             },
             startDelay: 0
@@ -56,6 +60,10 @@ const Level4 = {
                 ealc2: {
                     spawnChance: 0.6,
                     spawnInterval: 3000
+                },
+                ealc3: {
+                    spawnChance: 0.7,
+                    spawnInterval: 8000
                 }
             },
             startDelay: 0
@@ -151,6 +159,23 @@ const Level4 = {
             height: 50,
             collisionRadius: 25,
             lowHealthThreshold: 0.5
+        },
+        ealc3: {
+            name: 'Flying Zombie',
+            image: 'ealc3.png',
+            lowHealthImage: 'ealc3low.png',
+            flyImage: 'ealc3fly.png',
+            health: 500,
+            speed: 0.075,
+            flySpeed: 0.3,
+            damage: 20,
+            damageInterval: 1000,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            lowHealthThreshold: 0.5,
+            isFlyer: true,
+            initialState: 'flying'
         }
     },
 
@@ -168,6 +193,9 @@ const Level4 = {
         'ealc1low.png',
         'ealc2.png',
         'ealc2low.png',
+        'ealc3.png',
+        'ealc3low.png',
+        'ealc3fly.png',
         'pecen.png',
         'projectile.png',
         'sun.png',

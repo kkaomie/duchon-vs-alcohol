@@ -239,6 +239,16 @@ function initGame(level) {
                        this.shootStartTime = 0;
                        this.lastSunSpawn = 0;
                        this.placementTime = Date.now();
+                       this.plantType = type;
+                       this.songId = `plant_${gridX}_${gridY}_${type}_${this.placementTime}`;
+                       
+                       // Start playing the plant's song when placed
+                       if (typeof plantAudioManager !== 'undefined' && typeof PLANT_DATABASE !== 'undefined') {
+                           const plantData = PLANT_DATABASE[type];
+                           if (plantData && plantData.song) {
+                               plantAudioManager.playPlantSong(this.songId, plantData.song);
+                           }
+                       }
                    }
 
                    draw() {
@@ -323,6 +333,13 @@ function initGame(level) {
 
                    isAlive() {
                        return this.health > 0;
+                   }
+
+                   destroy() {
+                       // Stop the plant's song when it dies
+                       if (typeof plantAudioManager !== 'undefined') {
+                           plantAudioManager.stopPlantSongs(this.songId);
+                       }
                    }
               }
 
@@ -803,6 +820,7 @@ function initGame(level) {
                                }
                                
                                // Remove plant
+                               plant.destroy();
                                plants.splice(i, 1);
                                shovelMode = false;
                                selectedPlant = null;
@@ -987,13 +1005,14 @@ function initGame(level) {
                        waveEnemyConfig = levelData.getWaveEnemyConfig(gametime);
                        
                        if (waveEnemyConfig) {
-                           const enemyTypeToSpawn = levelData.shouldSpawnEnemy(waveEnemyConfig, lastEnemySpawnTimes, now);
+                           const lastSpawnTime = lastEnemySpawnTimes.ealc1 || 0;
+                           const enemyTypeToSpawn = levelData.shouldSpawnEnemy(waveEnemyConfig, lastSpawnTime, now);
                            if (enemyTypeToSpawn) {
                                const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
                                const enemyType = ENEMY_TYPES[enemyTypeToSpawn];
                                enemies.push(new Enemy(randomRow, enemyType));
                                // UPDATE: Track spawn time per enemy type
-                               lastEnemySpawnTimes[enemyTypeToSpawn] = now;
+                               lastEnemySpawnTimes.ealc1 = now;
                                totalEnemiesSpawned++;
                            }
                        }
@@ -1193,6 +1212,11 @@ function initGame(level) {
               }
 
               function returnToLevels() {
+                   // Stop all plant songs when returning to levels
+                   if (typeof plantAudioManager !== 'undefined') {
+                       plantAudioManager.stopAllSongs();
+                   }
+                   
                    canvas.removeEventListener('click', handleGameInput);
                    canvas.removeEventListener('touchend', handleGameInput);
                    window.removeEventListener('resize', resizeCanvas);

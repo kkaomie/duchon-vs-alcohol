@@ -10,23 +10,31 @@ function initGame(level) {
       const handleVisibilityChange = () => {
           if (document.hidden) {
               gamePaused = true;
-              gameActive = false; // Mark as failed
-              console.log('Game paused and marked as failed - window lost focus');
+              // Don't mark as failed immediately - wait for actual blur
+              console.log('Game paused - window hidden');
           } else {
               gamePaused = false;
-              console.log('Game resumed - window regained focus');
+              console.log('Game resumed - window visible');
           }
       };
       
       // Handle window/tab blur - user switched away
       const handleBlur = () => {
-          gamePaused = true;
-          gameActive = false; // Mark as failed
-          console.log('Game paused and marked as failed - window blurred');
+          // Add a small delay to detect if this is a real blur or just a temporary focus loss
+          blurTimeout = setTimeout(() => {
+              gamePaused = true;
+              gameActive = false; // Mark as failed
+              console.log('Game paused and marked as failed - window blurred (real blur detected)');
+          }, 500); // 500ms grace period
       };
       
       // Handle window/tab focus - user came back
       const handleFocus = () => {
+          // Clear the blur timeout if user comes back quickly
+          if (blurTimeout) {
+              clearTimeout(blurTimeout);
+              blurTimeout = null;
+          }
           gamePaused = false;
           console.log('Game resumed - window focused');
       };
@@ -36,6 +44,8 @@ function initGame(level) {
           gameActive = false; // Mark as failed
           console.log('Game marked as failed - app/window closing');
       };
+      
+      let blurTimeout = null;
       
       document.addEventListener('visibilitychange', handleVisibilityChange);
       window.addEventListener('blur', handleBlur);
@@ -436,8 +446,8 @@ function initGame(level) {
                                 if (plant.gridY === this.rowIndex && !this.plantSkipped) {
                                     // If moving from right of plant to left of plant, we're crossing it
                                     if (this.x > plant.x && nextX <= plant.x) {
-                                        // Plant occupies a grid cell - skip it by moving PAST the next grid block
-                                        this.x = plant.x - 2 * GRID_CELL_WIDTH;
+                                        // Plant occupies a grid cell - skip it by moving to next grid block
+                                        this.x = plant.x - GRID_CELL_WIDTH;
                                         this.flyingState = 'normal';
                                         this.plantSkipped = true;
                                         this.speed = this.type.speed; // Switch to normal speed 0.075

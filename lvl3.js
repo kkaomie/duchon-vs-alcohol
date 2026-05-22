@@ -110,6 +110,21 @@ const Level3 = {
             placementCooldown: 18000,
             lowHealthThreshold: 0.5
         },
+        cherry: {
+            name: 'Čerešchňon',
+            image: 'dcherry.png',
+            explosionImage: 'dcherryexp.png',
+            cost: 150,
+            health: 500,
+            attackDamage: 0,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            placementCooldown: 15000,
+            explodes: true,
+            explodeDelay: 3000,
+            explosionDuration: 500
+        },
         shovel: {
             name: 'Chlopatoň',
             image: 'dshovel.png',
@@ -171,7 +186,9 @@ const Level3 = {
         'pecen.png',
         'projectile.png',
         'sun.png',
-        'lvl1bcg.png'
+        'lvl1bcg.png',
+        'dcherry.png',
+        'dcherryexp.png'
     ],
 
     /**

@@ -257,6 +257,8 @@ function initGame(level) {
                         this.lastSunSpawn = 0;
                         this.placementTime = Date.now();
                         this.plantType = type;
+                        this.explosionStarted = false;
+                        this.explosionStartTime = null;
                         this.songId = `plant_${gridX}_${gridY}_${type}_${this.placementTime}`;
                         
                         // Start playing the plant's level song when placed
@@ -270,6 +272,20 @@ function initGame(level) {
 
                     draw() {
                         const now = Date.now();
+                        if (this.type.explodes && this.explosionStarted) {
+                            const elapsed = now - this.explosionStartTime;
+                            if (elapsed < this.type.explosionDuration) {
+                                const img = imageCache[this.type.explosionImage];
+                                const explosionSize = Math.max(GRID_CELL_WIDTH, GRID_CELL_HEIGHT) * 3;
+                                if (img) {
+                                    ctx.drawImage(img, this.x - explosionSize / 2, this.y - explosionSize / 2, explosionSize, explosionSize);
+                                } else {
+                                    ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+                                    ctx.fillRect(this.x - explosionSize / 2, this.y - explosionSize / 2, explosionSize, explosionSize);
+                                }
+                                return;
+                            }
+                        }
                         let imageToUse = this.type.image;
                         
                         // Check for low health state
@@ -308,6 +324,7 @@ function initGame(level) {
                     }
 
                     attack(enemies) {
+                        if (this.type.explodes) return;
                         const now = Date.now();
                         if (!this.canAttack()) return;
 
@@ -336,6 +353,30 @@ function initGame(level) {
                                 this.lastSunSpawn = now;
                             }
                         }
+                    }
+
+                    update(enemies) {
+                        if (!this.type.explodes) return;
+                        const now = Date.now();
+                        if (!this.explosionStarted && now - this.placementTime >= this.type.explodeDelay) {
+                            this.explosionStarted = true;
+                            this.explosionStartTime = now;
+                            this.explode(enemies);
+                        }
+                        if (this.explosionStarted && now - this.explosionStartTime >= this.type.explosionDuration) {
+                            this.health = 0;
+                        }
+                    }
+
+                    explode(enemies) {
+                        enemies.forEach(enemy => {
+                            const enemyGridX = Math.floor((enemy.x - GRID_START_X) / GRID_CELL_WIDTH);
+                            const dx = enemyGridX - this.gridX;
+                            const dy = enemy.rowIndex - this.gridY;
+                            if ((dy === 0 && Math.abs(dx) <= 1) || (dx === 0 && Math.abs(dy) <= 1)) {
+                                enemy.health = 0;
+                            }
+                        });
                     }
 
                     collidesWith(x, y) {
@@ -829,6 +870,26 @@ function initGame(level) {
                     ctx.fillText(`${suns}`, sunX + sunSize + 10, sunY + sunSize / 2 + 8);
                 }
 
+              function drawWrappedText(text, x, y, maxWidth, lineHeight) {
+                    const words = text.split(' ');
+                    let line = '';
+                    let lineCount = 0;
+                    for (let n = 0; n < words.length; n++) {
+                        const testLine = line ? `${line} ${words[n]}` : words[n];
+                        const metrics = ctx.measureText(testLine);
+                        if (metrics.width > maxWidth && line) {
+                            ctx.fillText(line, x, y + lineCount * lineHeight);
+                            line = words[n];
+                            lineCount++;
+                        } else {
+                            line = testLine;
+                        }
+                    }
+                    if (line) {
+                        ctx.fillText(line, x, y + lineCount * lineHeight);
+                    }
+                }
+
               function drawFinalWaveWarning() {
                     // Draw warning banner
                     const bannerHeight = 60;
@@ -1131,13 +1192,14 @@ function initGame(level) {
                     }
 
                     plants = plants.filter(plant => {
-                        plant.draw();
                         if (!gamePaused) {
+                            plant.update(enemies);
                             plant.attack(enemies);
                             if (plant.type.sunSpawnInterval) {
                                 plant.produceSun();
                             }
                         }
+                        plant.draw();
                         return plant.isAlive();
                     });
 
@@ -1218,13 +1280,13 @@ function initGame(level) {
                         ctx.fillStyle = '#00ff00';
                         ctx.font = 'bold 30px Arial';
                         ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
+                        ctx.textBaseline = 'top';
                         
                         // Different messages based on level
                         if (level === 1) {
-                            ctx.fillText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2 - 50);
+                            drawWrappedText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2 - 70, canvas.width * 0.75, 34);
                         } else if (level === 2) {
-                            ctx.fillText('odomkol si Orechoňa, nuz hlavne Kosackona, ktory zachrani riadok raz za hru ked nanho kliknes', canvas.width / 2, canvas.height / 2 - 50);
+                            drawWrappedText('odomkol si Orechoňa, nuz hlavne Kosackona, ktory zachrani riadok raz za hru ked nanho kliknes', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
                             
                             const orechonImg = imageCache['dnut1.png'];
                             if (orechonImg) {
@@ -1236,14 +1298,21 @@ function initGame(level) {
                                 ctx.drawImage(kosackonImg, canvas.width / 2 + 60, canvas.height / 2 + 20, 80, 80);
                             }
                         } else if (level === 3) {
-                            ctx.fillText('odomkol si chlopatoňa (nie actually rastlina ale buď ticho) (mám rád malé detičky)', canvas.width / 2, canvas.height / 2 - 50);
+                            drawWrappedText('odomkol si chlopatoňa (nie actually rastlina ale buď ticho) (mám rád malé detičky)', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
                             
                             const shovelImg = imageCache['dshovel.png'];
                             if (shovelImg) {
                                 ctx.drawImage(shovelImg, canvas.width / 2 - 40, canvas.height / 2 + 20, 80, 80);
                             }
                         } else if (level === 4) {
-                            ctx.fillText('ej bistu, vyhral si. nuz nestiham robit dalsie levely kvoli nizkemu platu (a dlhym fajciarskym prestavkam)', canvas.width / 2, canvas.height / 2 - 30);
+                            ctx.fillText('ej bistu, vyhral si.', canvas.width / 2, canvas.height / 2 - 70);
+                            ctx.font = 'bold 22px Arial';
+                            ctx.fillText('máš nového rastlichoňa - čerešchňon.', canvas.width / 2, canvas.height / 2 - 30);
+
+                            const cherryImg = imageCache['dcherry.png'];
+                            if (cherryImg) {
+                                ctx.drawImage(cherryImg, canvas.width / 2 - 60, canvas.height / 2 + 10, 120, 120);
+                            }
                         }
                         
                         // Show unlocked message with sunflower image if applicable
@@ -1273,8 +1342,9 @@ function initGame(level) {
                                     plantSelector.unlockPlant('orechon');
                                 } else if (level === 3) {
                                     plantSelector.unlockPlant('shovel');
+                                } else if (level === 4) {
+                                    plantSelector.unlockPlant('cherry');
                                 }
-                                // Don't unlock shovel again for level 4
                                 // Regenerate levels grid to reflect unlocked levels
                                 if (typeof regenerateLevels === 'function') {
                                     regenerateLevels();

@@ -37,6 +37,17 @@ const PLANT_DATABASE = {
         song: 'assets/S úsmevom.mp3',
         levelSong: 'assets/duchonmp3/2.mp3'
     },
+    cherry: {
+        name: 'Čerešchňon',
+        description: 'exploduje po 3 sekundách a zabije všetko v plus tvare',
+        image: 'dcherry.png',
+        cost: 150,
+        stats: 'výbuch/3s | životík: 500 | plus tvar',
+        unlocked: false,
+        unlockedByLevel: 4, // Unlocked after completing level 4
+        song: 'assets/S úsmevom.mp3',
+        levelSong: 'assets/duchonmp3/2.mp3'
+    },
     shovel: {
         name: 'Chlopatoň',
         description: 'teoreticky nie rastlina ale si retard',

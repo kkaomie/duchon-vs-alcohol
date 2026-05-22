@@ -101,6 +101,21 @@ const Level1 = {
             placementCooldown: 18000,
             lowHealthThreshold: 0.5
         },
+        cherry: {
+            name: 'Čerešchňon',
+            image: 'dcherry.png',
+            explosionImage: 'dcherryexp.png',
+            cost: 150,
+            health: 500,
+            attackDamage: 0,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            placementCooldown: 15000,
+            explodes: true,
+            explodeDelay: 3000,
+            explosionDuration: 500
+        },
         shovel: {
             name: 'Chlopatoň',
             image: 'dshovel.png',
@@ -145,7 +160,9 @@ const Level1 = {
         'dsunflower.png',
         'dshovel.png',
         'dnut1.png',
-        'dnut1low.png'
+        'dnut1low.png',
+        'dcherry.png',
+        'dcherryexp.png'
     ],
 
     /**

@@ -398,13 +398,19 @@ function initGame(level) {
                         this.y = GRID_START_Y + rowIndex * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
                         this.type = enemyType || ENEMY_TYPE;
                         this.health = this.type.health;
-                        this.speed = this.type.speed;
                         this.lastDamage = 0;
                         this.desiredX = this.x;
                         
                         // ealc3 three-state system
                         this.flyingState = 'flying'; // 'flying', 'normal', or 'low_health'
                         this.plantSkipped = false; // Track if we've already skipped a plant in flying state
+                        
+                        // Set initial speed based on state
+                        if (this.type.isFlyer && this.flyingState === 'flying') {
+                            this.speed = this.type.flySpeed; // 0.3 for flying
+                        } else {
+                            this.speed = this.type.speed; // 0.075 for normal
+                        }
                     }
 
                     update(plants) {
@@ -430,12 +436,12 @@ function initGame(level) {
                                 if (plant.gridY === this.rowIndex && !this.plantSkipped) {
                                     // If moving from right of plant to left of plant, we're crossing it
                                     if (this.x > plant.x && nextX <= plant.x) {
-                                        // Plant occupies a grid cell
+                                        // Plant occupies a grid cell - skip it by moving to next grid block
+                                        this.x = plant.x - GRID_CELL_WIDTH;
                                         this.flyingState = 'normal';
                                         this.plantSkipped = true;
-                                        // Update speed to normal speed
-                                        this.speed = this.type.speed;
-                                        break;
+                                        this.speed = this.type.speed; // Switch to normal speed 0.075
+                                        return this.x < DESTINATION_X;
                                     }
                                 }
                             }

@@ -440,15 +440,20 @@ function initGame(level) {
                         const dist = Math.hypot(dx, dy);
 
                         if (dist < 15) {
-                            this.target.health -= PLANT_TYPES.peashooter.attackDamage;
-                            
-                            // Apply slow if this is a cold projectile
-                            if (this.plantType && PLANT_TYPES[this.plantType] && PLANT_TYPES[this.plantType].slowsEnemies) {
-                                const slowData = PLANT_TYPES[this.plantType];
-                                this.target.slowedSpeed = this.target.type.speed * slowData.slowMultiplier;
-                                this.target.slowEndTime = Date.now() + slowData.slowDuration;
+                            const plantConfig = this.plantType && PLANT_TYPES[this.plantType]
+                                ? PLANT_TYPES[this.plantType]
+                                : PLANT_TYPES.peashooter;
+                            this.target.health -= plantConfig.attackDamage || 0;
+
+                            if (plantConfig.slowsEnemies) {
+                                const baseSpeed = this.target.type.isFlyer && this.target.flyingState === 'flying'
+                                    ? this.target.type.flySpeed
+                                    : this.target.type.speed;
+                                this.target.slowMultiplier = plantConfig.slowMultiplier;
+                                this.target.slowEndTime = Date.now() + plantConfig.slowDuration;
+                                this.target.currentSpeed = baseSpeed * plantConfig.slowMultiplier;
                             }
-                            
+
                             return false;
                         }
 
@@ -482,22 +487,28 @@ function initGame(level) {
                         this.health = this.type.health;
                         this.lastDamage = 0;
                         this.desiredX = this.x;
+                        this.slowMultiplier = 1;
+                        this.slowEndTime = 0;
                         
                         // ealc3 three-state system
                         this.flyingState = 'flying'; // 'flying', 'normal', or 'low_health'
                         this.plantSkipped = false; // Track if we've already skipped a plant in flying state
                         
                         // Set initial speed based on state
-                        if (this.type.isFlyer && this.flyingState === 'flying') {
-                            this.speed = this.type.flySpeed; // 0.3 for flying
-                        } else {
-                            this.speed = this.type.speed; // 0.075 for normal
-                        }
+                        this.currentSpeed = this.type.isFlyer && this.flyingState === 'flying'
+                            ? this.type.flySpeed
+                            : this.type.speed;
                     }
 
                     update(plants) {
+                        const now = Date.now();
+                        const isSlowActive = this.slowEndTime && now < this.slowEndTime;
+                        const baseSpeed = this.type.isFlyer && this.flyingState === 'flying'
+                            ? this.type.flySpeed
+                            : this.type.speed;
+                        this.currentSpeed = isSlowActive ? baseSpeed * this.slowMultiplier : baseSpeed;
                         let canMove = true;
-                        const nextX = this.x - this.speed;
+                        const nextX = this.x - this.currentSpeed;
 
                         // Check if ealc3 is in flying state
                         const isEalc3Flying = this.type.isFlyer && this.flyingState === 'flying';
@@ -585,6 +596,21 @@ function initGame(level) {
                             ctx.fillStyle = '#ff6600';
                             ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
                         }
+
+                        const now = Date.now();
+                        if (this.slowEndTime && now < this.slowEndTime) {
+                            ctx.save();
+                            ctx.globalAlpha = 0.5;
+                            const iceImg = imageCache['ice.png'];
+                            if (iceImg) {
+                                ctx.drawImage(iceImg, this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
+                            } else {
+                                ctx.fillStyle = '#88ccff';
+                                ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
+                            }
+                            ctx.restore();
+                        }
+
                         ctx.fillStyle = '#ff0000';
                         ctx.fillRect(this.x - this.type.width / 2, this.y - this.type.height / 2 - 10, this.type.width * healthPercent, 5);
                     }

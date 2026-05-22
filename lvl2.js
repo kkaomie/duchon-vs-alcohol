@@ -245,17 +245,25 @@ const Level2 = {
     /**
      * Determine if enemy should spawn based on wave configuration
      */
-    shouldSpawnEnemy(waveEnemyConfig, lastSpawnTime, currentTime) {
-        if (!waveEnemyConfig || !waveEnemyConfig.enemies.ealc1) return false;
+    shouldSpawnEnemy(waveEnemyConfig, lastSpawnTimes, currentTime) {
+        if (!waveEnemyConfig || !waveEnemyConfig.enemies) return null;
 
-        const spawnConfig = waveEnemyConfig.enemies.ealc1;
-        const timeSinceLastSpawn = currentTime - lastSpawnTime;
+        const enemyTypes = Object.keys(waveEnemyConfig.enemies);
+        if (enemyTypes.length === 0) return null;
 
-        if (timeSinceLastSpawn < spawnConfig.spawnInterval) {
-            return false;
+        for (let enemyType of enemyTypes) {
+            const spawnConfig = waveEnemyConfig.enemies[enemyType];
+            if (!spawnConfig) continue;
+
+            const lastSpawn = lastSpawnTimes[enemyType] || 0;
+            const timeSinceLastSpawn = currentTime - lastSpawn;
+
+            if (timeSinceLastSpawn >= spawnConfig.spawnInterval && Math.random() < spawnConfig.spawnChance) {
+                return enemyType;
+            }
         }
 
-        return Math.random() < spawnConfig.spawnChance;
+        return null;
     },
 
     /**

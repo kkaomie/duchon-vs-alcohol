@@ -66,7 +66,7 @@ const PLANT_DATABASE = {
         cost: 150,
         stats: 'zožerie nepriateľa vpravo do 100px, potom je plný 13s | životík: 150',
         unlocked: false,
-        unlockedByLevel: 5, // Unlocked after completing level 6
+        unlockedByLevel: 6, // Unlocked after completing level 6
         song: 'assets/duchonmp3/11.mp3',
         levelSong: 'assets/duchonmp3/11.mp3'
     },
@@ -204,7 +204,7 @@ class PlantSelector {
         screen.style.display = 'none';
         screen.innerHTML = `
             <button class="back-button" id="plant-selector-back-btn" style="top: 15px; left: 15px;">← Späť</button>
-            <button class="back-button" id="sebavrazda-btn" style="top: 15px; right: 15px; background-color: #ff2222;">sebavražda</button>
+            <button class="back-button" id="sebavrazda-btn" style="top: 15px; right: 15px; background-color: #ff2222; padding: 6px 10px; font-size: 11px; min-width: 90px;">sebavražda</button>
             <div class="plant-selector-container">
                 <div class="plant-selector-info-panel">
                     <div class="plant-info-label">
@@ -270,7 +270,7 @@ class PlantSelector {
             
             let lockInfo = '';
             if (!isUnlocked && plant.unlockedByLevel !== null) {
-                lockInfo = `<div class="plant-card-lock">🔒 Level ${plant.unlockedByLevel + 1}</div>`;
+                lockInfo = `<div class="plant-card-lock">🔒 Level ${plant.unlockedByLevel}</div>`;
             }
             
             card.innerHTML = `

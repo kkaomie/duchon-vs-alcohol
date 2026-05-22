@@ -135,6 +135,20 @@ const Level2 = {
             slowMultiplier: 0.5,
             slowDuration: 3000
         },
+        objekt76: {
+            name: 'objekt#76',
+            image: 'dcarnivore1empty.png',
+            fullImage: 'dcarnivore1full.png',
+            cost: 150,
+            health: 150,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            placementCooldown: 7000,
+            eatsEnemies: true,
+            eatRange: 50,
+            fullDuration: 10000
+        },
         shovel: {
             name: 'Chlopatoň',
             image: 'dshovel.png',
@@ -185,7 +199,9 @@ const Level2 = {
         'dcherryexp.png',
         'projectilecold.png',
         'dchpea.png',
-        'dchpeashoot.png'
+        'dchpeashoot.png',
+        'dcarnivore1empty.png',
+        'dcarnivore1full.png'
     ],
 
     /**

@@ -204,6 +204,7 @@ class PlantSelector {
         screen.style.display = 'none';
         screen.innerHTML = `
             <button class="back-button" id="plant-selector-back-btn" style="top: 15px; left: 15px;">← Späť</button>
+            <button class="back-button" id="sebavrazda-btn" style="top: 15px; right: 15px; background-color: #ff2222;">sebavražda</button>
             <div class="plant-selector-container">
                 <div class="plant-selector-info-panel">
                     <div class="plant-info-label">
@@ -232,11 +233,13 @@ class PlantSelector {
     attachEventListeners() {
         const btn = document.getElementById('plant-selector-btn');
         const backBtn = document.getElementById('plant-selector-back-btn');
+        const sebavraždaBtn = document.getElementById('sebavrazda-btn');
         const codex = document.getElementById('plant-codex');
         const resetBtn = document.getElementById('reset-progression-btn');
 
         if (btn) btn.addEventListener('click', () => this.show());
         if (backBtn) backBtn.addEventListener('click', () => this.hide());
+        if (sebavraždaBtn) sebavraždaBtn.addEventListener('click', () => this.showResetConfirmation());
         if (codex) {
             codex.addEventListener('click', (e) => this.handlePlantClick(e));
             codex.addEventListener('mouseover', (e) => this.handlePlantHover(e));
@@ -470,7 +473,7 @@ class PlantSelector {
             if (captchaPrompt && captchaPrompt.length === 4 && /^\d+$/.test(captchaPrompt)) {
                 this.resetProgression();
             } else {
-                alert('Ha ha ha, dostal som ťa ty fiškus! Progres resetovaný NIE JE.');
+                alert('Ha ha ha, dostal som ťa ty fiškál! Progres resetovaný NIE JE.');
             }
         }
     }

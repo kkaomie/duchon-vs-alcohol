@@ -170,6 +170,7 @@ function initGame(level) {
               let gameOverTime = null;
               let isTransitioning = false;
               let totalEnemiesSpawned = 0;
+              let mainWaveSpawnCounts = {}; // Track how many enemies of each type spawned during main waves
               let finalWaveTriggered = false;
               let finalWaveWarningTriggered = false;
               let finalWaveWarningTime = null;
@@ -1079,9 +1080,10 @@ function initGame(level) {
                                 const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
                                 const enemyType = ENEMY_TYPES[enemyTypeToSpawn];
                                 enemies.push(new Enemy(randomRow, enemyType));
-                                // ✅ FIX: Update the correct enemy type's spawn time
+                                // Track spawn time and per-type counts for the final wave calculation
                                 lastEnemySpawnTimes[enemyTypeToSpawn] = now;
                                 totalEnemiesSpawned++;
+                                mainWaveSpawnCounts[enemyTypeToSpawn] = (mainWaveSpawnCounts[enemyTypeToSpawn] || 0) + 1;
                             }
                         }
                     }
@@ -1102,24 +1104,30 @@ function initGame(level) {
                         finalWaveTriggered = true;
                         finalWaveSpawningTime = now;
                         
-                        // Calculate final wave count based on level config
-                        const finalWaveCount = Math.floor(totalEnemiesSpawned * levelData.finalWave.multiplier);
+                        // Build the exact final wave list: half of each enemy type spawned in the main waves
+                        const finalWaveSpawnList = [];
+                        Object.entries(mainWaveSpawnCounts).forEach(([enemyTypeKey, count]) => {
+                            const finalCount = Math.floor(count * levelData.finalWave.multiplier);
+                            for (let j = 0; j < finalCount; j++) {
+                                finalWaveSpawnList.push(enemyTypeKey);
+                            }
+                        });
+
+                        const finalWaveCount = finalWaveSpawnList.length;
                         
-                        // Schedule enemies to spawn over configured duration
-                        for (let i = 0; i < finalWaveCount; i++) {
+                        // Schedule exact enemy types rather than choosing new random types
+                        finalWaveSpawnList.forEach((enemyTypeKey, index) => {
                             setTimeout(() => {
                                 if (!gamePaused) {
                                     const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
-                                    // Check if this should be a special enemy type (ealc2 for level 3+)
-                                    let enemyType = ENEMY_TYPE;
-                                    if ((level === 3 || level === 4) && ENEMY_TYPES.ealc2 && Math.random() < 0.5) {
-                                        enemyType = ENEMY_TYPES.ealc2;
+                                    const enemyType = ENEMY_TYPES[enemyTypeKey];
+                                    if (enemyType) {
+                                        enemies.push(new Enemy(randomRow, enemyType));
+                                        finalWaveEnemiesSpawned++;
                                     }
-                                    enemies.push(new Enemy(randomRow, enemyType));
-                                    finalWaveEnemiesSpawned++;
                                 }
-                            }, (i / finalWaveCount) * levelData.finalWave.duration);
-                        }
+                            }, finalWaveCount > 0 ? (index / finalWaveCount) * levelData.finalWave.duration : 0);
+                        });
                     }
 
                     plants = plants.filter(plant => {

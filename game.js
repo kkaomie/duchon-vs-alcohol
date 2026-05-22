@@ -436,8 +436,8 @@ function initGame(level) {
                                 if (plant.gridY === this.rowIndex && !this.plantSkipped) {
                                     // If moving from right of plant to left of plant, we're crossing it
                                     if (this.x > plant.x && nextX <= plant.x) {
-                                        // Plant occupies a grid cell - skip it by moving to next grid block
-                                        this.x = plant.x - GRID_CELL_WIDTH;
+                                        // Plant occupies a grid cell - skip it by moving PAST the next grid block
+                                        this.x = plant.x - 2 * GRID_CELL_WIDTH;
                                         this.flyingState = 'normal';
                                         this.plantSkipped = true;
                                         this.speed = this.type.speed; // Switch to normal speed 0.075
@@ -468,8 +468,10 @@ function initGame(level) {
                             const healthPercent = this.health / this.type.health;
                             if (healthPercent <= this.type.lowHealthThreshold && this.flyingState !== 'flying') {
                                 this.flyingState = 'low_health';
+                                this.speed = this.type.speed; // Keep at normal speed when low health
                             } else if (healthPercent > this.type.lowHealthThreshold && this.flyingState === 'low_health') {
                                 this.flyingState = 'normal';
+                                this.speed = this.type.speed; // Keep at normal speed
                             }
                         }
 

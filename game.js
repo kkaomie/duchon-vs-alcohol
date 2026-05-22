@@ -77,6 +77,22 @@ function initGame(level) {
       } else if (level === 4) {
           levelConfig = Level4;
       } else if (level === 5) {
+          if (typeof Level5 === 'undefined') {
+              const fallbackScript = document.createElement('script');
+              fallbackScript.src = 'lvl5.js';
+              fallbackScript.onload = () => {
+                  if (typeof Level5 !== 'undefined') {
+                      playLevel(Level5);
+                  } else {
+                      console.error('Level5 loaded but Level5 is still undefined');
+                  }
+              };
+              fallbackScript.onerror = () => {
+                  console.error('Failed to load lvl5.js fallback');
+              };
+              document.body.appendChild(fallbackScript);
+              return;
+          }
           levelConfig = Level5;
       }
 

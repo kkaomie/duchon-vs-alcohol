@@ -544,13 +544,13 @@ function initGame(level) {
                             this.x = nextX;
                         }
 
-                        const now = Date.now();
+                        const nowDamage = Date.now();
                         for (let plant of plants) {
                             if (plant.gridY === this.rowIndex) {
                                 if (plant.isNearby(this.x, this.y)) {
-                                    if (now - this.lastDamage > this.type.damageInterval) {
+                                    if (nowDamage - this.lastDamage > this.type.damageInterval) {
                                         plant.health -= this.type.damage;
-                                        this.lastDamage = now;
+                                        this.lastDamage = nowDamage;
                                     }
                                 }
                             }

@@ -23,7 +23,7 @@ const PLANT_DATABASE = {
         stats: 'slniečko/8s | nemá dosah, si sprostý? | životík: 20',
         unlocked: false,
         unlockedByLevel: 1, // Unlocked after completing level 1
-        song: 'assets/S úsmevom.mp3',
+        song: 'assets/duchonmp3/8.mp3',
         levelSong: 'assets/duchonmp3/8.mp3'
     },
     orechon: {
@@ -34,7 +34,7 @@ const PLANT_DATABASE = {
         stats: 'útočík: 0 | životík: 3500 | hej ani tento nemá dosah',
         unlocked: false,
         unlockedByLevel: 2, // Unlocked after completing level 2
-        song: 'assets/S úsmevom.mp3',
+        song: 'assets/duchonmp3/2.mp3',
         levelSong: 'assets/duchonmp3/2.mp3'
     },
     cherry: {
@@ -45,19 +45,30 @@ const PLANT_DATABASE = {
         stats: 'výbuch po 3s | životík: 500 | 3x3 pole',
         unlocked: false,
         unlockedByLevel: 4, // Unlocked after completing level 4
-        song: 'assets/S úsmevom.mp3',
+        song: 'assets/duchonmp3/3.mp3',
         levelSong: 'assets/duchonmp3/3.mp3'
     },
     coldpea: {
         name: 'Chladničkouhorkoň',
-        description: 'strieľa ľadô, spomalťuje nepriateľov na 3 sekundy',
+        description: 'mrazivý rastliňochoň (spomaluje alkohol, nie jeho účinky)',
         image: 'dchpea.png',
         cost: 175,
-        stats: 'útočík: 40 | spomalenie: 50% | životík: 50',
+        stats: 'útočík: 40 | spomalenie: 2x | životík: 50',
         unlocked: false,
         unlockedByLevel: 5, // Unlocked after completing level 5
-        song: 'assets/S úsmevom.mp3',
-        levelSong: 'assets/duchonmp3/2.mp3'
+        song: 'assets/duchonmp3/10.mp3',
+        levelSong: 'assets/duchonmp3/10.mp3'
+    },
+    objekt76: {
+        name: 'objekt#76',
+        description: 'máš tento objekt (neviem ako sa mu nadáva)',
+        image: 'dcarnivore1empty.png',
+        cost: 150,
+        stats: 'zožerie nepriateľa vpravo do 50px, potom je plný 10s | životík: 150',
+        unlocked: false,
+        unlockedByLevel: 5, // Unlocked after completing level 5
+        song: 'assets/duchonmp3/11.mp3',
+        levelSong: 'assets/duchonmp3/11.mp3'
     },
     shovel: {
         name: 'Chlopatoň',

@@ -278,6 +278,8 @@ window.initGame = function initGame(level) {
                         this.plantType = type;
                         this.explosionStarted = false;
                         this.explosionStartTime = null;
+                        this.isFull = false;
+                        this.fullEndTime = 0;
                         this.songId = `plant_${gridX}_${gridY}_${type}_${this.placementTime}`;
                         
                         // Start playing the plant's level song when placed
@@ -307,8 +309,12 @@ window.initGame = function initGame(level) {
                         }
                         let imageToUse = this.type.image;
                         
+                        if (this.isFull && this.type.fullImage) {
+                            imageToUse = this.type.fullImage;
+                        }
+                        
                         // Check for low health state
-                        if (this.type.lowHealthImage) {
+                        if (!this.isFull && this.type.lowHealthImage) {
                             const healthPercent = this.health / this.type.health;
                             if (healthPercent <= this.type.lowHealthThreshold) {
                                 imageToUse = this.type.lowHealthImage;
@@ -343,7 +349,7 @@ window.initGame = function initGame(level) {
                     }
 
                     attack(enemies) {
-                        if (this.type.explodes) return;
+                        if (this.type.explodes || this.type.eatsEnemies) return;
                         const now = Date.now();
                         if (!this.canAttack()) return;
 
@@ -375,8 +381,31 @@ window.initGame = function initGame(level) {
                     }
 
                     update(enemies) {
-                        if (!this.type.explodes) return;
                         const now = Date.now();
+                        if (this.type.eatsEnemies) {
+                            if (this.isFull) {
+                                if (now >= this.fullEndTime) {
+                                    this.isFull = false;
+                                }
+                                return;
+                            }
+
+                            for (let enemy of enemies) {
+                                if (enemy.rowIndex === this.gridY && enemy.x > this.x) {
+                                    const distX = enemy.x - this.x;
+                                    if (distX <= (this.type.eatRange || 50)) {
+                                        enemy.health = 0;
+                                        this.isFull = true;
+                                        this.fullEndTime = now + (this.type.fullDuration || 10000);
+                                        this.health = this.type.health;
+                                        break;
+                                    }
+                                }
+                            }
+                            return;
+                        }
+
+                        if (!this.type.explodes) return;
                         if (!this.explosionStarted && now - this.placementTime >= this.type.explodeDelay) {
                             this.explosionStarted = true;
                             this.explosionStartTime = now;
@@ -550,7 +579,9 @@ window.initGame = function initGame(level) {
                             if (plant.gridY === this.rowIndex) {
                                 if (plant.isNearby(this.x, this.y)) {
                                     if (nowDamage - this.lastDamage > this.type.damageInterval) {
-                                        plant.health -= this.type.damage;
+                                        if (!plant.isFull) {
+                                            plant.health -= this.type.damage;
+                                        }
                                         this.lastDamage = nowDamage;
                                     }
                                 }
@@ -602,7 +633,7 @@ window.initGame = function initGame(level) {
                         if (this.slowEndTime && now < this.slowEndTime) {
                             ctx.save();
                             ctx.globalAlpha = 0.5;
-                            const iceImg = imageCache['ice.png'];
+                            const iceImg = imageCache['ice.png'] || imageCache['projectilecold.png'];
                             if (iceImg) {
                                 ctx.drawImage(iceImg, this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
                             } else {
@@ -1372,7 +1403,7 @@ window.initGame = function initGame(level) {
                         } else if (level === 5) {
                             ctx.fillText('chcem ťa.', canvas.width / 2, canvas.height / 2 - 70);
                             ctx.font = 'bold 22px Arial';
-                            ctx.fillText('približ sa.', canvas.width / 2, canvas.height / 2 - 30);
+                            ctx.fillText('máš tento objekt (neviem ako sa mu nadáva)', canvas.width / 2, canvas.height / 2 - 30);
                             ctx.font = 'bold 20px Arial';
                             ctx.fillText('(odomkol sa chladičkouhorkoň)', canvas.width / 2, canvas.height / 2 - 5);
 
@@ -1413,6 +1444,7 @@ window.initGame = function initGame(level) {
                                     plantSelector.unlockPlant('cherry');
                                 } else if (level === 5) {
                                     plantSelector.unlockPlant('coldpea');
+                                    plantSelector.unlockPlant('objekt76');
                                 }
                                 // Regenerate levels grid to reflect unlocked levels
                                 if (typeof regenerateLevels === 'function') {

@@ -95,6 +95,24 @@ window.initGame = function initGame(level) {
               return;
           }
           levelConfig = Level5;
+      } else if (level === 6) {
+          if (typeof Level6 === 'undefined') {
+              const fallbackScript = document.createElement('script');
+              fallbackScript.src = 'lvl6.js';
+              fallbackScript.onload = () => {
+                  if (typeof Level6 !== 'undefined') {
+                      playLevel(Level6);
+                  } else {
+                      console.error('Level6 loaded but Level6 is still undefined');
+                  }
+              };
+              fallbackScript.onerror = () => {
+                  console.error('Failed to load lvl6.js fallback');
+              };
+              document.body.appendChild(fallbackScript);
+              return;
+          }
+          levelConfig = Level6;
       }
 
       if (!levelConfig) {
@@ -1373,7 +1391,7 @@ window.initGame = function initGame(level) {
                         if (level === 1) {
                             drawWrappedText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2 - 70, canvas.width * 0.75, 34);
                         } else if (level === 2) {
-                            drawWrappedText('odomkol si Orechoňa, nuz hlavne Kosackona, ktory zachrani riadok raz za hru ked nanho kliknes', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
+                            drawWrappedText('odomkol si Orechoňa, nuž hlavne Kosačkona, ktorý zachráni riadok raz za hru keď naňho klikneš', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
                             
                             const orechonImg = imageCache['dnut1.png'];
                             if (orechonImg) {
@@ -1392,7 +1410,7 @@ window.initGame = function initGame(level) {
                                 ctx.drawImage(shovelImg, canvas.width / 2 - 40, canvas.height / 2 + 20, 80, 80);
                             }
                         } else if (level === 4) {
-                            ctx.fillText('ej bistu, vyhral si.', canvas.width / 2, canvas.height / 2 - 70);
+                            ctx.fillText('ej bisťu, vyhral si.', canvas.width / 2, canvas.height / 2 - 70);
                             ctx.font = 'bold 22px Arial';
                             ctx.fillText('máš nového rastlichoňa - čerešchňon.', canvas.width / 2, canvas.height / 2 - 30);
 
@@ -1403,13 +1421,24 @@ window.initGame = function initGame(level) {
                         } else if (level === 5) {
                             ctx.fillText('chcem ťa.', canvas.width / 2, canvas.height / 2 - 70);
                             ctx.font = 'bold 22px Arial';
-                            ctx.fillText('máš tento objekt (neviem ako sa mu nadáva)', canvas.width / 2, canvas.height / 2 - 30);
+                            ctx.fillText('tu máš tento chladničkouhor', canvas.width / 2, canvas.height / 2 - 30);
                             ctx.font = 'bold 20px Arial';
                             ctx.fillText('(odomkol sa chladičkouhorkoň)', canvas.width / 2, canvas.height / 2 - 5);
 
                             const coldpeaImg = imageCache['dchpea.png'];
                             if (coldpeaImg) {
                                 ctx.drawImage(coldpeaImg, canvas.width / 2 - 60, canvas.height / 2 + 35, 120, 120);
+                            }
+                        } else if (level === 6) {
+                            ctx.fillText('chcem ťa.', canvas.width / 2, canvas.height / 2 - 70);
+                            ctx.font = 'bold 22px Arial';
+                            ctx.fillText('tu máš tento objekt (neviem ako sa mu nadáva)', canvas.width / 2, canvas.height / 2 - 30);
+                            ctx.font = 'bold 20px Arial';
+                            ctx.fillText('(odomkol sa objekt#76)', canvas.width / 2, canvas.height / 2 - 5);
+
+                            const objektImg = imageCache['dcarnivore1empty.png'];
+                            if (objektImg) {
+                                ctx.drawImage(objektImg, canvas.width / 2 - 60, canvas.height / 2 + 35, 120, 120);
                             }
                         }
                         
@@ -1443,6 +1472,8 @@ window.initGame = function initGame(level) {
                                 } else if (level === 4) {
                                     plantSelector.unlockPlant('cherry');
                                 } else if (level === 5) {
+                                    plantSelector.unlockPlant('coldpea');
+                                } else if (level === 6) {
                                     plantSelector.unlockPlant('coldpea');
                                     plantSelector.unlockPlant('objekt76');
                                 }

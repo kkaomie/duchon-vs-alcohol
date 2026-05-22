@@ -146,8 +146,8 @@ const Level2 = {
             collisionRadius: 25,
             placementCooldown: 7000,
             eatsEnemies: true,
-            eatRange: 50,
-            fullDuration: 10000
+            eatRange: 100,
+            fullDuration: 13000
         },
         shovel: {
             name: 'Chlopatoň',

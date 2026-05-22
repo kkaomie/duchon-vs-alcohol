@@ -64,9 +64,9 @@ const PLANT_DATABASE = {
         description: 'máš tento objekt (neviem ako sa mu nadáva)',
         image: 'dcarnivore1empty.png',
         cost: 150,
-        stats: 'zožerie nepriateľa vpravo do 50px, potom je plný 10s | životík: 150',
+        stats: 'zožerie nepriateľa vpravo do 100px, potom je plný 13s | životík: 150',
         unlocked: false,
-        unlockedByLevel: 5, // Unlocked after completing level 5
+        unlockedByLevel: 5, // Unlocked after completing level 6
         song: 'assets/duchonmp3/11.mp3',
         levelSong: 'assets/duchonmp3/11.mp3'
     },

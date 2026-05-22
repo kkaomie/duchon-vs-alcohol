@@ -1,74 +1,80 @@
 /**
- * Level 3 Configuration & Logic
- * Modular, self-contained level implementation
- * 
- * Unlocks Orechoň plant, allows all 6 rows, introduces Lawn Mower tool and Shovel tool
+ * Level 6 Configuration & Logic
+ * Harder, longer version of Level 5 with more aggressive waves
  */
 
-const Level3 = {
-    // Level metadata
+const Level6 = {
     config: {
-        name: 'Level 3',
-        description: 'Full arsenal with lawn mower tool',
+        name: 'Level 6',
+        description: 'Harder and longer version of level 5',
         unlockedRows: 6,
-        levelDuration: 93000, // 30+30+30+3 seconds
+        levelDuration: 130000
     },
 
-    // Wave configuration - easily modifiable
     waves: [
         {
             id: 1,
-            name: 'Wave 1 - Start',
-            duration: 50000,
+            name: 'Wave 1 - Brutal Start',
+            duration: 60000,
             enemies: {
                 ealc1: {
-                    spawnChance: 0.7,
-                    spawnInterval: 7000
+                    spawnChance: 1,
+                    spawnInterval: 6500
+                },
+                ealc2: {
+                    spawnChance: 1.0,
+                    spawnInterval: 15000
                 }
             },
             startDelay: 20000
         },
         {
             id: 2,
-            name: 'Wave 2 - Ramp Up',
-            duration: 40000,
+            name: 'Wave 2 - Cold Pressure',
+            duration: 55000,
             enemies: {
                 ealc1: {
-                    spawnChance: 0.85,
-                    spawnInterval: 4000
+                    spawnChance: 0.95,
+                    spawnInterval: 3200
                 },
                 ealc2: {
                     spawnChance: 1.0,
-                    spawnInterval: 10000
+                    spawnInterval: 8000
+                },
+                ealc3: {
+                    spawnChance: 0.7,
+                    spawnInterval: 12000
                 }
             },
             startDelay: 0
         },
         {
             id: 3,
-            name: 'Wave 3 - Intense',
-            duration: 40000,
+            name: 'Wave 3 - Last Stand',
+            duration: 55000,
             enemies: {
                 ealc1: {
                     spawnChance: 1.0,
-                    spawnInterval: 2500
+                    spawnInterval: 2000
                 },
                 ealc2: {
-                    spawnChance: 0.6,
-                    spawnInterval: 3000
+                    spawnChance: 0.8,
+                    spawnInterval: 2300
+                },
+                ealc3: {
+                    spawnChance: 1.0,
+                    spawnInterval: 11000
                 }
             },
             startDelay: 0
         }
     ],
 
-    // Final wave configuration (triggered at 2 minutes)
     finalWave: {
-        multiplier: 0.5,
-        duration: 8000
+        multiplier: 0.55,
+        duration: 22000
     },
 
-    // Plant types available in this level
     plantTypes: {
         peashooter: {
             name: 'Peashooter',
@@ -149,6 +155,7 @@ const Level3 = {
             fullImage: 'dcarnivore1full.png',
             cost: 150,
             health: 150,
+            attackDamage: 0,
             width: 50,
             height: 50,
             collisionRadius: 25,
@@ -160,7 +167,7 @@ const Level3 = {
         shovel: {
             name: 'Chlopatoň',
             image: 'dshovel.png',
-            cost: 0, // Special item - not purchased
+            cost: 0,
             health: 0,
             attackDamage: 0,
             width: 50,
@@ -171,7 +178,6 @@ const Level3 = {
         }
     },
 
-    // Enemy types for this level
     enemyTypes: {
         ealc1: {
             name: 'Basic Zombie',
@@ -198,10 +204,26 @@ const Level3 = {
             height: 50,
             collisionRadius: 25,
             lowHealthThreshold: 0.5
+        },
+        ealc3: {
+            name: 'Flying Zombie',
+            image: 'ealc3.png',
+            lowHealthImage: 'ealc3low.png',
+            flyImage: 'ealc3fly.png',
+            health: 500,
+            speed: 0.075,
+            flySpeed: 0.3,
+            damage: 20,
+            damageInterval: 1000,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            lowHealthThreshold: 0.5,
+            isFlyer: true,
+            initialState: 'flying'
         }
     },
 
-    // Images to preload
     preloadImages: [
         'dpea1.png',
         'dpea1shoot.png',
@@ -215,30 +237,27 @@ const Level3 = {
         'ealc1low.png',
         'ealc2.png',
         'ealc2low.png',
+        'ealc3.png',
+        'ealc3low.png',
+        'ealc3fly.png',
         'pecen.png',
         'projectile.png',
+        'projectilecold.png',
+        'ice.png',
         'sun.png',
         'lvl1bcg.png',
-        'dcherry.png',
         'dcherryexp.png',
-        'projectilecold.png',
         'dchpea.png',
         'dchpeashoot.png',
         'dcarnivore1empty.png',
         'dcarnivore1full.png'
     ],
 
-    /**
-     * Calculate total level duration from waves
-     */
     getLevelDuration() {
         const wavesDuration = this.waves.reduce((sum, wave) => sum + wave.duration, 0);
         return wavesDuration + 3000;
     },
 
-    /**
-     * Get wave schedule for this level
-     */
     getWaveSchedule() {
         const schedule = [];
         let currentTime = 0;
@@ -262,9 +281,6 @@ const Level3 = {
         return schedule;
     },
 
-    /**
-     * Get enemy spawn configuration for current wave
-     */
     getWaveEnemyConfig(gametime) {
         const schedule = this.getWaveSchedule();
 
@@ -282,53 +298,46 @@ const Level3 = {
         return null;
     },
 
-    /**
-     * Determine which enemy type should spawn and if it should spawn
-     * Takes individual spawn timers for each enemy type
-     */
     shouldSpawnEnemy(waveEnemyConfig, lastSpawnTimes, currentTime) {
         if (!waveEnemyConfig || !waveEnemyConfig.enemies) return null;
 
-        // Collect all possible enemy types
         const enemyTypes = Object.keys(waveEnemyConfig.enemies);
-        
         if (enemyTypes.length === 0) return null;
 
-        // Check each enemy type independently with its own timer
         for (let enemyType of enemyTypes) {
             const spawnConfig = waveEnemyConfig.enemies[enemyType];
+            if (!spawnConfig) {
+                console.warn(`Invalid spawn config for enemy type: ${enemyType}`);
+                continue;
+            }
+
             const lastSpawn = lastSpawnTimes[enemyType] || 0;
             const timeSinceLastSpawn = currentTime - lastSpawn;
 
-            // Check if enough time has passed and spawn chance succeeds
-            if (timeSinceLastSpawn >= spawnConfig.spawnInterval && 
+            if (timeSinceLastSpawn >= spawnConfig.spawnInterval &&
                 Math.random() < spawnConfig.spawnChance) {
-                return enemyType; // Return the enemy type to spawn
+                return enemyType;
             }
         }
 
         return null;
     },
 
-    /**
-     * Get total enemies expected to spawn in all main waves
-     */
     calculateExpectedEnemyCount() {
         const schedule = this.getWaveSchedule();
         let expectedCount = 0;
 
         schedule.forEach(wave => {
-            const spawnConfig = wave.config.enemies.ealc1;
-            const spawnsPerWave = wave.duration / spawnConfig.spawnInterval;
-            expectedCount += spawnsPerWave * spawnConfig.spawnChance;
+            if (wave.config.enemies && wave.config.enemies.ealc1) {
+                const spawnConfig = wave.config.enemies.ealc1;
+                const spawnsPerWave = wave.duration / spawnConfig.spawnInterval;
+                expectedCount += spawnsPerWave * spawnConfig.spawnChance;
+            }
         });
 
         return Math.floor(expectedCount);
     },
 
-    /**
-     * Check if all main waves are complete
-     */
     areWavesComplete(gametime) {
         const schedule = this.getWaveSchedule();
         if (schedule.length === 0) return false;

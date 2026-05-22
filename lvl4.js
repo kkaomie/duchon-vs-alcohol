@@ -275,6 +275,11 @@ const Level4 = {
         // Check each enemy type independently with its own timer
         for (let enemyType of enemyTypes) {
             const spawnConfig = waveEnemyConfig.enemies[enemyType];
+            if (!spawnConfig) {
+                console.warn(`Invalid spawn config for enemy type: ${enemyType}`);
+                continue;
+            }
+            
             const lastSpawn = lastSpawnTimes[enemyType] || 0;
             const timeSinceLastSpawn = currentTime - lastSpawn;
 
@@ -296,9 +301,12 @@ const Level4 = {
         let expectedCount = 0;
 
         schedule.forEach(wave => {
-            const spawnConfig = wave.config.enemies.ealc1;
-            const spawnsPerWave = wave.duration / spawnConfig.spawnInterval;
-            expectedCount += spawnsPerWave * spawnConfig.spawnChance;
+            // Check if ealc1 exists before accessing
+            if (wave.config.enemies && wave.config.enemies.ealc1) {
+                const spawnConfig = wave.config.enemies.ealc1;
+                const spawnsPerWave = wave.duration / spawnConfig.spawnInterval;
+                expectedCount += spawnsPerWave * spawnConfig.spawnChance;
+            }
         });
 
         return Math.floor(expectedCount);

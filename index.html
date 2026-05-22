@@ -245,27 +245,7 @@
                 backgroundMusic.currentTime = 0;
             }
 
-            // Get random mp4 from assets folder (try common naming patterns)
-            const musicFiles = [
-                'assets/music1.mp4',
-                'assets/music2.mp4',
-                'assets/music3.mp4',
-                'assets/bg1.mp4',
-                'assets/bg2.mp4',
-                'assets/background1.mp4',
-                'assets/background2.mp4'
-            ];
-
-            // Try to pick a random one that exists
-            const randomFile = musicFiles[Math.floor(Math.random() * musicFiles.length)];
-            
-            backgroundMusic = new Audio(randomFile);
-            backgroundMusic.loop = true;
-            backgroundMusic.volume = 0.3;
-            backgroundMusic.play().catch(err => {
-                // If this file doesn't exist, try next one
-                console.log('Background music not available:', randomFile);
-            });
+            // Background audio is handled elsewhere, so do not load missing MP4 assets here.
         }
 
         function stopBackgroundMusic() {

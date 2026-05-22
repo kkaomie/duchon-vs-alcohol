@@ -125,6 +125,24 @@ const Level3 = {
             explodeDelay: 3000,
             explosionDuration: 500
         },
+        coldpea: {
+            name: 'Chladničkouhorkoň',
+            image: 'dchpea.png',
+            shootImage: 'dchpeashoot.png',
+            cost: 175,
+            health: 50,
+            attackRange: 10000,
+            attackDamage: 40,
+            attackSpeed: 1000,
+            shootDuration: 300,
+            width: 50,
+            height: 50,
+            collisionRadius: 25,
+            placementCooldown: 7500,
+            slowsEnemies: true,
+            slowMultiplier: 0.5,
+            slowDuration: 3000
+        },
         shovel: {
             name: 'Chlopatoň',
             image: 'dshovel.png',
@@ -188,7 +206,10 @@ const Level3 = {
         'sun.png',
         'lvl1bcg.png',
         'dcherry.png',
-        'dcherryexp.png'
+        'dcherryexp.png',
+        'projectilecold.png',
+        'dchpea.png',
+        'dchpeashoot.png'
     ],
 
     /**

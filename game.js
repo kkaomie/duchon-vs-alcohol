@@ -76,6 +76,8 @@ function initGame(level) {
           levelConfig = Level3;
       } else if (level === 4) {
           levelConfig = Level4;
+      } else if (level === 5) {
+          levelConfig = Level5;
       }
 
       if (!levelConfig) {
@@ -332,7 +334,7 @@ function initGame(level) {
                             if (enemy.rowIndex === this.gridY && enemy.x > this.x) {
                                 const distX = enemy.x - this.x;
                                 if (distX <= this.type.attackRange) {
-                                    projectiles.push(new Projectile(this.x, this.y, enemy));
+                                    projectiles.push(new Projectile(this.x, this.y, enemy, this.plantType));
                                     this.lastAttack = now;
                                     this.isShooting = true;
                                     this.shootStartTime = now;
@@ -403,12 +405,13 @@ function initGame(level) {
 
               // Projectile class
               class Projectile {
-                    constructor(x, y, target) {
+                    constructor(x, y, target, plantType = null) {
                         this.x = x;
                         this.y = y;
                         this.target = target;
                         this.speed = 5;
                         this.radius = 8;
+                        this.plantType = plantType;
                     }
 
                     update() {
@@ -422,6 +425,14 @@ function initGame(level) {
 
                         if (dist < 15) {
                             this.target.health -= PLANT_TYPES.peashooter.attackDamage;
+                            
+                            // Apply slow if this is a cold projectile
+                            if (this.plantType && PLANT_TYPES[this.plantType] && PLANT_TYPES[this.plantType].slowsEnemies) {
+                                const slowData = PLANT_TYPES[this.plantType];
+                                this.target.slowedSpeed = this.target.type.speed * slowData.slowMultiplier;
+                                this.target.slowEndTime = Date.now() + slowData.slowDuration;
+                            }
+                            
                             return false;
                         }
 
@@ -431,11 +442,13 @@ function initGame(level) {
                     }
 
                     draw() {
-                        const img = imageCache['projectile.png'];
+                        // Use cold projectile image if available, otherwise regular projectile
+                        const imageKey = this.plantType && PLANT_TYPES[this.plantType] && PLANT_TYPES[this.plantType].slowsEnemies ? 'projectilecold.png' : 'projectile.png';
+                        const img = imageCache[imageKey];
                         if (img) {
                             ctx.drawImage(img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
                         } else {
-                            ctx.fillStyle = '#ffff00';
+                            ctx.fillStyle = this.plantType && PLANT_TYPES[this.plantType] && PLANT_TYPES[this.plantType].slowsEnemies ? '#00ccff' : '#ffff00';
                             ctx.beginPath();
                             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                             ctx.fill();
@@ -1313,6 +1326,17 @@ function initGame(level) {
                             if (cherryImg) {
                                 ctx.drawImage(cherryImg, canvas.width / 2 - 60, canvas.height / 2 + 10, 120, 120);
                             }
+                        } else if (level === 5) {
+                            ctx.fillText('chcem ťa.', canvas.width / 2, canvas.height / 2 - 70);
+                            ctx.font = 'bold 22px Arial';
+                            ctx.fillText('približ sa.', canvas.width / 2, canvas.height / 2 - 30);
+                            ctx.font = 'bold 20px Arial';
+                            ctx.fillText('(odomkol sa chladičkouhorkoň)', canvas.width / 2, canvas.height / 2 - 5);
+
+                            const coldpeaImg = imageCache['dchpea.png'];
+                            if (coldpeaImg) {
+                                ctx.drawImage(coldpeaImg, canvas.width / 2 - 60, canvas.height / 2 + 35, 120, 120);
+                            }
                         }
                         
                         // Show unlocked message with sunflower image if applicable
@@ -1344,6 +1368,8 @@ function initGame(level) {
                                     plantSelector.unlockPlant('shovel');
                                 } else if (level === 4) {
                                     plantSelector.unlockPlant('cherry');
+                                } else if (level === 5) {
+                                    plantSelector.unlockPlant('coldpea');
                                 }
                                 // Regenerate levels grid to reflect unlocked levels
                                 if (typeof regenerateLevels === 'function') {

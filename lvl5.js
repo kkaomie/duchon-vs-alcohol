@@ -1,20 +1,20 @@
 /**
- * Level 4 Configuration & Logic
+ * Level 5 Configuration & Logic
  * Modular, self-contained level implementation
  * 
- * Copy of Level 3 with same mechanics but different winscreen message
+ * Slightly harder version of Level 4 with new cold-shooting plant
  */
 
-const Level4 = {
+const Level5 = {
     // Level metadata
     config: {
-        name: 'Level 4',
-        description: 'Full arsenal with lawn mower tool',
+        name: 'Level 5',
+        description: 'Challenge with new cold-shooting plant',
         unlockedRows: 6,
-        levelDuration: 93000, // 30+30+30+3 seconds
+        levelDuration: 100000, // Slightly longer than level 4
     },
 
-    // Wave configuration - easily modifiable
+    // Wave configuration - slightly harder than level 4
     waves: [
         {
             id: 1,
@@ -23,11 +23,11 @@ const Level4 = {
             enemies: {
                 ealc1: {
                     spawnChance: 1,
-                    spawnInterval: 8000
+                    spawnInterval: 7000 // Faster than level 4
                 },
                 ealc2: {
                     spawnChance: 1.0,
-                    spawnInterval: 18000
+                    spawnInterval: 16000 // Faster than level 4
                 }
             },
             startDelay: 20000
@@ -38,16 +38,16 @@ const Level4 = {
             duration: 50000,
             enemies: {
                 ealc1: {
-                    spawnChance: 0.85,
-                    spawnInterval: 4000
+                    spawnChance: 0.9, // Slightly higher than level 4
+                    spawnInterval: 3500 // Faster than level 4
                 },
                 ealc2: {
                     spawnChance: 1.0,
-                    spawnInterval: 10000
+                    spawnInterval: 9000 // Faster than level 4
                 },
                 ealc3: {
-                    spawnChance: 0.5,
-                    spawnInterval: 15000
+                    spawnChance: 0.6, // Slightly higher than level 4
+                    spawnInterval: 13000 // Faster than level 4
                 }
             },
             startDelay: 0
@@ -59,15 +59,15 @@ const Level4 = {
             enemies: {
                 ealc1: {
                     spawnChance: 1.0,
-                    spawnInterval: 2500
+                    spawnInterval: 2200 // Faster than level 4
                 },
                 ealc2: {
-                    spawnChance: 0.6,
-                    spawnInterval: 3000
+                    spawnChance: 0.7, // Slightly higher than level 4
+                    spawnInterval: 2800 // Faster than level 4
                 },
                 ealc3: {
-                    spawnChance: 1,
-                    spawnInterval: 15000
+                    spawnChance: 1, // Slightly higher than level 4
+                    spawnInterval: 14000 // Slightly faster than level 4
                 }
             },
             startDelay: 0
@@ -77,7 +77,7 @@ const Level4 = {
     // Final wave configuration (triggered at 2 minutes)
     finalWave: {
         multiplier: 0.5,
-        duration: 14000
+        duration: 16000 // Slightly longer spawning window
     },
 
     // Plant types available in this level
@@ -235,11 +235,11 @@ const Level4 = {
         'ealc3fly.png',
         'pecen.png',
         'projectile.png',
+        'projectilecold.png',
         'sun.png',
         'lvl1bcg.png',
         'dcherry.png',
         'dcherryexp.png',
-        'projectilecold.png',
         'dchpea.png',
         'dchpeashoot.png'
     ],

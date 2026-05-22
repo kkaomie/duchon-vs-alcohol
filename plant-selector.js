@@ -39,12 +39,23 @@ const PLANT_DATABASE = {
     },
     cherry: {
         name: 'Čerešchňon',
-        description: 'exploduje po 3 sekundách a zabije všetko v plus tvare',
+        description: 'ruská ofenzíva, zabíja všetko (dokonca aj mimo ukrajiny)',
         image: 'dcherry.png',
         cost: 150,
-        stats: 'výbuch/3s | životík: 500 | plus tvar',
+        stats: 'výbuch po 3s | životík: 500 | 3x3 pole',
         unlocked: false,
         unlockedByLevel: 4, // Unlocked after completing level 4
+        song: 'assets/S úsmevom.mp3',
+        levelSong: 'assets/duchonmp3/3.mp3'
+    },
+    coldpea: {
+        name: 'Chladničkouhorkoň',
+        description: 'strieľa ľadô, spomalťuje nepriateľov na 3 sekundy',
+        image: 'dchpea.png',
+        cost: 175,
+        stats: 'útočík: 40 | spomalenie: 50% | životík: 50',
+        unlocked: false,
+        unlockedByLevel: 5, // Unlocked after completing level 5
         song: 'assets/S úsmevom.mp3',
         levelSong: 'assets/duchonmp3/2.mp3'
     },

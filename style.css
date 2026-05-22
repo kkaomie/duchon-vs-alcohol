@@ -1,0 +1,564 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+html {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    -webkit-user-select: none;
+    -webkit-user-zoom: none;
+    zoom: 1 !important;
+}
+
+.screen {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    transition: opacity 0.3s ease;
+}
+
+.screen.hidden {
+    display: none !important;
+    pointer-events: none;
+}
+
+/* Home Screen */
+#home-screen {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background: #1a7e28;
+    background-image: url('./assets/mainbcg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+#home-screen .background {
+    position: absolute;
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.button-container {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    width: 90%;
+    max-width: 280px;
+}
+
+.game-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    background-color: rgba(26, 126, 40, 0.9);
+    color: white;
+    border: 3px solid white;
+    border-radius: 10px;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.game-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+}
+
+.game-button:hover {
+    background-color: rgba(26, 126, 40, 1);
+}
+
+/* Levels Screen */
+#levels-screen {
+    display: flex;
+    flex-direction: column;
+    background: #1a1a1a;
+    background-image: url('./assets/lvlsbcg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow-y: hidden;
+    overflow-x: auto;
+    padding: 15px;
+    position: relative;
+}
+
+#levels-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+.levels-container {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+}
+
+.levels-title {
+    color: white;
+    font-size: 22px;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.levels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+    gap: 12px;
+    max-width: 85vw;
+    width: 100%;
+    justify-items: center;
+    overflow-x: auto;
+    padding: 10px 0;
+}
+
+.level-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.level-item.unlocked {
+    cursor: pointer;
+}
+
+.level-item.unlocked:hover .level-icon {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+.level-item.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.level-icon {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(200, 200, 200, 0.8));
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: bold;
+    color: #1a7e28;
+    opacity: 0.85;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.level-item.unlocked .level-icon {
+    color: #1a7e28;
+}
+
+.level-item.locked .level-icon {
+    color: #666;
+    font-size: 30px;
+}
+
+.level-label {
+    color: white;
+    font-size: 10px;
+    text-align: center;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Plant Selector Button */
+.plant-selector-button {
+    position: absolute;
+    top: 60px;
+    right: 15px;
+    z-index: 25;
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    background-color: rgba(26, 126, 40, 0.8);
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.plant-selector-button:hover {
+    background-color: rgba(26, 126, 40, 1);
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 1);
+}
+
+.plant-selector-button:active {
+    transform: scale(0.95);
+}
+
+/* Plant Selector Screen */
+#plant-selector-screen {
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%);
+    padding: 60px 15px 15px 15px;
+    gap: 15px;
+    overflow: hidden;
+}
+
+.plant-selector-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 15px;
+    overflow: hidden;
+}
+
+.plant-selector-info-panel {
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plant-info-label {
+    width: 100%;
+    color: white;
+    text-align: center;
+}
+
+.plant-info-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #90ee90;
+    margin-bottom: 8px;
+}
+
+.plant-info-description {
+    font-size: 14px;
+    color: #ffffff;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.plant-info-stats {
+    font-size: 12px;
+    color: #ffff99;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.plant-selector-content {
+    display: flex;
+    gap: 15px;
+    height: 100%;
+    overflow: hidden;
+    flex: 1;
+}
+
+.plant-codex {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+    overflow-y: auto;
+    padding-right: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.plant-codex::-webkit-scrollbar {
+    width: 8px;
+}
+
+.plant-codex::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.plant-codex::-webkit-scrollbar-thumb {
+    background: rgba(26, 126, 40, 0.7);
+    border-radius: 4px;
+}
+
+.plant-codex::-webkit-scrollbar-thumb:hover {
+    background: rgba(26, 126, 40, 1);
+}
+
+.plant-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 10px;
+    background-color: rgba(26, 126, 40, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 110px;
+    justify-content: space-between;
+}
+
+.plant-card:hover {
+    background-color: rgba(26, 126, 40, 0.8);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.05);
+}
+
+.plant-card.selected {
+    background-color: rgba(144, 238, 144, 0.8);
+    border-color: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 10px rgba(144, 238, 144, 0.6);
+}
+
+.plant-card-image {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.plant-card-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.plant-card-name {
+    font-size: 11px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+}
+
+.plant-card-cost {
+    font-size: 10px;
+    color: #ffff99;
+    font-weight: bold;
+}
+
+.plant-selected-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 200px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.selected-count {
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    padding: 5px;
+    background-color: rgba(26, 126, 40, 0.5);
+    border-radius: 4px;
+}
+
+.selected-plants {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.selected-plants::-webkit-scrollbar {
+    width: 6px;
+}
+
+.selected-plants::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.selected-plants::-webkit-scrollbar-thumb {
+    background: rgba(26, 126, 40, 0.7);
+    border-radius: 3px;
+}
+
+.selected-plant-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+    background-color: rgba(144, 238, 144, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #1a3a1a;
+}
+
+.selected-plant-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.deselect-btn {
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 3px;
+    background-color: rgba(255, 76, 76, 0.8);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.deselect-btn:hover {
+    background-color: rgba(255, 76, 76, 1);
+    transform: scale(1.1);
+}
+
+.deselect-btn:active {
+    transform: scale(0.95);
+}
+
+/* Game Screen */
+#gameCanvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    touch-action: manipulation;
+}
+
+/* Install Tutorial Screen */
+#install-screen {
+    display: flex;
+    flex-direction: row;
+    background: #1a1a1a;
+    overflow-y: hidden;
+    overflow-x: auto;
+    padding: 15px;
+    gap: 10px;
+    position: relative;
+}
+
+.back-button {
+    align-self: flex-start;
+    padding: 8px 14px;
+    font-size: 13px;
+    background-color: #1a7e28;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: all 0.2s ease;
+    z-index: 20;
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.back-button:active {
+    transform: scale(0.95);
+}
+
+.back-button:hover {
+    background-color: #138620;
+}
+
+.install-content {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    margin-top: 40px;
+    overflow-x: auto;
+}
+
+.install-image {
+    max-width: 28vh;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+/* Mobile-specific improvements */
+@supports (padding: max(0px)) {
+    .screen {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+        padding-top: max(0px, env(safe-area-inset-top));
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .plant-selected-list {
+        width: 150px;
+    }
+    
+    .plant-codex {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    }
+}

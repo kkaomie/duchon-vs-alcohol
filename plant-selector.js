@@ -60,11 +60,11 @@ const PLANT_DATABASE = {
         levelSong: 'assets/duchonmp3/10.mp3'
     },
     objekt76: {
-        name: 'objekt#76',
-        description: 'máš tento objekt (neviem ako sa mu nadáva)',
+        name: 'Objekt #76',
+        description: 'jemu alkohol nevadí (preto nie je duchoň)',
         image: 'dcarnivore1empty.png',
         cost: 150,
-        stats: 'zožerie nepriateľa vpravo do 100px, potom je plný 13s | životík: 150',
+        stats: 'schrumká alkohol | životík: 150',
         unlocked: false,
         unlockedByLevel: 6, // Unlocked after completing level 6
         song: 'assets/duchonmp3/11.mp3',
@@ -204,7 +204,7 @@ class PlantSelector {
         screen.style.display = 'none';
         screen.innerHTML = `
             <button class="back-button" id="plant-selector-back-btn" style="top: 15px; left: 15px;">← Späť</button>
-            <button class="back-button" id="sebavrazda-btn" style="top: 15px; right: 15px; background-color: #ff2222; padding: 6px 10px; font-size: 11px; min-width: 90px;">sebavražda</button>
+            <button class="back-button" id="sebavrazda-btn" style="top: 15px; right: 15px; background-color: #ff2222; padding: 10px 8px; font-size: 14px; height: 44px; min-width: 70px; line-height: 20px;">sebavražda</button>
             <div class="plant-selector-container">
                 <div class="plant-selector-info-panel">
                     <div class="plant-info-label">

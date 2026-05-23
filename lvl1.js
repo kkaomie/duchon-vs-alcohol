@@ -207,8 +207,9 @@ const Level1 = {
      * Formula: sum of all wave durations + 3 seconds buffer
      */
     getLevelDuration() {
-        const wavesDuration = this.waves.reduce((sum, wave) => sum + wave.duration, 0);
-        return wavesDuration + 3000; // Add 3 second buffer
+        const wavesSum = this.waves.reduce((sum, wave) => sum + wave.duration + (wave.startDelay || 0), 0);
+        const finalDur = (this.finalWave && this.finalWave.duration) ? this.finalWave.duration : 0;
+        return wavesSum + finalDur + 5000; // include start delays, final wave and 5s buffer
     },
 
     /**

@@ -265,8 +265,9 @@ const Level5 = {
      * Calculate total level duration from waves
      */
     getLevelDuration() {
-        const wavesDuration = this.waves.reduce((sum, wave) => sum + wave.duration, 0);
-        return wavesDuration + 3000;
+        const wavesSum = this.waves.reduce((sum, wave) => sum + wave.duration + (wave.startDelay || 0), 0);
+        const finalDur = (this.finalWave && this.finalWave.duration) ? this.finalWave.duration : 0;
+        return wavesSum + finalDur + 5000;
     },
 
     /**

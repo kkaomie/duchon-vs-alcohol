@@ -26,7 +26,7 @@ const Level6 = {
                     spawnInterval: 15000
                 }
             },
-            startDelay: 20000
+            startDelay: 30000
         },
         {
             id: 2,
@@ -46,7 +46,7 @@ const Level6 = {
                     spawnInterval: 12000
                 }
             },
-            startDelay: 0
+            startDelay: 10000
         },
         {
             id: 3,
@@ -59,14 +59,14 @@ const Level6 = {
                 },
                 ealc2: {
                     spawnChance: 0.8,
-                    spawnInterval: 2300
+                    spawnInterval: 2800
                 },
                 ealc3: {
                     spawnChance: 1.0,
                     spawnInterval: 11000
                 }
             },
-            startDelay: 0
+            startDelay: 10000
         }
     ],
 
@@ -254,8 +254,9 @@ const Level6 = {
     ],
 
     getLevelDuration() {
-        const wavesDuration = this.waves.reduce((sum, wave) => sum + wave.duration, 0);
-        return wavesDuration + 3000;
+        const wavesSum = this.waves.reduce((sum, wave) => sum + wave.duration + (wave.startDelay || 0), 0);
+        const finalDur = (this.finalWave && this.finalWave.duration) ? this.finalWave.duration : 0;
+        return wavesSum + finalDur + 5000;
     },
 
     getWaveSchedule() {

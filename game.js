@@ -190,7 +190,6 @@ window.initGame = function initGame(level) {
               
               // Calculate level duration from waves and enemy wait time
               const LEVEL_DURATION = levelData.getLevelDuration();
-              const firstWaveDelay = levelData.waves[0].startDelay;
 
               // Game state
               let suns = 50;
@@ -597,9 +596,7 @@ window.initGame = function initGame(level) {
                             if (plant.gridY === this.rowIndex) {
                                 if (plant.isNearby(this.x, this.y)) {
                                     if (nowDamage - this.lastDamage > this.type.damageInterval) {
-                                        if (!plant.isFull) {
-                                            plant.health -= this.type.damage;
-                                        }
+                                        plant.health -= this.type.damage;
                                         this.lastDamage = nowDamage;
                                     }
                                 }
@@ -922,7 +919,7 @@ window.initGame = function initGame(level) {
                     const barHeight = 20;
                     const barX = GRID_START_X;
                     const barY = 30;
-                    const totalDuration = LEVEL_DURATION + firstWaveDelay;
+                    const totalDuration = LEVEL_DURATION;
                     const progress = gametime / totalDuration;
 
                     ctx.fillStyle = '#333333';

@@ -69,7 +69,21 @@ window.initGame = function initGame(level) {
 
       // Get level configuration
       let levelConfig = null;
-      if (level === 1) {
+      if (level === 99) {
+          // Special speci level with modifiers
+          // Use Level1 as the base and modify it
+          if (typeof Level1 === 'undefined') {
+              console.error('Level1 not loaded for speci level base');
+              return;
+          }
+          levelConfig = JSON.parse(JSON.stringify(Level1)); // Deep copy
+          
+          // Apply speci modifiers
+          if (window.speciModifiers) {
+              levelConfig.config.unlockedRows = window.speciModifiers.unlockedRows;
+              levelConfig.speciModifiers = window.speciModifiers;
+          }
+      } else if (level === 1) {
           levelConfig = Level1;
       } else if (level === 2) {
           levelConfig = Level2;
@@ -235,7 +249,30 @@ window.initGame = function initGame(level) {
 
               // Enemy types from level configuration
               const ENEMY_TYPES = levelData.enemyTypes;
-              const ENEMY_TYPE = ENEMY_TYPES.ealc1; // Default enemy type for this level
+              let ENEMY_TYPE = ENEMY_TYPES.ealc1; // Default enemy type for this level
+
+              // Apply speci level modifiers
+              let gameTimeMultiplier = 1.0;
+              let kosackonEnabled = true;
+              if (level === 99 && levelData.speciModifiers) {
+                  gameTimeMultiplier = levelData.speciModifiers.timeSpeed;
+                  kosackonEnabled = levelData.speciModifiers.kosackonEnabled;
+                  
+                  // Create a modified copy of ENEMY_TYPE
+                  const modifiedEnemyType = JSON.parse(JSON.stringify(ENEMY_TYPE));
+                  modifiedEnemyType.health *= levelData.speciModifiers.enemyDamage;
+                  modifiedEnemyType.attackDamage *= levelData.speciModifiers.enemyDamage;
+                  modifiedEnemyType.speed *= levelData.speciModifiers.enemySpeed;
+                  ENEMY_TYPE = modifiedEnemyType;
+                  
+                  console.log('Speci level modifiers applied:', {
+                      timeSpeed: gameTimeMultiplier,
+                      enemyDamage: levelData.speciModifiers.enemyDamage,
+                      enemySpeed: levelData.speciModifiers.enemySpeed,
+                      unlockedRows: levelData.speciModifiers.unlockedRows,
+                      kosackonEnabled: kosackonEnabled
+                  });
+              }
 
               // Kosackon class
               class Kosackon {
@@ -866,7 +903,7 @@ window.initGame = function initGame(level) {
                         }
                         
                         // Draw kosackon (slightly bigger) on top of pecen ALWAYS if not used
-                        if (level >= 3 && !kosackonActiveRows.has(row)) {
+                        if (level >= 3 && kosackonEnabled && !kosackonActiveRows.has(row)) {
                             drawKosackonStatic(row);
                         }
                     }
@@ -1063,7 +1100,7 @@ window.initGame = function initGame(level) {
                     }
 
                     // Handle kosackon clicks (level 3+)
-                    if (level >= 3) {
+                    if (level >= 3 && kosackonEnabled) {
                         for (let row = 0; row < UNLOCKED_ROWS; row++) {
                             if (!kosackonActiveRows.has(row)) {
                                 const kosackonX = GRID_START_X - 80; // 30px closer
@@ -1189,7 +1226,7 @@ window.initGame = function initGame(level) {
                     const now = Date.now();
                     
                     if (!gamePaused) {
-                        gametime = now - startTime;
+                        gametime = (now - startTime) * gameTimeMultiplier;
                     }
 
                     drawBackground();
@@ -1351,7 +1388,13 @@ window.initGame = function initGame(level) {
                         ctx.font = 'bold 48px Arial';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
-                        ctx.fillText('mojko prehral si či ako sa tomu nadáva', canvas.width / 2, canvas.height / 2 - 30);
+                        
+                        // Special message for speci level
+                        if (level === 99) {
+                            ctx.fillText('trochu si si veril no', canvas.width / 2, canvas.height / 2 - 30);
+                        } else {
+                            ctx.fillText('mojko prehral si či ako sa tomu nadáva', canvas.width / 2, canvas.height / 2 - 30);
+                        }
                         
                         // Select subtitle only on first game over
                         if (!loseScreenSubtitle) {
@@ -1384,8 +1427,10 @@ window.initGame = function initGame(level) {
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'top';
                         
-                        // Different messages based on level
-                        if (level === 1) {
+                        // Special message for speci level
+                        if (level === 99) {
+                            ctx.fillText('ta čo už', canvas.width / 2, canvas.height / 2 - 70);
+                        } else if (level === 1) {
                             drawWrappedText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2 - 70, canvas.width * 0.75, 34);
                         } else if (level === 2) {
                             drawWrappedText('odomkol si Orechoňa, nuž hlavne Kosačkona, ktorý zachráni riadok raz za hru keď naňho klikneš', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
@@ -1457,26 +1502,38 @@ window.initGame = function initGame(level) {
                         if (Date.now() - gameOverTime > 3000) {
                             isTransitioning = true;
                             gameActive = false; // Stop all game logic
-                            // Unlock next level when level is completed
-                            if (typeof plantSelector !== 'undefined') {
-                                plantSelector.completeLevel(level - 1); // 0-indexed
-                                if (level === 1) {
-                                    plantSelector.unlockPlant('sunflower');
-                                } else if (level === 2) {
-                                    plantSelector.unlockPlant('orechon');
-                                } else if (level === 3) {
-                                    plantSelector.unlockPlant('shovel');
-                                } else if (level === 4) {
-                                    plantSelector.unlockPlant('cherry');
-                                } else if (level === 5) {
-                                    plantSelector.unlockPlant('coldpea');
-                                } else if (level === 6) {
-                                    plantSelector.unlockPlant('coldpea');
-                                    plantSelector.unlockPlant('objekt76');
+                            
+                            // Handle speci level completion
+                            if (level === 99) {
+                                if (typeof speciLevel !== 'undefined') {
+                                    speciLevel.levelCompleted();
+                                    // Regenerate levels grid to show updated speci level status
+                                    if (typeof generateLevels === 'function') {
+                                        generateLevels();
+                                    }
                                 }
-                                // Regenerate levels grid to reflect unlocked levels
-                                if (typeof regenerateLevels === 'function') {
-                                    regenerateLevels();
+                            } else {
+                                // Unlock next level when level is completed
+                                if (typeof plantSelector !== 'undefined') {
+                                    plantSelector.completeLevel(level - 1); // 0-indexed
+                                    if (level === 1) {
+                                        plantSelector.unlockPlant('sunflower');
+                                    } else if (level === 2) {
+                                        plantSelector.unlockPlant('orechon');
+                                    } else if (level === 3) {
+                                        plantSelector.unlockPlant('shovel');
+                                    } else if (level === 4) {
+                                        plantSelector.unlockPlant('cherry');
+                                    } else if (level === 5) {
+                                        plantSelector.unlockPlant('coldpea');
+                                    } else if (level === 6) {
+                                        plantSelector.unlockPlant('coldpea');
+                                        plantSelector.unlockPlant('objekt76');
+                                    }
+                                    // Regenerate levels grid to reflect unlocked levels
+                                    if (typeof regenerateLevels === 'function') {
+                                        regenerateLevels();
+                                    }
                                 }
                             }
                             returnToLevels();
@@ -1505,6 +1562,26 @@ window.initGame = function initGame(level) {
                     // Restart background music when returning to levels
                     if (typeof bgMusicManager !== 'undefined') {
                         bgMusicManager.playBackgroundMusic();
+                    }
+                    
+                    // Hide speci level screens if we're coming from a speci level
+                    if (level === 99) {
+                        const speciMainScreen = document.getElementById('speci-level-screen');
+                        const speciModifiersScreen = document.getElementById('speci-modifiers-screen');
+                        const speciHistoryScreen = document.getElementById('speci-history-screen');
+                        
+                        if (speciMainScreen) {
+                            speciMainScreen.style.display = 'none';
+                            speciMainScreen.classList.add('hidden');
+                        }
+                        if (speciModifiersScreen) {
+                            speciModifiersScreen.style.display = 'none';
+                            speciModifiersScreen.classList.add('hidden');
+                        }
+                        if (speciHistoryScreen) {
+                            speciHistoryScreen.style.display = 'none';
+                            speciHistoryScreen.classList.add('hidden');
+                        }
                     }
                     
                     canvas.removeEventListener('click', handleGameInput);

@@ -1,9 +1,17 @@
-const CACHE_NAME = 'html-game-v5';
+const CACHE_NAME = 'html-game-v6';
 const urlsToCache = [
     './',
     './index.html',
     './style.css',
     './game.js',
+    './plant-selector.js',
+    './speci-level.js',
+    './lvl1.js',
+    './lvl2.js',
+    './lvl3.js',
+    './lvl4.js',
+    './lvl5.js',
+    './lvl6.js',
     './manifest.json',
     './assets/icons/icon-192.png',
     './assets/icons/icon-512.png',

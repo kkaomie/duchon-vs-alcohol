@@ -518,14 +518,6 @@ class PlantSelector {
 
 // Initialize when DOM is ready
 let plantSelector;
-function initPlantSelector() {
-    if (!plantSelector) {
-        plantSelector = new PlantSelector();
-    }
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPlantSelector);
-} else {
-    initPlantSelector();
-}
+document.addEventListener('DOMContentLoaded', () => {
+    plantSelector = new PlantSelector();
+});

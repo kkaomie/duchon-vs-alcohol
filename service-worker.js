@@ -21,6 +21,17 @@ const urlsToCache = [
     './assets/tutinst3.png'
 ];
 
+// Include plain URLs too so stale HTML can still load the latest file cache when
+// the page has not yet switched to versioned script references.
+urlsToCache.push('./plant-selector.js');
+urlsToCache.push('./speci-level.js');
+urlsToCache.push('./lvl1.js');
+urlsToCache.push('./lvl2.js');
+urlsToCache.push('./lvl3.js');
+urlsToCache.push('./lvl4.js');
+urlsToCache.push('./lvl5.js');
+urlsToCache.push('./lvl6.js');
+
 self.addEventListener('install', (event) => {
     console.log('Service Worker installing...');
     event.waitUntil(

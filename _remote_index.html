@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="theme-color" content="#1a7e28">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Duchon Game">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" href="./assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
+    <link rel="stylesheet" href="style.css">
+    <title>Duchoň vs Alcohol</title>
+    <style>
+        #warning-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #ff4444;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        body.show-warning {
+            padding-top: 60px;
+        }
+        
+        body.show-warning #warning-banner {
+            display: block;
+        }
+
+        #secret-console-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 60px;
+            height: 60px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: auto;
+            display: none;
+        }
+
+        #secret-console-button.show {
+            display: block;
+        }
+
+        #secret-console-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #secret-console-modal.show {
+            display: flex;
+        }
+
+        .secret-console-box {
+            background-color: #1a1a1a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .secret-console-input {
+            background-color: #0a0a0a;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 15px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .secret-console-input::placeholder {
+            color: #00880088;
+        }
+
+        .secret-console-input:focus {
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+        }
+
+        .secret-console-message {
+            color: #00ff00;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            min-height: 40px;
+            word-wrap: break-word;
+        }
+
+        .secret-console-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #00ff00;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Plant selector button positioning */
+        .levels-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            position: relative;
+            z-index: 3;
+        }
+
+        .levels-title {
+            color: white;
+            font-size: 22px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            margin: 0;
+        }
+
+        .plant-selector-inline-button {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            background-color: rgba(26, 126, 40, 0.8);
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .plant-selector-inline-button:hover {
+            background-color: rgba(26, 126, 40, 1);
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 1);
+        }
+
+        .plant-selector-inline-button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div id="warning-banner">
+         ⚠️🥵🦶🏿🦄 hej inac kvoli nedostatocnym eurofondom (prioritu ma jachta) hra nefunguje V CHROME, MUSIS SI JU STIAHNUT (ako nainstalovat PWA)
+    </div>
+
+    <!-- Secret Console Button (invisible) -->
+    <button id="secret-console-button" title="Secret"></button>
+
+    <!-- Secret Console Modal -->
+    <div id="secret-console-modal">
+        <div class="secret-console-box">
+            <button class="secret-console-close-btn" id="secret-console-close-btn">×</button>
+            <input 
+                type="text" 
+                class="secret-console-input" 
+                id="secret-console-input" 
+                placeholder="zadaj príkaz..."
+                autocomplete="off"
+            >
+            <div class="secret-console-message" id="secret-console-message"></div>
+        </div>
+    </div>
+
+    <div id="home-screen" class="screen" style="display: flex !important;">
+        <div class="background"></div>
+        <div class="button-container">
+            <button id="play-btn" class="game-button">hrať hríčku</button>
+            <button id="install-btn" class="game-button">ako nainštalovať PWA</button>
+            <button id="refresh-sw-btn" class="game-button">obnoviť service-worker.js</button>
+        </div>
+    </div>
+
+    <div id="levels-screen" class="screen hidden" style="display: none !important;">
+        <button id="back-from-levels-btn" class="back-button">← Späť</button>
+        <div class="levels-container">
+            <div class="levels-header">
+                <h2 class="levels-title">Vyber si uroven zlatko</h2>
+                <button id="plant-selector-inline-btn" class="plant-selector-inline-button" title="Codex">🌿</button>
+            </div>
+            <div class="levels-grid" id="levelsGrid"></div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen hidden" style="display: none !important;">
+        <canvas id="gameCanvas" width="1280" height="720"></canvas>
+    </div>
+
+    <div id="install-screen" class="screen hidden" style="display: none !important;">
+        <button id="back-btn" class="back-button">← späť</button>
+        <div class="install-content">
+            <img src="./assets/tutinst1.png" alt="Installation step 1" class="install-image">
+            <img src="./assets/tutinst2.png" alt="Installation step 2" class="install-image">
+            <img src="./assets/tutinst3.png" alt="Installation step 3" class="install-image">
+        </div>
+    </div>
+    
+    <script src="plant-selector.js"></script>
+    <script src="lvl1.js"></script>
+    <script src="lvl2.js"></script>
+    <script src="lvl3.js"></script>
+    <script src="lvl4.js"></script>
+    <script src="game.js?v=7"></script>
+    <script>
+        // Background music management
+        let backgroundMusic = null;
+        let gameAudioContext = null;
+
+        function playBackgroundMusic() {
+            // Stop any existing background music
+            if (backgroundMusic) {
+                backgroundMusic.pause();
+                backgroundMusic.currentTime = 0;
+            }
+
+            // Background audio is handled elsewhere, so do not load missing MP4 assets here.
+        }
+
+        function stopBackgroundMusic() {
+            if (backgroundMusic) {
+                backgroundMusic.pause();
+                backgroundMusic.currentTime = 0;
+            }
+        }
+
+        // Secret Console Handler
+        function setupSecretConsole() {
+            const secretBtn = document.getElementById('secret-console-button');
+            const secretModal = document.getElementById('secret-console-modal');
+            const secretInput = document.getElementById('secret-console-input');
+            const secretMessage = document.getElementById('secret-console-message');
+            const closeBtn = document.getElementById('secret-console-close-btn');
+
+            // Show console when secret button is clicked
+            secretBtn.addEventListener('click', () => {
+                secretModal.classList.add('show');
+                secretInput.focus();
+                secretMessage.textContent = '';
+            });
+
+            // Close console
+            function closeConsole() {
+                secretModal.classList.remove('show');
+                secretInput.value = '';
+                secretMessage.textContent = '';
+            }
+
+            closeBtn.addEventListener('click', closeConsole);
+
+            // Close when clicking outside the box
+            secretModal.addEventListener('click', (e) => {
+                if (e.target === secretModal) {
+                    closeConsole();
+                }
+            });
+
+            // Handle console input
+            secretInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const command = secretInput.value.trim();
+                    
+                    if (command === 'allprogression') {
+                        // Unlock all levels and plants
+                        if (plantSelector) {
+                            // Complete all 15 levels
+                            for (let i = 0; i < 15; i++) {
+                                plantSelector.completedLevels.add(i);
+                            }
+                            
+                            // Unlock all plants
+                            plantSelector.unlockPlant('sunflower');
+                            plantSelector.unlockPlant('orechon');
+                            
+                            // Select all plants
+                            plantSelector.selectedPlants = ['peashooter', 'sunflower', 'orechon'];
+                            
+                            // Save to storage
+                            plantSelector.saveToStorage();
+                            plantSelector.renderCodex();
+                            plantSelector.renderSelectedList();
+                            
+                            // Regenerate levels if we're on levels screen
+                            if (typeof regenerateLevels === 'function') {
+                                regenerateLevels();
+                            }
+                            
+                            secretMessage.textContent = '✓ All progression unlocked!';
+                            secretInput.value = '';
+                        } else {
+                            secretMessage.textContent = '✗ Error: Plant selector not initialized';
+                        }
+                    } else if (command === 'x4Y5suns') {
+                        // Give 2000 suns starting in next level
+                        if (plantSelector) {
+                            plantSelector.secretBonusSuns = 2000;
+                            plantSelector.saveToStorage();
+                            secretMessage.textContent = '✓ +2000 suns bonus applied for next level!';
+                            secretInput.value = '';
+                        } else {
+                            secretMessage.textContent = '✗ Error: Plant selector not initialized';
+                        }
+                    } else if (command === 'allreset') {
+                        // Reset all benefits except progression
+                        if (plantSelector) {
+                            plantSelector.secretBonusSuns = 0;
+                            plantSelector.saveToStorage();
+                            secretMessage.textContent = '✓ All secret benefits reset!';
+                            secretInput.value = '';
+                        } else {
+                            secretMessage.textContent = '✗ Error: Plant selector not initialized';
+                        }
+                    } else {
+                        secretMessage.textContent = `✗ Unknown command: "${command}"`;
+                        secretInput.value = '';
+                    }
+                }
+            });
+
+            // Allow closing with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && secretModal.classList.contains('show')) {
+                    closeConsole();
+                }
+            });
+        }
+
+        // Check if running in browser vs installed app
+        function isInstalledApp() {
+            // Check if PWA is installed/running as standalone app
+            if (window.navigator.standalone === true) return true; // iOS
+            if (window.matchMedia('(display-mode: standalone)').matches) return true; // Android
+            if (window.matchMedia('(display-mode: fullscreen)').matches) return true; // Fullscreen
+            return false;
+        }
+
+        // Show warning only on home screen and if not installed
+        window.addEventListener('load', () => {
+            if (!isInstalledApp()) {
+                document.body.classList.add('show-warning');
+            }
+            setupSecretConsole();
+            playBackgroundMusic();
+        });
+
+        // Lock to landscape orientation
+        if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(err => console.log('Cannot lock orientation:', err));
+        }
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(() => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker failed:', err));
+        }
+
+        // Prevent zoom
+        document.addEventListener('gesturestart', (e) => e.preventDefault());
+        document.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) e.preventDefault();
+        }, { passive: false });
+
+        // Get elements
+        const homeScreen = document.getElementById('home-screen');
+        const levelsScreen = document.getElementById('levels-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const installScreen = document.getElementById('install-screen');
+        const playBtn = document.getElementById('play-btn');
+        const installBtn = document.getElementById('install-btn');
+        const refreshSwBtn = document.getElementById('refresh-sw-btn');
+        const backBtn = document.getElementById('back-btn');
+        const backFromLevelsBtn = document.getElementById('back-from-levels-btn');
+        const levelsGrid = document.getElementById('levelsGrid');
+        const warningBanner = document.getElementById('warning-banner');
+        const secretConsoleButton = document.getElementById('secret-console-button');
+        const plantSelectorInlineBtn = document.getElementById('plant-selector-inline-btn');
+
+        // Generate 15 levels
+        function generateLevels() {
+            levelsGrid.innerHTML = '';
+
+            for (let i = 1; i <= 15; i++) {
+                const levelIndex = i - 1; // 0-indexed for progression checking
+                const isUnlocked = plantSelector.isLevelUnlocked(levelIndex);
+                const isCompleted = plantSelector.completedLevels.has(levelIndex);
+                
+                const levelItem = document.createElement('div');
+                levelItem.className = isUnlocked ? 'level-item unlocked' : 'level-item locked';
+                if (isCompleted) levelItem.classList.add('completed');
+                levelItem.setAttribute('data-level', i);
+                
+                const levelIcon = document.createElement('div');
+                levelIcon.className = 'level-icon';
+                if (isCompleted) {
+                    levelIcon.textContent = '✓';
+                } else {
+                    levelIcon.textContent = isUnlocked ? i : '🔒';
+                }
+                
+                const levelLabel = document.createElement('div');
+                levelLabel.className = 'level-label';
+                levelLabel.textContent = 'Úroveň ' + i;
+                
+                levelItem.appendChild(levelIcon);
+                levelItem.appendChild(levelLabel);
+                levelsGrid.appendChild(levelItem);
+
+                // Add click handler only if unlocked
+                if (isUnlocked) {
+                    levelItem.addEventListener('click', () => {
+                        stopBackgroundMusic();
+                        showScreen('game');
+                        console.log('Starting game...');
+                        initGame(i);
+                    });
+                }
+            }
+        }
+
+        // Force home screen to show on load
+        window.addEventListener('load', () => {
+            generateLevels();
+            showScreen('home');
+        });
+
+        function showScreen(screenName) {
+            homeScreen.style.display = 'none';
+            levelsScreen.style.display = 'none';
+            gameScreen.style.display = 'none';
+            installScreen.style.display = 'none';
+            homeScreen.classList.add('hidden');
+            levelsScreen.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            installScreen.classList.add('hidden');
+
+            // Hide warning banner when leaving home screen
+            if (screenName !== 'home') {
+                warningBanner.style.display = 'none';
+                document.body.classList.remove('show-warning');
+            } else {
+                // Show warning banner only on home screen if not installed
+                if (!isInstalledApp()) {
+                    warningBanner.style.display = 'block';
+                    document.body.classList.add('show-warning');
+                } else {
+                    playBackgroundMusic();
+                }
+            }
+
+            // Show/hide secret console button based on current screen
+            if (screenName === 'install') {
+                secretConsoleButton.classList.add('show');
+            } else {
+                secretConsoleButton.classList.remove('show');
+            }
+
+            if (screenName === 'home') {
+                homeScreen.style.display = 'flex';
+                homeScreen.classList.remove('hidden');
+                playBackgroundMusic();
+            } else if (screenName === 'levels') {
+                levelsScreen.style.display = 'flex';
+                levelsScreen.classList.remove('hidden');
+                playBackgroundMusic();
+            } else if (screenName === 'game') {
+                gameScreen.style.display = 'block';
+                gameScreen.classList.remove('hidden');
+                stopBackgroundMusic();
+            } else if (screenName === 'install') {
+                installScreen.style.display = 'flex';
+                installScreen.classList.remove('hidden');
+            }
+        }
+
+        // Play button - go to levels screen
+        playBtn.addEventListener('click', () => {
+            showScreen('levels');
+        });
+
+        // Install/Tutorial button
+        installBtn.addEventListener('click', () => {
+            showScreen('install');
+        });
+
+        // Back button - return to home
+        backBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showScreen('home');
+        });
+
+        // Back from levels button
+        backFromLevelsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showScreen('home');
+        });
+
+        // Plant selector inline button
+        if (plantSelectorInlineBtn) {
+            plantSelectorInlineBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof plantSelector !== 'undefined' && plantSelector.toggleScreen) {
+                    plantSelector.toggleScreen();
+                }
+            });
+        }
+
+        // Refresh Service Worker and Clear Cache
+        refreshSwBtn.addEventListener('click', async () => {
+            try {
+                // Unregister all service workers
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.unregister();
+                }
+                                // Clear all caches
+                const cacheNames = await caches.keys();
+                for (let cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                }
+
+                // Re-register service worker
+                await navigator.serviceWorker.register('./service-worker.js');
+                
+                alert('Service Worker obnovený! Aplikácia sa bude obnovovať.');
+                location.reload();
+            } catch (err) {
+                console.error('Error refreshing Service Worker:', err);
+                alert('Chyba pri obnove Service Workera');
+            }
+        });
+
+        // Expose regenerateLevels globally so game.js can call it
+        function regenerateLevels() {
+            generateLevels();
+        }
+    </script>
+</body>
+</html>

@@ -1,17 +1,17 @@
-const CACHE_NAME = 'html-game-v7';
+const CACHE_NAME = 'html-game-v8';
 const urlsToCache = [
     './',
     './index.html',
-    './style.css?v=7',
-    './game.js?v=7',
-    './plant-selector.js?v=7',
-    './speci-level.js?v=7',
-    './lvl1.js?v=7',
-    './lvl2.js?v=7',
-    './lvl3.js?v=7',
-    './lvl4.js?v=7',
-    './lvl5.js?v=7',
-    './lvl6.js?v=7',
+    './style.css?v=8',
+    './game.js?v=8',
+    './plant-selector.js?v=8',
+    './speci-level.js?v=8',
+    './lvl1.js?v=8',
+    './lvl2.js?v=8',
+    './lvl3.js?v=8',
+    './lvl4.js?v=8',
+    './lvl5.js?v=8',
+    './lvl6.js?v=8',
     './manifest.json',
     './assets/icons/icon-192.png',
     './assets/icons/icon-512.png',
@@ -27,6 +27,10 @@ urlsToCache.push('./plant-selector.js');
 urlsToCache.push('./speci-level.js');
 urlsToCache.push('./lvl1.js');
 urlsToCache.push('./lvl2.js');
+urlsToCache.push('./lvl3.js');
+urlsToCache.push('./lvl4.js');
+urlsToCache.push('./lvl5.js');
+urlsToCache.push('./lvl6.js');
 urlsToCache.push('./lvl3.js');
 urlsToCache.push('./lvl4.js');
 urlsToCache.push('./lvl5.js');

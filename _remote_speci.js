@@ -331,15 +331,6 @@ class SpeciLevel {
 
 // Initialize when needed
 let speciLevel;
-function initSpeciLevel() {
-    if (!speciLevel) {
-        speciLevel = new SpeciLevel();
-        window.speciLevel = speciLevel;
-    }
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSpeciLevel);
-} else {
-    initSpeciLevel();
-}
+document.addEventListener('DOMContentLoaded', () => {
+    speciLevel = new SpeciLevel();
+});

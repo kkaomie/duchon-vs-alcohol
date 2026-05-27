@@ -204,7 +204,7 @@ class PlantSelector {
         screen.style.display = 'none';
         screen.innerHTML = `
             <button class="back-button" id="plant-selector-back-btn" style="top: 15px; left: 15px;">← Späť</button>
-            <button class="back-button" id="sebavrazda-btn" style="top: 15px; right: 15px; background-color: #ff2222; padding: 5px 6px; font-size: 12px; height: 36px; min-width: 50px; line-height: 18px;">sebavražda</button>
+            <button class="back-button" id="sebavrazda-btn" style="top: 15px; right: 15px; left: auto; width: auto; background-color: #ff2222; padding: 5px 8px; font-size: 12px; height: 36px; min-width: 50px; line-height: 18px; box-sizing: border-box;">sebavražda</button>
             <div class="plant-selector-container">
                 <div class="plant-selector-info-panel">
                     <div class="plant-info-label">

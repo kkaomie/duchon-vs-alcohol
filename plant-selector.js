@@ -467,7 +467,7 @@ class PlantSelector {
     }
 
     showResetConfirmation() {
-        const confirmReset = confirm('Naozaj chceš sprsviť sebavraždu (pls)?');
+        const confirmReset = confirm('Naozaj sa chceš zabiť? (pls)');
         if (confirmReset) {
             const captchaPrompt = prompt('Zadaj náhodné 4-ciferné číslo ako overenie že ti to neklikol Kubo:');
             if (captchaPrompt && captchaPrompt.length === 4 && /^\d+$/.test(captchaPrompt)) {

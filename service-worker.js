@@ -31,10 +31,6 @@ urlsToCache.push('./lvl3.js');
 urlsToCache.push('./lvl4.js');
 urlsToCache.push('./lvl5.js');
 urlsToCache.push('./lvl6.js');
-urlsToCache.push('./lvl3.js');
-urlsToCache.push('./lvl4.js');
-urlsToCache.push('./lvl5.js');
-urlsToCache.push('./lvl6.js');
 
 self.addEventListener('install', (event) => {
     console.log('Service Worker installing...');

@@ -201,9 +201,10 @@ class PlantSelector {
         const screen = document.createElement('div');
         screen.id = 'plant-selector-screen';
         screen.className = 'screen hidden';
+        screen.style.display = 'none';
         screen.innerHTML = `
             <button class="back-button" id="plant-selector-back-btn" style="top: 15px; left: 15px;">← Späť</button>
-            <button class="back-button" id="sebavrazda-btn" style="top: 15px; right: 15px; left: auto; width: auto; background-color: #ff2222; padding: 5px 8px; font-size: 12px; height: 36px; min[...]
+            <button class="back-button" id="sebavrazda-btn" style="top: 15px; right: 15px; left: auto; width: auto; background-color: #ff2222; padding: 5px 8px; font-size: 12px; height: 36px; min-width: 150px;">💀 Nastaviť na default</button>
             <div class="plant-selector-container">
                 <div class="plant-selector-info-panel">
                     <div class="plant-info-label">
@@ -217,7 +218,7 @@ class PlantSelector {
                     <div class="plant-selected-list">
                         <div class="selected-count" id="selected-count">0 / 5 rastlichoňov</div>
                         <div class="selected-plants" id="selected-plants-list"></div>
-                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: auto; width: 100%; padding: 12px 20px; background-color: #ff4444; color: white; border: none; borde[...]
+                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: auto; width: 100%; padding: 12px 20px; background-color: #ff4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Resetuj progress</button>
                     </div>
                 </div>
             </div>
@@ -398,17 +399,12 @@ class PlantSelector {
     show() {
         const screen = document.getElementById('plant-selector-screen');
         const levelsScreen = document.getElementById('levels-screen');
-        const speciMain = document.getElementById('speci-level-screen');
-        const speciMod = document.getElementById('speci-modifiers-screen');
-        const speciHist = document.getElementById('speci-history-screen');
-        
-        if (speciMain) speciMain.classList.add('hidden');
-        if (speciMod) speciMod.classList.add('hidden');
-        if (speciHist) speciHist.classList.add('hidden');
         
         if (screen && levelsScreen) {
-            levelsScreen.classList.add('hidden');
+            screen.style.display = 'flex';
             screen.classList.remove('hidden');
+            levelsScreen.style.display = 'none';
+            levelsScreen.classList.add('hidden');
         }
     }
 
@@ -419,7 +415,9 @@ class PlantSelector {
         this.stopPreviewSong();
         
         if (screen && levelsScreen) {
+            screen.style.display = 'none';
             screen.classList.add('hidden');
+            levelsScreen.style.display = 'flex';
             levelsScreen.classList.remove('hidden');
             // Resume background music when returning to levels screen
             bgMusicManager.playBackgroundMusic();

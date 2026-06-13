@@ -27,7 +27,6 @@ class SpeciLevel {
         const screen = document.createElement('div');
         screen.id = 'speci-level-screen';
         screen.className = 'screen hidden';
-        screen.style.display = 'none';
         screen.style.backgroundImage = "url('./assets/specibcg.png')";
         screen.style.backgroundSize = 'cover';
         screen.style.backgroundPosition = 'center';
@@ -44,7 +43,6 @@ class SpeciLevel {
         const modifiersScreen = document.createElement('div');
         modifiersScreen.id = 'speci-modifiers-screen';
         modifiersScreen.className = 'screen hidden';
-        modifiersScreen.style.display = 'none';
         modifiersScreen.style.background = 'linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%)';
         modifiersScreen.style.overflowY = 'auto';
         modifiersScreen.innerHTML = `
@@ -88,7 +86,6 @@ class SpeciLevel {
         const historyScreen = document.createElement('div');
         historyScreen.id = 'speci-history-screen';
         historyScreen.className = 'screen hidden';
-        historyScreen.style.display = 'none';
         historyScreen.style.background = 'linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%)';
         historyScreen.style.overflowY = 'auto';
         historyScreen.innerHTML = `
@@ -155,86 +152,66 @@ class SpeciLevel {
         }
     }
 
+    hideAllSpeciScreens() {
+        const screen = document.getElementById('speci-level-screen');
+        const modifiersScreen = document.getElementById('speci-modifiers-screen');
+        const historyScreen = document.getElementById('speci-history-screen');
+        
+        if (screen) {
+            screen.classList.add('hidden');
+        }
+        if (modifiersScreen) {
+            modifiersScreen.classList.add('hidden');
+        }
+        if (historyScreen) {
+            historyScreen.classList.add('hidden');
+        }
+    }
+
     show() {
+        this.hideAllSpeciScreens();
         const screen = document.getElementById('speci-level-screen');
         if (screen) {
-            screen.style.display = 'flex';
             screen.classList.remove('hidden');
         }
         this.currentScreen = 'main';
     }
 
     hide() {
-        const screen = document.getElementById('speci-level-screen');
-        const modifiersScreen = document.getElementById('speci-modifiers-screen');
-        const historyScreen = document.getElementById('speci-history-screen');
-        
-        if (screen) {
-            screen.style.display = 'none';
-            screen.classList.add('hidden');
-        }
-        if (modifiersScreen) {
-            modifiersScreen.style.display = 'none';
-            modifiersScreen.classList.add('hidden');
-        }
-        if (historyScreen) {
-            historyScreen.style.display = 'none';
-            historyScreen.classList.add('hidden');
-        }
+        this.hideAllSpeciScreens();
         
         // Show levels screen
         const levelsScreen = document.getElementById('levels-screen');
         if (levelsScreen) {
-            levelsScreen.style.display = 'flex';
             levelsScreen.classList.remove('hidden');
         }
     }
 
     showModifiers() {
-        const screen = document.getElementById('speci-level-screen');
+        this.hideAllSpeciScreens();
         const modifiersScreen = document.getElementById('speci-modifiers-screen');
         
-        if (screen) {
-            screen.style.display = 'none';
-            screen.classList.add('hidden');
-        }
         if (modifiersScreen) {
-            modifiersScreen.style.display = 'flex';
             modifiersScreen.classList.remove('hidden');
         }
         this.currentScreen = 'modifiers';
     }
 
     showMain() {
+        this.hideAllSpeciScreens();
         const screen = document.getElementById('speci-level-screen');
-        const modifiersScreen = document.getElementById('speci-modifiers-screen');
-        const historyScreen = document.getElementById('speci-history-screen');
         
         if (screen) {
-            screen.style.display = 'flex';
             screen.classList.remove('hidden');
-        }
-        if (modifiersScreen) {
-            modifiersScreen.style.display = 'none';
-            modifiersScreen.classList.add('hidden');
-        }
-        if (historyScreen) {
-            historyScreen.style.display = 'none';
-            historyScreen.classList.add('hidden');
         }
         this.currentScreen = 'main';
     }
 
     showHistory() {
-        const screen = document.getElementById('speci-level-screen');
+        this.hideAllSpeciScreens();
         const historyScreen = document.getElementById('speci-history-screen');
         
-        if (screen) {
-            screen.style.display = 'none';
-            screen.classList.add('hidden');
-        }
         if (historyScreen) {
-            historyScreen.style.display = 'flex';
             historyScreen.classList.remove('hidden');
         }
         
@@ -281,19 +258,14 @@ class SpeciLevel {
 
         // Close speci screens and start game
         const levelsScreen = document.getElementById('levels-screen');
-        const modifiersScreen = document.getElementById('speci-modifiers-screen');
         const gameScreen = document.getElementById('game-screen');
 
-        if (modifiersScreen) {
-            modifiersScreen.style.display = 'none';
-            modifiersScreen.classList.add('hidden');
-        }
+        this.hideAllSpeciScreens();
+        
         if (levelsScreen) {
-            levelsScreen.style.display = 'none';
             levelsScreen.classList.add('hidden');
         }
         if (gameScreen) {
-            gameScreen.style.display = 'flex';
             gameScreen.classList.remove('hidden');
         }
 

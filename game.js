@@ -1616,5 +1616,3 @@ window.initGame = function initGame(level) {
             }
          }
 }
-</parameter>
-</invoke>

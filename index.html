@@ -203,7 +203,7 @@
         </div>
     </div>
 
-    <div id="levels-screen" class="screen hidden" style="display: none !important;">
+    <div id="levels-screen" class="screen hidden">
         <button id="back-from-levels-btn" class="back-button">← Späť</button>
         <div class="levels-container">
             <div class="levels-header">
@@ -214,11 +214,11 @@
         </div>
     </div>
 
-    <div id="game-screen" class="screen hidden" style="display: none !important;">
+    <div id="game-screen" class="screen hidden">
         <canvas id="gameCanvas" width="1280" height="720"></canvas>
     </div>
 
-    <div id="install-screen" class="screen hidden" style="display: none !important;">
+    <div id="install-screen" class="screen hidden">
         <button id="back-btn" class="back-button">← späť</button>
         <div class="install-content">
             <img src="./assets/tutinst1.png" alt="Installation step 1" class="install-image">
@@ -482,10 +482,7 @@
         });
 
         function showScreen(screenName) {
-            homeScreen.style.display = 'none';
-            levelsScreen.style.display = 'none';
-            gameScreen.style.display = 'none';
-            installScreen.style.display = 'none';
+            // Hide all main screens using .hidden class ONLY
             homeScreen.classList.add('hidden');
             levelsScreen.classList.add('hidden');
             gameScreen.classList.add('hidden');
@@ -512,20 +509,17 @@
                 secretConsoleButton.classList.remove('show');
             }
 
+            // Show selected screen
             if (screenName === 'home') {
-                homeScreen.style.display = 'flex';
                 homeScreen.classList.remove('hidden');
                 playBackgroundMusic();
             } else if (screenName === 'levels') {
-                levelsScreen.style.display = 'flex';
                 levelsScreen.classList.remove('hidden');
                 playBackgroundMusic();
             } else if (screenName === 'game') {
-                gameScreen.style.display = 'block';
                 gameScreen.classList.remove('hidden');
                 stopBackgroundMusic();
             } else if (screenName === 'install') {
-                installScreen.style.display = 'flex';
                 installScreen.classList.remove('hidden');
             }
         }

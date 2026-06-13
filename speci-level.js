@@ -31,12 +31,6 @@ class SpeciLevel {
         screen.style.backgroundImage = "url('./assets/specibcg.png')";
         screen.style.backgroundSize = 'cover';
         screen.style.backgroundPosition = 'center';
-        screen.style.position = 'fixed';
-        screen.style.top = '0';
-        screen.style.left = '0';
-        screen.style.width = '100%';
-        screen.style.height = '100%';
-        screen.style.zIndex = '50';
         screen.innerHTML = `
             <div class="speci-main-container">
                 <button id="speci-play-btn" class="speci-button speci-large-btn">hrať hríčku²</button>
@@ -53,14 +47,8 @@ class SpeciLevel {
         modifiersScreen.style.display = 'none';
         modifiersScreen.style.background = 'linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%)';
         modifiersScreen.style.overflowY = 'auto';
-        modifiersScreen.style.position = 'fixed';
-        modifiersScreen.style.top = '0';
-        modifiersScreen.style.left = '0';
-        modifiersScreen.style.width = '100%';
-        modifiersScreen.style.height = '100%';
-        modifiersScreen.style.zIndex = '51';
         modifiersScreen.innerHTML = `
-            <button id="speci-modifiers-back-btn" class="back-button" style="top: 15px; left: 15px; position: fixed; z-index: 52;">← Späť</button>
+            <button id="speci-modifiers-back-btn" class="back-button" style="top: 15px; left: 15px;">← Späť</button>
             <div class="speci-modifiers-container">
                 <h2 class="speci-title">Vyber si úpravu úrovne</h2>
                 
@@ -103,14 +91,8 @@ class SpeciLevel {
         historyScreen.style.display = 'none';
         historyScreen.style.background = 'linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%)';
         historyScreen.style.overflowY = 'auto';
-        historyScreen.style.position = 'fixed';
-        historyScreen.style.top = '0';
-        historyScreen.style.left = '0';
-        historyScreen.style.width = '100%';
-        historyScreen.style.height = '100%';
-        historyScreen.style.zIndex = '51';
         historyScreen.innerHTML = `
-            <button id="speci-history-back-btn" class="back-button" style="top: 15px; left: 15px; position: fixed; z-index: 52;">← Späť</button>
+            <button id="speci-history-back-btn" class="back-button" style="top: 15px; left: 15px;">← Späť</button>
             <div class="speci-history-container">
                 <h2 class="speci-title">História špeci úrovne</h2>
                 <div id="speci-history-list" class="speci-history-list"></div>
@@ -175,14 +157,9 @@ class SpeciLevel {
 
     show() {
         const screen = document.getElementById('speci-level-screen');
-        const levelsScreen = document.getElementById('levels-screen');
         if (screen) {
             screen.style.display = 'flex';
             screen.classList.remove('hidden');
-        }
-        if (levelsScreen) {
-            levelsScreen.style.display = 'none';
-            levelsScreen.classList.add('hidden');
         }
         this.currentScreen = 'main';
     }

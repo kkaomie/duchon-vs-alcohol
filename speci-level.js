@@ -152,24 +152,22 @@ class SpeciLevel {
         }
     }
 
-    hideAllSpeciScreens() {
+    hideAllScreens() {
         const screen = document.getElementById('speci-level-screen');
         const modifiersScreen = document.getElementById('speci-modifiers-screen');
         const historyScreen = document.getElementById('speci-history-screen');
+        const levelsScreen = document.getElementById('levels-screen');
+        const plantScreen = document.getElementById('plant-selector-screen');
         
-        if (screen) {
-            screen.classList.add('hidden');
-        }
-        if (modifiersScreen) {
-            modifiersScreen.classList.add('hidden');
-        }
-        if (historyScreen) {
-            historyScreen.classList.add('hidden');
-        }
+        if (screen) screen.classList.add('hidden');
+        if (modifiersScreen) modifiersScreen.classList.add('hidden');
+        if (historyScreen) historyScreen.classList.add('hidden');
+        if (levelsScreen) levelsScreen.classList.add('hidden');
+        if (plantScreen) plantScreen.classList.add('hidden');
     }
 
     show() {
-        this.hideAllSpeciScreens();
+        this.hideAllScreens();
         const screen = document.getElementById('speci-level-screen');
         if (screen) {
             screen.classList.remove('hidden');
@@ -178,7 +176,7 @@ class SpeciLevel {
     }
 
     hide() {
-        this.hideAllSpeciScreens();
+        this.hideAllScreens();
         
         // Show levels screen
         const levelsScreen = document.getElementById('levels-screen');
@@ -188,7 +186,7 @@ class SpeciLevel {
     }
 
     showModifiers() {
-        this.hideAllSpeciScreens();
+        this.hideAllScreens();
         const modifiersScreen = document.getElementById('speci-modifiers-screen');
         
         if (modifiersScreen) {
@@ -198,7 +196,7 @@ class SpeciLevel {
     }
 
     showMain() {
-        this.hideAllSpeciScreens();
+        this.hideAllScreens();
         const screen = document.getElementById('speci-level-screen');
         
         if (screen) {
@@ -208,7 +206,7 @@ class SpeciLevel {
     }
 
     showHistory() {
-        this.hideAllSpeciScreens();
+        this.hideAllScreens();
         const historyScreen = document.getElementById('speci-history-screen');
         
         if (historyScreen) {
@@ -256,15 +254,10 @@ class SpeciLevel {
             kosackonEnabled: this.modifiers.kosackonEnabled
         };
 
-        // Close speci screens and start game
-        const levelsScreen = document.getElementById('levels-screen');
-        const gameScreen = document.getElementById('game-screen');
-
-        this.hideAllSpeciScreens();
+        // Hide all screens except game screen
+        this.hideAllScreens();
         
-        if (levelsScreen) {
-            levelsScreen.classList.add('hidden');
-        }
+        const gameScreen = document.getElementById('game-screen');
         if (gameScreen) {
             gameScreen.classList.remove('hidden');
         }

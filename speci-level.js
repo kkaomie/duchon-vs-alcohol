@@ -9,7 +9,13 @@ class SpeciLevel {
             enemyDamage: 1.0,
             enemySpeed: 1.0,
             unlockedRows: 6,
-            kosackonEnabled: true
+            kosackonEnabled: true,
+            enemyTypes: {
+                ealc1: true,
+                ealc2: true,
+                ealc3: true
+            },
+            finalWavePercent: 50 // 0-100, in 10% increments
         };
         this.history = [];
         this.currentScreen = 'main'; // 'main', 'modifiers', 'history'
@@ -79,6 +85,38 @@ class SpeciLevel {
                     </label>
                 </div>
 
+                <div class="speci-modifier-group">
+                    <label>Typ nepriateľov:</label>
+                    <div class="speci-enemy-types">
+                        <div class="speci-enemy-item">
+                            <input type="checkbox" id="enemyType-ealc1" checked>
+                            <label for="enemyType-ealc1">
+                                <img src="./assets/ealc1.png" alt="ealc1" class="speci-enemy-image">
+                                ealc1
+                            </label>
+                        </div>
+                        <div class="speci-enemy-item">
+                            <input type="checkbox" id="enemyType-ealc2" checked>
+                            <label for="enemyType-ealc2">
+                                <img src="./assets/ealc2.png" alt="ealc2" class="speci-enemy-image">
+                                ealc2
+                            </label>
+                        </div>
+                        <div class="speci-enemy-item">
+                            <input type="checkbox" id="enemyType-ealc3" checked>
+                            <label for="enemyType-ealc3">
+                                <img src="./assets/ealc3.png" alt="ealc3" class="speci-enemy-image">
+                                ealc3
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="speci-modifier-group">
+                    <label>Počet nepriateľov v koncovej vlne: <span id="finalWavePercentValue">50%</span></label>
+                    <input type="range" id="finalWavePercentSlider" min="0" max="100" step="10" value="50" class="speci-slider">
+                </div>
+
                 <button id="speci-play-modifiers-btn" class="speci-button speci-large-btn">Hrať</button>
             </div>
         `;
@@ -115,6 +153,12 @@ class SpeciLevel {
         const enemySpeedSlider = document.getElementById('enemySpeedSlider');
         const unlockedRowsSlider = document.getElementById('unlockedRowsSlider');
         const kosackonCheckbox = document.getElementById('kosackonCheckbox');
+        const finalWavePercentSlider = document.getElementById('finalWavePercentSlider');
+
+        // Enemy type checkboxes
+        const enemyType1 = document.getElementById('enemyType-ealc1');
+        const enemyType2 = document.getElementById('enemyType-ealc2');
+        const enemyType3 = document.getElementById('enemyType-ealc3');
 
         if (playBtn) playBtn.addEventListener('click', () => this.showModifiers());
         if (historyBtn) historyBtn.addEventListener('click', () => this.showHistory());
@@ -151,6 +195,29 @@ class SpeciLevel {
         if (kosackonCheckbox) {
             kosackonCheckbox.addEventListener('change', (e) => {
                 this.modifiers.kosackonEnabled = e.target.checked;
+            });
+        }
+        if (finalWavePercentSlider) {
+            finalWavePercentSlider.addEventListener('input', (e) => {
+                this.modifiers.finalWavePercent = parseInt(e.target.value);
+                document.getElementById('finalWavePercentValue').textContent = this.modifiers.finalWavePercent + '%';
+            });
+        }
+
+        // Enemy type listeners
+        if (enemyType1) {
+            enemyType1.addEventListener('change', (e) => {
+                this.modifiers.enemyTypes.ealc1 = e.target.checked;
+            });
+        }
+        if (enemyType2) {
+            enemyType2.addEventListener('change', (e) => {
+                this.modifiers.enemyTypes.ealc2 = e.target.checked;
+            });
+        }
+        if (enemyType3) {
+            enemyType3.addEventListener('change', (e) => {
+                this.modifiers.enemyTypes.ealc3 = e.target.checked;
             });
         }
     }
@@ -259,6 +326,9 @@ class SpeciLevel {
         this.history.forEach((entry, index) => {
             const item = document.createElement('div');
             item.className = 'speci-history-item';
+            const enemyTypesList = Object.keys(entry.enemyTypes)
+                .filter(type => entry.enemyTypes[type])
+                .join(', ');
             item.innerHTML = `
                 <div class="speci-history-title">Pokus #${index + 1}</div>
                 <div class="speci-history-details">
@@ -267,6 +337,8 @@ class SpeciLevel {
                     <div>Rýchlosť: ${entry.enemySpeed.toFixed(1)}x</div>
                     <div>Riadky: ${entry.unlockedRows}</div>
                     <div>Kosackon: ${entry.kosackonEnabled ? 'Áno' : 'Nie'}</div>
+                    <div>Typy nepriateľov: ${enemyTypesList}</div>
+                    <div>Koncová vlna: ${entry.finalWavePercent}%</div>
                 </div>
             `;
             historyList.appendChild(item);
@@ -280,7 +352,9 @@ class SpeciLevel {
             enemyDamage: this.modifiers.enemyDamage,
             enemySpeed: this.modifiers.enemySpeed,
             unlockedRows: this.modifiers.unlockedRows,
-            kosackonEnabled: this.modifiers.kosackonEnabled
+            kosackonEnabled: this.modifiers.kosackonEnabled,
+            enemyTypes: {...this.modifiers.enemyTypes},
+            finalWavePercent: this.modifiers.finalWavePercent
         };
 
         // Close speci screens and start game

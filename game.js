@@ -1444,7 +1444,7 @@ window.initGame = function initGame(level) {
                         } else if (level === 1) {
                             drawWrappedText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2 - 70, canvas.width * 0.75, 34);
                         } else if (level === 2) {
-                            drawWrappedText('odomkol si Orechoňa, nuž hlavne Kosačkona, ktorý zachráni riadok raz za hru keď naňho klikneš', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 28);
+                            drawWrappedText('odomkol si Orechoňa, nuž hlavne Kosačkona, ktorý zachráni riadok raz za hru keď naňho klikneš', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
                             
                             const orechonImg = imageCache['dnut1.png'];
                             if (orechonImg) {
@@ -1456,7 +1456,7 @@ window.initGame = function initGame(level) {
                                 ctx.drawImage(kosackonImg, canvas.width / 2 + 60, canvas.height / 2 + 20, 80, 80);
                             }
                         } else if (level === 3) {
-                            drawWrappedText('odomkol si chlopatoňa (nie actually rastlina ale buď ticho) (mám rád malé detičky)', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 28);
+                            drawWrappedText('odomkol si chlopatoňa (nie actually rastlina ale buď ticho) (mám rád malé detičky)', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
                             
                             const shovelImg = imageCache['dshovel.png'];
                             if (shovelImg) {
@@ -1614,5 +1614,5 @@ window.initGame = function initGame(level) {
 
               gameLoop();
             }
-         }
+          }
 }

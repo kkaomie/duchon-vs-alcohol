@@ -291,7 +291,7 @@ window.initGame = function initGame(level) {
                         this.rowIndex = rowIndex;
                         this.x = GRID_START_X - 80; // Start outside arena to the left (30px closer to arena)
                         this.y = GRID_START_Y + rowIndex * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT / 2;
-                        this.speed = 3;
+                        this.speed = 3 * gameTimeMultiplier; // Apply speed multiplier
                         this.size = (GRID_CELL_WIDTH / 4) * 2.5; // Slightly bigger (was 2x)
                         this.startTime = Date.now();
                         this.animationState = 0;
@@ -520,7 +520,7 @@ window.initGame = function initGame(level) {
                         this.x = x;
                         this.y = y;
                         this.target = target;
-                        this.speed = 5;
+                        this.speed = 5 * gameTimeMultiplier; // Apply speed multiplier
                         this.radius = 8;
                         this.plantType = plantType;
                     }
@@ -589,18 +589,18 @@ window.initGame = function initGame(level) {
                         this.flyingState = 'flying'; // 'flying', 'normal', or 'low_health'
                         this.plantSkipped = false; // Track if we've already skipped a plant in flying state
                         
-                        // Set initial speed based on state
+                        // Set initial speed based on state, apply speed multiplier
                         this.currentSpeed = this.type.isFlyer && this.flyingState === 'flying'
-                            ? this.type.flySpeed
-                            : this.type.speed;
+                            ? this.type.flySpeed * gameTimeMultiplier
+                            : this.type.speed * gameTimeMultiplier;
                     }
 
                     update(plants) {
                         const now = Date.now();
                         const isSlowActive = this.slowEndTime && now < this.slowEndTime;
-                        const baseSpeed = this.type.isFlyer && this.flyingState === 'flying'
+                        const baseSpeed = (this.type.isFlyer && this.flyingState === 'flying'
                             ? this.type.flySpeed
-                            : this.type.speed;
+                            : this.type.speed) * gameTimeMultiplier;
                         this.currentSpeed = isSlowActive ? baseSpeed * this.slowMultiplier : baseSpeed;
                         let canMove = true;
                         const nextX = this.x - this.currentSpeed;
@@ -628,7 +628,7 @@ window.initGame = function initGame(level) {
                                         this.x = plant.x - GRID_CELL_WIDTH;
                                         this.flyingState = 'normal';
                                         this.plantSkipped = true;
-                                        this.speed = this.type.speed; // Switch to normal speed 0.075
+                                        this.speed = this.type.speed * gameTimeMultiplier;
                                         return this.x < DESTINATION_X;
                                     }
                                 }
@@ -656,10 +656,10 @@ window.initGame = function initGame(level) {
                             const healthPercent = this.health / this.type.health;
                             if (healthPercent <= this.type.lowHealthThreshold && this.flyingState !== 'flying') {
                                 this.flyingState = 'low_health';
-                                this.speed = this.type.speed; // Keep at normal speed when low health
+                                this.speed = this.type.speed * gameTimeMultiplier;
                             } else if (healthPercent > this.type.lowHealthThreshold && this.flyingState === 'low_health') {
                                 this.flyingState = 'normal';
-                                this.speed = this.type.speed; // Keep at normal speed
+                                this.speed = this.type.speed * gameTimeMultiplier;
                             }
                         }
 
@@ -722,7 +722,7 @@ window.initGame = function initGame(level) {
                         this.y = stationary ? y : -40;
                         this.value = 25;
                         this.radius = 25;
-                        this.speed = 1;
+                        this.speed = 1 * gameTimeMultiplier; // Apply speed multiplier
                         this.stationary = stationary;
                         if (stationary) {
                             this.targetY = y;
@@ -1245,7 +1245,8 @@ window.initGame = function initGame(level) {
                     drawSunCounter();
                     drawGrid();
 
-                    if (!gamePaused && now - lastSunSpawn > 8000) {
+                    // Adjust sun spawn timing based on speed multiplier
+                    if (!gamePaused && now - lastSunSpawn > 8000 / gameTimeMultiplier) {
                         suns_on_screen.push(new Sun(GRID_START_X + Math.random() * GRID_WIDTH));
                         lastSunSpawn = now;
                     }

@@ -213,7 +213,7 @@ window.initGame = function initGame(level) {
               let PLANT_MENU_X = canvas.width - 150 - 60; // Moved 200px to the left, then 100px to the right
               const PLANT_MENU_Y = TOP_PADDING;
               
-              // Calculate level duration from waves and enemy wait time
+              // Calculate level duration from waves
               const LEVEL_DURATION = levelData.getLevelDuration();
 
               // Game state
@@ -265,9 +265,14 @@ window.initGame = function initGame(level) {
               // Apply speci level modifiers
               let gameTimeMultiplier = 1.0;
               let kosackonEnabled = true;
+              let enabledEnemyTypes = {ealc1: true, ealc2: true, ealc3: true};
+              let finalWavePercent = 50;
+              
               if (level === 99 && levelData.speciModifiers) {
                   gameTimeMultiplier = levelData.speciModifiers.timeSpeed;
                   kosackonEnabled = levelData.speciModifiers.kosackonEnabled;
+                  enabledEnemyTypes = levelData.speciModifiers.enemyTypes;
+                  finalWavePercent = levelData.speciModifiers.finalWavePercent;
                   
                   // Create a modified copy of ENEMY_TYPE
                   const modifiedEnemyType = JSON.parse(JSON.stringify(ENEMY_TYPE));
@@ -281,7 +286,9 @@ window.initGame = function initGame(level) {
                       enemyDamage: levelData.speciModifiers.enemyDamage,
                       enemySpeed: levelData.speciModifiers.enemySpeed,
                       unlockedRows: levelData.speciModifiers.unlockedRows,
-                      kosackonEnabled: kosackonEnabled
+                      kosackonEnabled: kosackonEnabled,
+                      enabledEnemyTypes: enabledEnemyTypes,
+                      finalWavePercent: finalWavePercent
                   });
               }
 
@@ -360,7 +367,7 @@ window.initGame = function initGame(level) {
                         const now = Date.now();
                         if (this.type.explodes && this.explosionStarted) {
                             const elapsed = now - this.explosionStartTime;
-                            if (elapsed < this.type.explosionDuration) {
+                            if (elapsed < this.type.explosionDuration / gameTimeMultiplier) {
                                 const img = imageCache[this.type.explosionImage];
                                 const explosionSize = Math.max(GRID_CELL_WIDTH, GRID_CELL_HEIGHT) * 3;
                                 if (img) {
@@ -386,7 +393,7 @@ window.initGame = function initGame(level) {
                             }
                         }
                         
-                        if (this.type.shootImage && this.isShooting && now - this.shootStartTime < this.type.shootDuration) {
+                        if (this.type.shootImage && this.isShooting && now - this.shootStartTime < this.type.shootDuration / gameTimeMultiplier) {
                             const img = imageCache[this.type.shootImage];
                             if (img) {
                                 ctx.drawImage(img, this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
@@ -410,7 +417,7 @@ window.initGame = function initGame(level) {
 
                     canAttack() {
                         const now = Date.now();
-                        return (now - this.lastAttack >= this.type.attackSpeed);
+                        return (now - this.lastAttack >= this.type.attackSpeed / gameTimeMultiplier);
                     }
 
                     attack(enemies) {
@@ -438,7 +445,7 @@ window.initGame = function initGame(level) {
                             const timeSincePlacement = now - this.placementTime;
                             const timeSinceLastSpawn = now - this.lastSunSpawn;
                             
-                            if (timeSincePlacement >= this.type.sunSpawnInterval && timeSinceLastSpawn >= this.type.sunSpawnInterval) {
+                            if (timeSincePlacement >= this.type.sunSpawnInterval / gameTimeMultiplier && timeSinceLastSpawn >= this.type.sunSpawnInterval / gameTimeMultiplier) {
                                 suns_on_screen.push(new Sun(this.x, this.y, true));
                                 this.lastSunSpawn = now;
                             }
@@ -461,7 +468,7 @@ window.initGame = function initGame(level) {
                                     if (distX <= (this.type.eatRange || 50)) {
                                         enemy.health = 0;
                                         this.isFull = true;
-                                        this.fullEndTime = now + (this.type.fullDuration || 10000);
+                                        this.fullEndTime = now + (this.type.fullDuration / gameTimeMultiplier || 10000);
                                         this.health = this.type.health;
                                         break;
                                     }
@@ -471,12 +478,12 @@ window.initGame = function initGame(level) {
                         }
 
                         if (!this.type.explodes) return;
-                        if (!this.explosionStarted && now - this.placementTime >= this.type.explodeDelay) {
+                        if (!this.explosionStarted && now - this.placementTime >= this.type.explodeDelay / gameTimeMultiplier) {
                             this.explosionStarted = true;
                             this.explosionStartTime = now;
                             this.explode(enemies);
                         }
-                        if (this.explosionStarted && now - this.explosionStartTime >= this.type.explosionDuration) {
+                        if (this.explosionStarted && now - this.explosionStartTime >= this.type.explosionDuration / gameTimeMultiplier) {
                             this.health = 0;
                         }
                     }
@@ -545,7 +552,7 @@ window.initGame = function initGame(level) {
                                     ? this.target.type.flySpeed
                                     : this.target.type.speed;
                                 this.target.slowMultiplier = plantConfig.slowMultiplier;
-                                this.target.slowEndTime = Date.now() + plantConfig.slowDuration;
+                                this.target.slowEndTime = Date.now() + plantConfig.slowDuration / gameTimeMultiplier;
                                 this.target.currentSpeed = baseSpeed * plantConfig.slowMultiplier;
                             }
 
@@ -643,7 +650,7 @@ window.initGame = function initGame(level) {
                         for (let plant of plants) {
                             if (plant.gridY === this.rowIndex) {
                                 if (plant.isNearby(this.x, this.y)) {
-                                    if (nowDamage - this.lastDamage > this.type.damageInterval) {
+                                    if (nowDamage - this.lastDamage > this.type.damageInterval / gameTimeMultiplier) {
                                         plant.health -= this.type.damage;
                                         this.lastDamage = nowDamage;
                                     }
@@ -834,7 +841,7 @@ window.initGame = function initGame(level) {
                                 const now = Date.now();
                                 const plantCooldown = plant.placementCooldown || 0;
                                 const lastPlacement = plantPlacementCooldowns[plantList[index]] || 0;
-                                const isOnCooldown = (now - lastPlacement) < plantCooldown;
+                                const isOnCooldown = (now - lastPlacement) < plantCooldown / gameTimeMultiplier;
 
                                 // Set background color based on state
                                 if (isOnCooldown) {
@@ -1208,7 +1215,7 @@ window.initGame = function initGame(level) {
                                     const plantCooldown = PLANT_TYPES[selectedPlant].placementCooldown || 0;
                                     const lastPlacement = plantPlacementCooldowns[selectedPlant] || 0;
                                     
-                                    if (now - lastPlacement >= plantCooldown) {
+                                    if (now - lastPlacement >= plantCooldown / gameTimeMultiplier) {
                                         plants.push(new Plant(selectedPlant, gridX, gridY));
                                         suns -= PLANT_TYPES[selectedPlant].cost;
                                         plantPlacementCooldowns[selectedPlant] = now;
@@ -1288,7 +1295,7 @@ window.initGame = function initGame(level) {
                         
                         if (waveEnemyConfig) {
                             const enemyTypeToSpawn = levelData.shouldSpawnEnemy(waveEnemyConfig, lastEnemySpawnTimes, now);
-                            if (enemyTypeToSpawn) {
+                            if (enemyTypeToSpawn && enabledEnemyTypes[enemyTypeToSpawn]) {
                                 const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
                                 const enemyType = ENEMY_TYPES[enemyTypeToSpawn];
                                 enemies.push(new Enemy(randomRow, enemyType));
@@ -1316,12 +1323,15 @@ window.initGame = function initGame(level) {
                         finalWaveTriggered = true;
                         finalWaveSpawningTime = now;
                         
-                        // Build the exact final wave list: half of each enemy type spawned in the main waves
+                        // Build the exact final wave list: percentage of enemies spawned in the main waves
                         const finalWaveSpawnList = [];
                         Object.entries(mainWaveSpawnCounts).forEach(([enemyTypeKey, count]) => {
-                            const finalCount = Math.floor(count * levelData.finalWave.multiplier);
-                            for (let j = 0; j < finalCount; j++) {
-                                finalWaveSpawnList.push(enemyTypeKey);
+                            // Apply the final wave percentage and only include enabled enemy types
+                            if (enabledEnemyTypes[enemyTypeKey]) {
+                                const finalCount = Math.floor(count * (finalWavePercent / 100));
+                                for (let j = 0; j < finalCount; j++) {
+                                    finalWaveSpawnList.push(enemyTypeKey);
+                                }
                             }
                         });
 
@@ -1338,7 +1348,7 @@ window.initGame = function initGame(level) {
                                         finalWaveEnemiesSpawned++;
                                     }
                                 }
-                            }, finalWaveCount > 0 ? (index / finalWaveCount) * levelData.finalWave.duration : 0);
+                            }, finalWaveCount > 0 ? (index / finalWaveCount) * (levelData.finalWave.duration / gameTimeMultiplier) : 0);
                         });
                     }
 
@@ -1389,7 +1399,7 @@ window.initGame = function initGame(level) {
                     drawPlantMenu();
 
                     // Win logic: check enemies only after final wave completes
-                    if (finalWaveTriggered && !gamePaused && (now - finalWaveSpawningTime) >= levelData.finalWave.duration && enemies.length === 0) {
+                    if (finalWaveTriggered && !gamePaused && (now - finalWaveSpawningTime) >= (levelData.finalWave.duration / gameTimeMultiplier) && enemies.length === 0) {
                         levelWon = true;
                     }
 
@@ -1615,5 +1625,5 @@ window.initGame = function initGame(level) {
 
               gameLoop();
             }
-          }
+           }
 }

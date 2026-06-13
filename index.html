@@ -169,34 +169,6 @@
         .plant-selector-inline-button:active {
             transform: scale(0.95);
         }
-
-        .speci-inline-button {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.7);
-            border-radius: 50%;
-            background-color: rgba(200, 100, 26, 0.8);
-            color: white;
-            font-size: 28px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            -webkit-tap-highlight-color: transparent;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .speci-inline-button:hover {
-            background-color: rgba(200, 100, 26, 1);
-            transform: scale(1.05);
-            border-color: rgba(255, 255, 255, 1);
-        }
-
-        .speci-inline-button:active {
-            transform: scale(0.95);
-        }
     </style>
 </head>
 <body>
@@ -236,7 +208,6 @@
         <div class="levels-container">
             <div class="levels-header">
                 <h2 class="levels-title">Vyber si uroven zlatko</h2>
-                <button id="speci-inline-btn" class="speci-inline-button" title="Speci Level">✨</button>
                 <button id="plant-selector-inline-btn" class="plant-selector-inline-button" title="Codex">🌿</button>
             </div>
             <div class="levels-grid" id="levelsGrid"></div>
@@ -435,7 +406,6 @@
         const levelsGrid = document.getElementById('levelsGrid');
         const warningBanner = document.getElementById('warning-banner');
         const secretConsoleButton = document.getElementById('secret-console-button');
-        const speciInlineBtn = document.getElementById('speci-inline-btn');
         const plantSelectorInlineBtn = document.getElementById('plant-selector-inline-btn');
 
         // Generate 15 levels
@@ -478,6 +448,31 @@
                     });
                 }
             }
+
+            // Add speci level button as level 16
+            const speciItem = document.createElement('div');
+            speciItem.className = 'level-item unlocked';
+            speciItem.setAttribute('data-level', 'speci');
+            
+            const speciIcon = document.createElement('div');
+            speciIcon.className = 'level-icon';
+            speciIcon.textContent = '✨';
+            
+            const speciLabel = document.createElement('div');
+            speciLabel.className = 'level-label';
+            speciLabel.textContent = 'Špeci';
+            
+            speciItem.appendChild(speciIcon);
+            speciItem.appendChild(speciLabel);
+            levelsGrid.appendChild(speciItem);
+
+            // Add click handler for speci level
+            speciItem.addEventListener('click', () => {
+                stopBackgroundMusic();
+                if (typeof speciLevel !== 'undefined' && speciLevel.show) {
+                    speciLevel.show();
+                }
+            });
         }
 
         // Force home screen to show on load
@@ -558,18 +553,6 @@
             e.stopPropagation();
             showScreen('home');
         });
-
-        // Speci level button
-        if (speciInlineBtn) {
-            speciInlineBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (typeof speciLevel !== 'undefined' && speciLevel.show) {
-                    stopBackgroundMusic();
-                    speciLevel.show();
-                }
-            });
-        }
 
         // Plant selector inline button
         if (plantSelectorInlineBtn) {

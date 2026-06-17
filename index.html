@@ -227,13 +227,13 @@
         </div>
     </div>
     
+    <script src="game.js?v=7"></script>
     <script src="plant-selector.js"></script>
     <script src="speci-level.js"></script>
     <script src="lvl1.js"></script>
     <script src="lvl2.js"></script>
     <script src="lvl3.js"></script>
     <script src="lvl4.js"></script>
-    <script src="game.js?v=7"></script>
     <script>
         // Background music management
         let backgroundMusic = null;
@@ -496,7 +496,7 @@
                 warningBanner.style.display = 'none';
                 document.body.classList.remove('show-warning');
             } else {
-                // Show warning banner only on home screen if not installed
+                // Show warning banner only on home screen and if not installed
                 if (!isInstalledApp()) {
                     warningBanner.style.display = 'block';
                     document.body.classList.add('show-warning');

@@ -89,8 +89,18 @@ window.initGame = function initGame(level) {
           }
           levelConfig.preloadImages = [...Level1.preloadImages];
           
+          // Ensure kosackon images are always preloaded for speci level
+          ['dlawnmowerO.png', 'dlawnmowerC.png'].forEach(imgName => {
+              if (!levelConfig.preloadImages.includes(imgName)) {
+                  levelConfig.preloadImages.push(imgName);
+              }
+          });
+
           // Apply speci modifiers
           if (window.speciModifiers) {
+              // Force kosackons enabled for speci level (speci requires them always available)
+              window.speciModifiers.kosackonEnabled = true;
+
               levelConfig.config.unlockedRows = window.speciModifiers.unlockedRows;
               levelConfig.speciModifiers = window.speciModifiers;
           }
@@ -258,8 +268,8 @@ window.initGame = function initGame(level) {
               // Plant types from level configuration
               const PLANT_TYPES = levelData.plantTypes;
 
-              // Enemy types from level configuration
-              const ENEMY_TYPES = levelData.enemyTypes;
+              // Enemy types from level configuration (clone so we can safely modify for speci)
+              let ENEMY_TYPES = JSON.parse(JSON.stringify(levelData.enemyTypes));
               let ENEMY_TYPE = ENEMY_TYPES.ealc1; // Default enemy type for this level
 
               // Apply speci level modifiers
@@ -270,17 +280,28 @@ window.initGame = function initGame(level) {
               
               if (level === 99 && levelData.speciModifiers) {
                   gameTimeMultiplier = levelData.speciModifiers.timeSpeed;
-                  kosackonEnabled = levelData.speciModifiers.kosackonEnabled;
-                  enabledEnemyTypes = levelData.speciModifiers.enemyTypes;
-                  finalWavePercent = levelData.speciModifiers.finalWavePercent;
-                  
-                  // Create a modified copy of ENEMY_TYPE
-                  const modifiedEnemyType = JSON.parse(JSON.stringify(ENEMY_TYPE));
-                  modifiedEnemyType.health *= levelData.speciModifiers.enemyDamage;
-                  modifiedEnemyType.attackDamage *= levelData.speciModifiers.enemyDamage;
-                  modifiedEnemyType.speed *= levelData.speciModifiers.enemySpeed;
-                  ENEMY_TYPE = modifiedEnemyType;
-                  
+                  kosackonEnabled = !!levelData.speciModifiers.kosackonEnabled;
+                  enabledEnemyTypes = levelData.speciModifiers.enemyTypes || enabledEnemyTypes;
+                  finalWavePercent = levelData.speciModifiers.finalWavePercent || finalWavePercent;
+
+                  // Apply damage & speed multipliers to ALL enemy type definitions used for spawning
+                  const dmgMult = levelData.speciModifiers.enemyDamage || 1.0;
+                  const spdMult = levelData.speciModifiers.enemySpeed || 1.0;
+
+                  Object.keys(ENEMY_TYPES).forEach(key => {
+                      const e = ENEMY_TYPES[key];
+                      if (!e) return;
+                      if (typeof e.health === 'number') e.health = Math.max(1, e.health * dmgMult);
+                      // enemy property for damage is sometimes 'damage' or 'attackDamage'
+                      if (typeof e.damage === 'number') e.damage = Math.max(0, e.damage * dmgMult);
+                      if (typeof e.attackDamage === 'number') e.attackDamage = Math.max(0, e.attackDamage * dmgMult);
+                      if (typeof e.speed === 'number') e.speed = Math.max(0.001, e.speed * spdMult);
+                      if (typeof e.flySpeed === 'number') e.flySpeed = Math.max(0.001, e.flySpeed * spdMult);
+                  });
+
+                  // Update default single ENEMY_TYPE reference in case some code uses it
+                  ENEMY_TYPE = ENEMY_TYPES.ealc1 ? ENEMY_TYPES.ealc1 : ENEMY_TYPE;
+
                   console.log('Speci level modifiers applied:', {
                       timeSpeed: gameTimeMultiplier,
                       enemyDamage: levelData.speciModifiers.enemyDamage,
@@ -1294,7 +1315,25 @@ window.initGame = function initGame(level) {
                         waveEnemyConfig = levelData.getWaveEnemyConfig(gametime);
                         
                         if (waveEnemyConfig) {
-                            const enemyTypeToSpawn = levelData.shouldSpawnEnemy(waveEnemyConfig, lastEnemySpawnTimes, now);
+                            // Create a deep copy so we can scale spawn intervals without mutating level config
+                            const scaledWaveEnemyConfig = JSON.parse(JSON.stringify(waveEnemyConfig));
+
+                            // Compute spawn scaling factor based on time multiplier.
+                            // Mapping used: spawnScale = max(1, floor(gameTimeMultiplier / 2))
+                            // Example: timeSpeed 20 => spawnScale = 10 => spawnInterval is divided by 10
+                            const spawnScale = Math.max(1, Math.floor(gameTimeMultiplier / 2));
+
+                            if (scaledWaveEnemyConfig.enemies) {
+                                Object.values(scaledWaveEnemyConfig.enemies).forEach(spawnCfg => {
+                                    if (!spawnCfg) return;
+                                    if (typeof spawnCfg.spawnInterval === 'number') {
+                                        // Reduce interval so enemies spawn more often when timeSpeed is high
+                                        spawnCfg.spawnInterval = Math.max(20, Math.floor(spawnCfg.spawnInterval / spawnScale));
+                                    }
+                                });
+                            }
+
+                            const enemyTypeToSpawn = levelData.shouldSpawnEnemy(scaledWaveEnemyConfig, lastEnemySpawnTimes, now);
                             if (enemyTypeToSpawn && enabledEnemyTypes[enemyTypeToSpawn]) {
                                 const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
                                 const enemyType = ENEMY_TYPES[enemyTypeToSpawn];
@@ -1434,90 +1473,6 @@ window.initGame = function initGame(level) {
                         ctx.font = '18px Arial';
                         ctx.fillText(loseScreenSubtitle, canvas.width / 2, canvas.height / 2 + 40);
 
-                        if (Date.now() - gameOverTime > 3000) {
-                            isTransitioning = true;
-                            gameActive = false; // Stop all game logic
-                            returnToLevels();
-                            return;
-                        }
-                        gameLoopId = requestAnimationFrame(gameLoop);
-                    } else if (levelWon) {
-                        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                        ctx.fillRect(0, 0, canvas.width, canvas.height);
-                        ctx.fillStyle = '#00ff00';
-                        ctx.font = 'bold 30px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'top';
-                        
-                        // Special message for speci level
-                        if (level === 99) {
-                            ctx.fillText('ta čo už', canvas.width / 2, canvas.height / 2 - 70);
-                        } else if (level === 1) {
-                            drawWrappedText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2 - 70, canvas.width * 0.75, 34);
-                        } else if (level === 2) {
-                            drawWrappedText('odomkol si Orechoňa, nuž hlavne Kosačkona, ktorý zachráni riadok raz za hru keď naňho klikneš', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
-                            
-                            const orechonImg = imageCache['dnut1.png'];
-                            if (orechonImg) {
-                                ctx.drawImage(orechonImg, canvas.width / 2 - 40, canvas.height / 2 + 20, 80, 80);
-                            }
-                            
-                            const kosackonImg = imageCache['dlawnmowerO.png'];
-                            if (kosackonImg) {
-                                ctx.drawImage(kosackonImg, canvas.width / 2 + 60, canvas.height / 2 + 20, 80, 80);
-                            }
-                        } else if (level === 3) {
-                            drawWrappedText('odomkol si chlopatoňa (nie actually rastlina ale buď ticho) (mám rád malé detičky)', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
-                            
-                            const shovelImg = imageCache['dshovel.png'];
-                            if (shovelImg) {
-                                ctx.drawImage(shovelImg, canvas.width / 2 - 40, canvas.height / 2 + 20, 80, 80);
-                            }
-                        } else if (level === 4) {
-                            ctx.fillText('ej bisťu, vyhral si.', canvas.width / 2, canvas.height / 2 - 70);
-                            ctx.font = 'bold 22px Arial';
-                            ctx.fillText('máš nového rastlichoňa - čerešchňon.', canvas.width / 2, canvas.height / 2 - 30);
-
-                            const cherryImg = imageCache['dcherry.png'];
-                            if (cherryImg) {
-                                ctx.drawImage(cherryImg, canvas.width / 2 - 60, canvas.height / 2 + 10, 120, 120);
-                            }
-                        } else if (level === 5) {
-                            ctx.fillText('chcem ťa.', canvas.width / 2, canvas.height / 2 - 70);
-                            ctx.font = 'bold 22px Arial';
-                            ctx.fillText('tu máš tento chladničkouhor', canvas.width / 2, canvas.height / 2 - 30);
-                            ctx.font = 'bold 20px Arial';
-                            ctx.fillText('(odomkol sa chladičkouhorkoň)', canvas.width / 2, canvas.height / 2 - 5);
-
-                            const coldpeaImg = imageCache['dchpea.png'];
-                            if (coldpeaImg) {
-                                ctx.drawImage(coldpeaImg, canvas.width / 2 - 60, canvas.height / 2 + 35, 120, 120);
-                            }
-                        } else if (level === 6) {
-                            ctx.fillText('chcem ťa.', canvas.width / 2, canvas.height / 2 - 70);
-                            ctx.font = 'bold 22px Arial';
-                            ctx.fillText('tu máš tento objekt (neviem ako sa mu nadáva)', canvas.width / 2, canvas.height / 2 - 30);
-                            ctx.font = 'bold 20px Arial';
-                            ctx.fillText('(odomkol sa objekt#76)', canvas.width / 2, canvas.height / 2 - 5);
-
-                            const objektImg = imageCache['dcarnivore1empty.png'];
-                            if (objektImg) {
-                                ctx.drawImage(objektImg, canvas.width / 2 - 60, canvas.height / 2 + 35, 120, 120);
-                            }
-                        }
-                        
-                        // Show unlocked message with sunflower image if applicable
-                        if (level === 1) {
-                            ctx.fillStyle = '#ffff00';
-                            ctx.font = 'bold 24px Arial';
-                            ctx.fillText('slnecnicoň odomknutý', canvas.width / 2, canvas.height / 2 + 20);
-                            
-                            const sunflowerImg = imageCache['dsunflower.png'];
-                            if (sunflowerImg) {
-                                ctx.drawImage(sunflowerImg, canvas.width / 2 - 40, canvas.height / 2 + 50, 80, 80);
-                            }
-                        }
-
                         if (!gameOverTime) {
                             gameOverTime = Date.now();
                         }
@@ -1562,68 +1517,18 @@ window.initGame = function initGame(level) {
                             return;
                         }
                         gameLoopId = requestAnimationFrame(gameLoop);
-                    } else {
-                        gameLoopId = requestAnimationFrame(gameLoop);
-                    }
-                }
-
-              function returnToLevels() {
-                    // CRITICAL FIX: Cancel the game loop animation frame to completely stop the game
-                    // This prevents the background game loop from continuing to run and triggering
-                    // false "level failed" messages when the user switches windows
-                    if (gameLoopId !== null) {
-                        cancelAnimationFrame(gameLoopId);
-                        gameLoopId = null;
-                    }
-                    
-                    // Stop all plant songs when returning to levels
-                    if (typeof plantAudioManager !== 'undefined') {
-                        plantAudioManager.stopAllSongs();
-                    }
-                    
-                    // Restart background music when returning to levels
-                    if (typeof bgMusicManager !== 'undefined') {
-                        bgMusicManager.playBackgroundMusic();
-                    }
-                    
-                    // Hide speci level screens if we're coming from a speci level
-                    if (level === 99) {
-                        const speciMainScreen = document.getElementById('speci-level-screen');
-                        const speciModifiersScreen = document.getElementById('speci-modifiers-screen');
-                        const speciHistoryScreen = document.getElementById('speci-history-screen');
+                    } else if (levelWon) {
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.fillStyle = '#00ff00';
+                        ctx.font = 'bold 30px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'top';
                         
-                        if (speciMainScreen) {
-                            speciMainScreen.style.display = 'none';
-                            speciMainScreen.classList.add('hidden');
-                        }
-                        if (speciModifiersScreen) {
-                            speciModifiersScreen.style.display = 'none';
-                            speciModifiersScreen.classList.add('hidden');
-                        }
-                        if (speciHistoryScreen) {
-                            speciHistoryScreen.style.display = 'none';
-                            speciHistoryScreen.classList.add('hidden');
-                        }
-                    }
-                    
-                    canvas.removeEventListener('click', handleGameInput);
-                    canvas.removeEventListener('touchend', handleGameInput);
-                    window.removeEventListener('resize', resizeCanvas);
-                    window.removeEventListener('orientationchange', resizeCanvas);
-                    document.removeEventListener('visibilitychange', handleVisibilityChange);
-                    window.removeEventListener('blur', handleBlur);
-                    window.removeEventListener('focus', handleFocus);
-                    window.removeEventListener('beforeunload', handleBeforeUnload);
-                    const levelsScreen = document.getElementById('levels-screen');
-                    const gameScreen = document.getElementById('game-screen');
-
-                    gameScreen.style.display = 'none';
-                    levelsScreen.style.display = 'flex';
-                    gameScreen.classList.add('hidden');
-                    levelsScreen.classList.remove('hidden');
-                }
-
-              gameLoop();
-            }
-           }
-}
+                        // Special message for speci level
+                        if (level === 99) {
+                            ctx.fillText('ta čo už', canvas.width / 2, canvas.height / 2 - 70);
+                        } else if (level === 1) {
+                            drawWrappedText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2 - 70, canvas.width * 0.75, 34);
+                        } else if (level === 2) {
+                            drawWrappedText('odomkol si Orechoňa, nuž hlavne Kosačkona, ktorý zachráni riadok raz za hru keď naňho klikneš', canvas.width / 2, canvas.height / 2 - 80, can[...]

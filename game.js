@@ -1531,4 +1531,66 @@ window.initGame = function initGame(level) {
                         } else if (level === 1) {
                             drawWrappedText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2 - 70, canvas.width * 0.75, 34);
                         } else if (level === 2) {
-                            drawWrappedText('odomkol si Orechoňa, nuž hlavne Kosačkona, ktorý zachráni riadok raz za hru keď naňho klikneš', canvas.width / 2, canvas.height / 2 - 80, can[...]
+                            drawWrappedText('odomkol si Orechoňa, nuž hlavne Kosačkona, ktorý zachráni riadok raz za hru keď naňho klikneš', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
+                        } else if (level === 3) {
+                            drawWrappedText('odomkol si Viničko, ktorá trávi alkohol aby bol slabší, a tiež si odomkol Čeresničku', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
+                        } else if (level === 4) {
+                            drawWrappedText('odomkol si Jahôdku ktorá exploduje na nepriateľov a je veľmi účinná ale musí sa pripraviť', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
+                        } else if (level === 5) {
+                            drawWrappedText('zvládol si najťažšiu úroveň! teraz máš prístup k Chľade do kostola, ten mrznú nepriateľov!', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
+                        } else if (level === 6) {
+                            drawWrappedText('Super! Zvládol si všetky levely! Toto bola posljedná úroveň. Gratulujem! 🎉', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
+                        }
+                        
+                        if (!gameOverTime) {
+                            gameOverTime = Date.now();
+                        }
+                        if (Date.now() - gameOverTime > 4000) {
+                            isTransitioning = true;
+                            gameActive = false; // Stop all game logic
+                            
+                            // Handle speci level completion
+                            if (level === 99) {
+                                if (typeof speciLevel !== 'undefined') {
+                                    speciLevel.levelCompleted();
+                                    // Regenerate levels grid to show updated speci level status
+                                    if (typeof generateLevels === 'function') {
+                                        generateLevels();
+                                    }
+                                }
+                            } else {
+                                // Unlock next level when level is completed
+                                if (typeof plantSelector !== 'undefined') {
+                                    plantSelector.completeLevel(level - 1); // 0-indexed
+                                    if (level === 1) {
+                                        plantSelector.unlockPlant('sunflower');
+                                    } else if (level === 2) {
+                                        plantSelector.unlockPlant('orechon');
+                                    } else if (level === 3) {
+                                        plantSelector.unlockPlant('cherry');
+                                    } else if (level === 4) {
+                                        plantSelector.unlockPlant('jahôdka');
+                                    } else if (level === 5) {
+                                        plantSelector.unlockPlant('coldpea');
+                                    } else if (level === 6) {
+                                        plantSelector.unlockPlant('objekt76');
+                                    }
+                                    // Regenerate levels grid to reflect unlocked levels
+                                    if (typeof regenerateLevels === 'function') {
+                                        regenerateLevels();
+                                    }
+                                }
+                            }
+                            returnToLevels();
+                            return;
+                        }
+                        gameLoopId = requestAnimationFrame(gameLoop);
+                    } else {
+                        gameLoopId = requestAnimationFrame(gameLoop);
+                    }
+                }
+
+              gameLoopId = requestAnimationFrame(gameLoop);
+          }
+      }
+};

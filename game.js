@@ -264,6 +264,7 @@ window.initGame = function initGame(level) {
 
                // Apply speci level modifiers
                let gameTimeMultiplier = 1.0;
+               let enemySpeedMultiplier = 1.0;
                let kosackonEnabled = true;
                let enabledEnemyTypes = {ealc1: true, ealc2: true, ealc3: true};
                let finalWavePercent = 50;
@@ -271,6 +272,7 @@ window.initGame = function initGame(level) {
                
                if (level === 99 && levelData.speciModifiers) {
                    gameTimeMultiplier = levelData.speciModifiers.timeSpeed;
+                   enemySpeedMultiplier = levelData.speciModifiers.enemySpeed;
                    kosackonEnabled = levelData.speciModifiers.kosackonEnabled;
                    enabledEnemyTypes = levelData.speciModifiers.enemyTypes;
                    finalWavePercent = levelData.speciModifiers.finalWavePercent;
@@ -1298,7 +1300,7 @@ window.initGame = function initGame(level) {
                          waveEnemyConfig = levelData.getWaveEnemyConfig(gametime);
                          
                          if (waveEnemyConfig) {
-                             const enemyTypeToSpawn = levelData.shouldSpawnEnemy(waveEnemyConfig, lastEnemySpawnTimes, now);
+                             const enemyTypeToSpawn = levelData.shouldSpawnEnemy(waveEnemyConfig, lastEnemySpawnTimes, now, level, enemySpeedMultiplier);
                              if (enemyTypeToSpawn && enabledEnemyTypes[enemyTypeToSpawn]) {
                                  const randomRow = Math.floor(Math.random() * UNLOCKED_ROWS);
                                  // Use modified enemy types if in speci level, otherwise use original

@@ -10,6 +10,8 @@ class SpeciLevel {
             enemySpeed: 1.0,
             unlockedRows: 6,
             kosackonEnabled: true,
+            kosackonAlwaysVisible: true,
+            plantCostMultiplier: 1,
             enemyTypes: {
                 ealc1: true,
                 ealc2: true,
@@ -71,6 +73,11 @@ class SpeciLevel {
                 <div class="speci-modifier-group">
                     <label>Rýchlosť nepriateľov: <span id="enemySpeedValue">1.0x</span></label>
                     <input type="range" id="enemySpeedSlider" min="0.1" max="10" step="0.1" value="1.0" class="speci-slider">
+                </div>
+
+                <div class="speci-modifier-group">
+                    <label>Cena rastlín: <span id="plantCostMultiplierValue">1x</span></label>
+                    <input type="range" id="plantCostMultiplierSlider" min="0" max="3" step="1" value="1" class="speci-slider">
                 </div>
 
                 <div class="speci-modifier-group">
@@ -151,6 +158,7 @@ class SpeciLevel {
         const timeSpeedSlider = document.getElementById('timeSpeedSlider');
         const enemyDamageSlider = document.getElementById('enemyDamageSlider');
         const enemySpeedSlider = document.getElementById('enemySpeedSlider');
+        const plantCostMultiplierSlider = document.getElementById('plantCostMultiplierSlider');
         const unlockedRowsSlider = document.getElementById('unlockedRowsSlider');
         const kosackonCheckbox = document.getElementById('kosackonCheckbox');
         const finalWavePercentSlider = document.getElementById('finalWavePercentSlider');
@@ -184,6 +192,13 @@ class SpeciLevel {
             enemySpeedSlider.addEventListener('input', (e) => {
                 this.modifiers.enemySpeed = parseFloat(e.target.value);
                 document.getElementById('enemySpeedValue').textContent = this.modifiers.enemySpeed.toFixed(1) + 'x';
+            });
+        }
+        if (plantCostMultiplierSlider) {
+            plantCostMultiplierSlider.addEventListener('input', (e) => {
+                this.modifiers.plantCostMultiplier = parseInt(e.target.value);
+                const displayValue = this.modifiers.plantCostMultiplier === 0 ? 'Free' : this.modifiers.plantCostMultiplier + 'x';
+                document.getElementById('plantCostMultiplierValue').textContent = displayValue;
             });
         }
         if (unlockedRowsSlider) {
@@ -329,12 +344,14 @@ class SpeciLevel {
             const enemyTypesList = Object.keys(entry.enemyTypes)
                 .filter(type => entry.enemyTypes[type])
                 .join(', ');
+            const costDisplay = entry.plantCostMultiplier === 0 ? 'Free' : entry.plantCostMultiplier + 'x';
             item.innerHTML = `
                 <div class="speci-history-title">Pokus #${index + 1}</div>
                 <div class="speci-history-details">
                     <div>Čas: ${entry.timeSpeed.toFixed(1)}x</div>
                     <div>Poškodenie: ${entry.enemyDamage.toFixed(1)}x</div>
                     <div>Rýchlosť: ${entry.enemySpeed.toFixed(1)}x</div>
+                    <div>Cena rastlín: ${costDisplay}</div>
                     <div>Riadky: ${entry.unlockedRows}</div>
                     <div>Kosackon: ${entry.kosackonEnabled ? 'Áno' : 'Nie'}</div>
                     <div>Typy nepriateľov: ${enemyTypesList}</div>
@@ -353,6 +370,8 @@ class SpeciLevel {
             enemySpeed: this.modifiers.enemySpeed,
             unlockedRows: this.modifiers.unlockedRows,
             kosackonEnabled: this.modifiers.kosackonEnabled,
+            kosackonAlwaysVisible: this.modifiers.kosackonAlwaysVisible,
+            plantCostMultiplier: this.modifiers.plantCostMultiplier,
             enemyTypes: {...this.modifiers.enemyTypes},
             finalWavePercent: this.modifiers.finalWavePercent
         };

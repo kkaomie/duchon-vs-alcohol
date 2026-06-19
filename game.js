@@ -93,6 +93,24 @@ window.initGame = function initGame(level) {
            if (window.speciModifiers) {
                levelConfig.config.unlockedRows = window.speciModifiers.unlockedRows;
                levelConfig.speciModifiers = window.speciModifiers;
+               
+               // Apply timeSpeed multiplier to spawn intervals
+               const timeSpeed = window.speciModifiers.timeSpeed;
+               levelConfig.waves.forEach(wave => {
+                   Object.keys(wave.enemies).forEach(enemyType => {
+                       wave.enemies[enemyType].spawnInterval /= timeSpeed;
+                   });
+               });
+               
+               // Apply plant cost multiplier
+               const costMultiplier = window.speciModifiers.plantCostMultiplier;
+               Object.keys(levelConfig.plantTypes).forEach(plantType => {
+                   const plant = levelConfig.plantTypes[plantType];
+                   if (plant.cost > 0) {
+                       const newCost = plant.cost * costMultiplier;
+                       plant.cost = Math.ceil(newCost / 25) * 25;
+                   }
+               });
            }
        } else if (level === 1) {
            levelConfig = Level1;
@@ -266,6 +284,7 @@ window.initGame = function initGame(level) {
                let gameTimeMultiplier = 1.0;
                let enemySpeedMultiplier = 1.0;
                let kosackonEnabled = true;
+               let kosackonAlwaysVisible = false;
                let enabledEnemyTypes = {ealc1: true, ealc2: true, ealc3: true};
                let finalWavePercent = 50;
                let modifiedEnemyTypes = {}; // Store modified enemy types for speci level
@@ -274,6 +293,7 @@ window.initGame = function initGame(level) {
                    gameTimeMultiplier = levelData.speciModifiers.timeSpeed;
                    enemySpeedMultiplier = levelData.speciModifiers.enemySpeed;
                    kosackonEnabled = levelData.speciModifiers.kosackonEnabled;
+                   kosackonAlwaysVisible = levelData.speciModifiers.kosackonAlwaysVisible;
                    enabledEnemyTypes = levelData.speciModifiers.enemyTypes;
                    finalWavePercent = levelData.speciModifiers.finalWavePercent;
                    
@@ -293,6 +313,7 @@ window.initGame = function initGame(level) {
                        enemySpeed: levelData.speciModifiers.enemySpeed,
                        unlockedRows: levelData.speciModifiers.unlockedRows,
                        kosackonEnabled: kosackonEnabled,
+                       kosackonAlwaysVisible: kosackonAlwaysVisible,
                        enabledEnemyTypes: enabledEnemyTypes,
                        finalWavePercent: finalWavePercent
                    });
@@ -926,9 +947,12 @@ window.initGame = function initGame(level) {
                              ctx.fillRect(DESTINATION_X - 25, destY - 25, 50, 50);
                          }
                          
-                         // Draw kosackon (slightly bigger) on top of pecen ALWAYS if not used
-                         if (level >= 3 && kosackonEnabled && !kosackonActiveRows.has(row)) {
-                             drawKosackonStatic(row);
+                         // Draw kosackon - visible if kosackonEnabled AND (either level >= 3 for normal levels OR speci level with kosackonAlwaysVisible)
+                         if (kosackonEnabled && !kosackonActiveRows.has(row)) {
+                             const shouldDrawKosackon = level === 99 ? kosackonAlwaysVisible : (level >= 3);
+                             if (shouldDrawKosackon) {
+                                 drawKosackonStatic(row);
+                             }
                          }
                      }
                  }
@@ -1123,8 +1147,9 @@ window.initGame = function initGame(level) {
                          }
                      }
 
-                     // Handle kosackon clicks (level 3+)
-                     if (level >= 3 && kosackonEnabled) {
+                     // Handle kosackon clicks (in speci level always enabled if kosackonEnabled, in other levels need level >= 3)
+                     const canClickKosackon = level === 99 ? kosackonEnabled : (level >= 3 && kosackonEnabled);
+                     if (canClickKosackon) {
                          for (let row = 0; row < UNLOCKED_ROWS; row++) {
                              if (!kosackonActiveRows.has(row)) {
                                  const kosackonX = GRID_START_X - 80; // 30px closer
@@ -1467,7 +1492,7 @@ window.initGame = function initGame(level) {
                          } else if (level === 1) {
                              drawWrappedText('zachránil si Veľkého Duchoňa (aspoň pred alkoholom)', canvas.width / 2, canvas.height / 2 - 70, canvas.width * 0.75, 34);
                          } else if (level === 2) {
-                             drawWrappedText('odomkol si Orechoňa, nuž hlavne Kosačkona, ktorý zachráni riadok raz za hru keď naňho klikneš', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
+                             drawWrappedText('odomkol si Orechoňa, nuž hlavne Kosačkona, ktorý zachráni riadok raz za hru keď naňho klikneš', canvas.width / 2, canvas.height / 2 - 80, ca[...]
                              
                              const orechonImg = imageCache['dnut1.png'];
                              if (orechonImg) {
@@ -1479,7 +1504,7 @@ window.initGame = function initGame(level) {
                                  ctx.drawImage(kosackonImg, canvas.width / 2 + 60, canvas.height / 2 + 20, 80, 80);
                              }
                          } else if (level === 3) {
-                             drawWrappedText('odomkol si chlopatoňa (nie actually rastlina ale buď ticho) (mám rád malé detičky)', canvas.width / 2, canvas.height / 2 - 80, canvas.width * 0.75, 34);
+                             drawWrappedText('odomkol si chlopatoňa (nie actually rastlina ale buď ticho) (mám rád malé detičky)', canvas.width / 2, canvas.height / 2 - 80, canvas.width * [...]
                              
                              const shovelImg = imageCache['dshovel.png'];
                              if (shovelImg) {

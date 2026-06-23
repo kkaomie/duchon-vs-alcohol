@@ -205,6 +205,13 @@ window.initGame = function initGame(level) {
                     }
                 ];
                 
+                console.log('[Speci Waves Created]', {
+                    wave1enemies: Object.keys(levelConfig.waves[1].enemies),
+                    wave2enemies: Object.keys(levelConfig.waves[2].enemies),
+                    wave3enemies: Object.keys(levelConfig.waves[3].enemies),
+                    availableEnemyTypes: Object.keys(levelConfig.enemyTypes)
+                });
+                
                 // Apply timeSpeed multiplier to spawn intervals (already done in waves above)
                 // Apply plant cost multiplier
                 const costMultiplier = window.speciModifiers.plantCostMultiplier;
@@ -283,8 +290,14 @@ window.initGame = function initGame(level) {
 
                 const lastSpawn = lastSpawnTimes[enemyType] || 0;
                 const timeSinceLastSpawn = currentTime - lastSpawn;
+                const shouldSpawn = timeSinceLastSpawn >= spawnConfig.spawnInterval && Math.random() < spawnConfig.spawnChance;
 
-                if (timeSinceLastSpawn >= spawnConfig.spawnInterval && Math.random() < spawnConfig.spawnChance) {
+                // Debug: log spawn check for non-ealc1 types
+                if (enemyType !== 'ealc1' && gametime > 65000 && gametime < 75000) {
+                    console.log(`[Speci Wave Check] ${enemyType}: interval=${spawnConfig.spawnInterval.toFixed(0)}, chance=${spawnConfig.spawnChance}, timeSince=${timeSinceLastSpawn.toFixed(0)}, shouldSpawn=${shouldSpawn}`);
+                }
+
+                if (shouldSpawn) {
                     enemiesToSpawn.push(enemyType);
                 }
             }
@@ -1456,6 +1469,12 @@ window.initGame = function initGame(level) {
                                   ? getSpeciEnemyTypesToSpawn(waveEnemyConfig, lastEnemySpawnTimes, now)
                                   : levelData.shouldSpawnEnemy(waveEnemyConfig, lastEnemySpawnTimes, now, level, enemySpeedMultiplier);
                               const spawnList = Array.isArray(enemyTypesToSpawn) ? enemyTypesToSpawn : (enemyTypesToSpawn ? [enemyTypesToSpawn] : []);
+                              
+                              // Debug: log what we're trying to spawn
+                              if (level === 99 && gametime > 65000 && gametime < 75000 && spawnList.length > 0) {
+                                  console.log(`[Speci Spawn] Trying to spawn: ${spawnList.join(', ')}, ENEMY_TYPES has: ${Object.keys(ENEMY_TYPES).join(', ')}`);
+                              }
+                              
                               spawnList.forEach(enemyTypeToSpawn => {
                                   if (!enemyTypeToSpawn || !enabledEnemyTypes[enemyTypeToSpawn]) return;
 
@@ -1464,7 +1483,10 @@ window.initGame = function initGame(level) {
                                   const enemyType = level === 99 && modifiedEnemyTypes[enemyTypeToSpawn] 
                                       ? modifiedEnemyTypes[enemyTypeToSpawn]
                                       : ENEMY_TYPES[enemyTypeToSpawn];
-                                  if (!enemyType) return;
+                                  if (!enemyType) {
+                                      console.log(`[Speci Spawn ERROR] Enemy type ${enemyTypeToSpawn} not found in ENEMY_TYPES`);
+                                      return;
+                                  }
 
                                   enemies.push(new Enemy(randomRow, enemyType));
                                   // Track spawn time and per-type counts for the final wave calculation

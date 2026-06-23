@@ -327,32 +327,35 @@ window.initGame = function initGame(level) {
             ];
 
             const preloadImages = Array.from(new Set([...(levelData.preloadImages || []), ...fallbackPreloadImages]));
- 
-            const imageCache = {};
+            const sharedCache = window.APP_IMAGE_CACHE || {};
+            const imageCache = Object.assign({}, sharedCache);
             let imagesLoaded = 0;
+            let imagesToLoad = preloadImages.filter(src => !imageCache[src]);
  
             function preloadImage(src) {
                 return new Promise((resolve) => {
-                      const img = new Image();
-                      img.crossOrigin = 'anonymous';
-                      img.onload = () => {
-                          imageCache[src] = img;
-                          imagesLoaded++;
-                          console.log(`Loaded: ${src} (${imagesLoaded}/${preloadImages.length})`);
-                          resolve(img);
-                      };
-                      img.onerror = () => {
-                          console.error('Failed to load:', src);
-                          imagesLoaded++;
-                          resolve(null);
-                      };
-                      img.src = './assets/' + src;
-                  });
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        imageCache[src] = img;
+                        window.APP_IMAGE_CACHE = window.APP_IMAGE_CACHE || {};
+                        window.APP_IMAGE_CACHE[src] = img;
+                        imagesLoaded++;
+                        console.log(`Loaded: ${src} (${imagesLoaded}/${imagesToLoad.length})`);
+                        resolve(img);
+                    };
+                    img.onerror = () => {
+                        console.error('Failed to load:', src);
+                        imagesLoaded++;
+                        resolve(null);
+                    };
+                    img.src = './assets/' + src;
+                });
             }
  
-            // Preload all images
-            Promise.all(preloadImages.map(preloadImage)).then(() => {
-                console.log('All images preloaded');
+            // Preload missing images only; existing cached images are reused
+            Promise.all(imagesToLoad.map(preloadImage)).then(() => {
+                console.log('Game assets preloaded or already cached');
 
                 const loadingScreen = document.getElementById('loading-screen');
                 if (loadingScreen) {

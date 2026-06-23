@@ -402,13 +402,116 @@
             return false;
         }
 
+        window.APP_IMAGE_CACHE = window.APP_IMAGE_CACHE || {};
+        window.APP_IMAGE_STATUS = window.APP_IMAGE_STATUS || {};
+        window.APP_ASSETS_LOADED = false;
+        window.APP_LOADING_PROMISE = null;
+
+        function getAppImageAssets() {
+            return [
+                'mainbcg.png',
+                'lvlsbcg.png',
+                'lvl1bcg.png',
+                'specibcg.png',
+                'pecen.png',
+                'sun.png',
+                'projectile.png',
+                'projectilecold.png',
+                'ice.png',
+                'dpea1.png',
+                'dpea1shoot.png',
+                'dsunflower.png',
+                'dnut1.png',
+                'dnut1low.png',
+                'dcherry.png',
+                'dcherryexp.png',
+                'dchpea.png',
+                'dchpeashoot.png',
+                'dcarnivore1empty.png',
+                'dcarnivore1full.png',
+                'dshovel.png',
+                'dlawnmowerO.png',
+                'dlawnmowerC.png',
+                'ealc1.png',
+                'ealc1low.png',
+                'ealc2.png',
+                'ealc2low.png',
+                'ealc3.png',
+                'ealc3low.png',
+                'ealc3fly.png'
+            ];
+        }
+
+        function preloadAppImage(src, timeoutMs = 6000) {
+            return new Promise(resolve => {
+                const status = window.APP_IMAGE_STATUS[src];
+                if (status === 'loaded' || status === 'error') {
+                    resolve({ src, status });
+                    return;
+                }
+
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                let finished = false;
+
+                const finish = (resultStatus) => {
+                    if (finished) return;
+                    finished = true;
+                    window.APP_IMAGE_STATUS[src] = resultStatus;
+                    if (resultStatus === 'loaded') {
+                        window.APP_IMAGE_CACHE[src] = img;
+                    } else {
+                        window.APP_IMAGE_CACHE[src] = null;
+                    }
+                    resolve({ src, status: resultStatus });
+                };
+
+                img.onload = () => finish('loaded');
+                img.onerror = () => finish('error');
+                img.src = './assets/' + src;
+
+                setTimeout(() => {
+                    finish('timeout');
+                }, timeoutMs);
+            });
+        }
+
+        async function preloadAppImageBatch(imageNames) {
+            const results = await Promise.all(imageNames.map(src => preloadAppImage(src)));
+            const pending = results.filter(r => r.status === 'timeout').map(r => r.src);
+            return { pending, results };
+        }
+
+        async function preloadAppAssets() {
+            if (window.APP_LOADING_PROMISE) return window.APP_LOADING_PROMISE;
+
+            window.APP_LOADING_PROMISE = (async () => {
+                const allAssets = Array.from(new Set(getAppImageAssets()));
+                let pending = allAssets.filter(src => window.APP_IMAGE_STATUS[src] !== 'loaded' && window.APP_IMAGE_STATUS[src] !== 'error');
+                let pass = 0;
+
+                while (pass < 2 && pending.length > 0) {
+                    pass += 1;
+                    const batchResult = await preloadAppImageBatch(pending);
+                    pending = batchResult.pending;
+                    if (pending.length === 0) {
+                        break;
+                    }
+                }
+
+                window.APP_ASSETS_LOADED = true;
+                return window.APP_IMAGE_CACHE;
+            })();
+
+            return window.APP_LOADING_PROMISE;
+        }
+
         // Show warning only on home screen and if not installed
         window.addEventListener('load', () => {
             if (!isInstalledApp()) {
                 document.body.classList.add('show-warning');
             }
             setupSecretConsole();
-            playBackgroundMusic();
         });
 
         // Lock to landscape orientation
@@ -512,8 +615,10 @@
             });
         }
 
-        // Force home screen to show on load
-        window.addEventListener('load', () => {
+        // Force preload and home screen show on load
+        window.addEventListener('load', async () => {
+            showScreen('loading');
+            await preloadAppAssets();
             generateLevels();
             showScreen('home');
         });
@@ -549,6 +654,12 @@
                 secretConsoleButton.classList.add('show');
             } else {
                 secretConsoleButton.classList.remove('show');
+            }
+
+            const loadingVideo = document.getElementById('loading-video');
+            if (screenName !== 'loading' && loadingVideo) {
+                loadingVideo.pause();
+                loadingVideo.currentTime = 0;
             }
 
             if (screenName === 'home') {

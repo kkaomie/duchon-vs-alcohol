@@ -569,6 +569,7 @@ body {
     justify-content: center;
     align-items: center;
     padding: 20px;
+    z-index: 10;
 }
 
 .speci-main-container {
@@ -578,14 +579,21 @@ body {
     align-items: center;
     width: 100%;
     max-width: 400px;
+    background-color: rgba(0, 0, 0, 0.45);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
 }
 
 .speci-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     padding: 15px 20px;
     font-size: 18px;
     font-weight: bold;
-    background-color: rgba(26, 126, 40, 0.9);
+    background-color: rgba(26, 126, 40, 0.95);
     color: white;
     border: 3px solid white;
     border-radius: 10px;

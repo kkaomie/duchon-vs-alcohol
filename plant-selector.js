@@ -204,21 +204,21 @@ class PlantSelector {
         screen.style.display = 'none';
         screen.innerHTML = `
             <button class="back-button" id="plant-selector-back-btn" style="top: 15px; left: 15px;">← Späť</button>
-            <button class="back-button" id="sebavrazda-btn" style="top: 15px; right: 15px; left: auto; width: auto; background-color: #ff2222; padding: 5px 8px; font-size: 12px; height: 36px; min-width: 50px; line-height: 18px; box-sizing: border-box;">sebavražda</button>
+            <button class="back-button" id="sebavrazda-btn" style="top: 15px; right: 15px; left: auto; width: auto; background-color: #ff2222; padding: 5px 8px; font-size: 12px; height: 36px; min-width: 150px;">samovrazda</button>
             <div class="plant-selector-container">
                 <div class="plant-selector-info-panel">
                     <div class="plant-info-label">
-                        <div class="plant-info-name" id="plant-info-name">výber rastlichoňa</div>
-                        <div class="plant-info-description" id="plant-info-description">klikni na rastlichoňov a prečítaj si</div>
-                        <div class="plant-info-stats" id="plant-info-stats">Výber duchoňov</div>
+                        <div class="plant-info-name" id="plant-info-name">zahrada duchonov</div>
+                        <div class="plant-info-description" id="plant-info-description">klikni na duchona (fakt ti treba toto hovorit ty retard?)</div>
+                        <div class="plant-info-stats" id="plant-info-stats">vyber duchonov</div>
                     </div>
                 </div>
                 <div class="plant-selector-content">
                     <div class="plant-codex" id="plant-codex"></div>
                     <div class="plant-selected-list">
-                        <div class="selected-count" id="selected-count">0 / 5 rastlichoňov</div>
+                        <div class="selected-count" id="selected-count">0 / 5 rastlichonov</div>
                         <div class="selected-plants" id="selected-plants-list"></div>
-                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: auto; width: 100%; padding: 12px 20px; background-color: #ff4444; color: white; border: none; borde[...]
+                        <button id="reset-progression-btn" class="reset-btn" style="margin-top: auto; width: 100%; padding: 12px 20px; background-color: #ff4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">samovrazda</button>
                     </div>
                 </div>
             </div>
@@ -401,10 +401,10 @@ class PlantSelector {
         const levelsScreen = document.getElementById('levels-screen');
         
         if (screen && levelsScreen) {
-            levelsScreen.style.display = 'none';
-            levelsScreen.classList.add('hidden');
             screen.style.display = 'flex';
             screen.classList.remove('hidden');
+            levelsScreen.style.display = 'none';
+            levelsScreen.classList.add('hidden');
         }
     }
 

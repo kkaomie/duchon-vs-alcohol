@@ -404,12 +404,11 @@ class SpeciLevel {
             levelsScreen.style.display = 'none';
             levelsScreen.classList.add('hidden');
         }
-        if (gameScreen) {
-            gameScreen.style.display = 'block';
-            gameScreen.classList.remove('hidden');
-        }
 
         // Start the special level (level 99 or use a special marker)
+        if (typeof showScreen === 'function') {
+            showScreen('loading');
+        }
         if (typeof window.initGame === 'function') {
             window.initGame(99); // 99 is the special level marker
         }

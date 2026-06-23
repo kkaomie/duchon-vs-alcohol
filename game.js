@@ -125,7 +125,11 @@ window.initGame = function initGame(level) {
                 levelConfig.finalWave = JSON.parse(JSON.stringify(Level1.finalWave));
             }
             levelConfig.preloadImages = [...Level1.preloadImages];
-            ['ealc2.png', 'ealc2low.png', 'ealc3.png', 'ealc3low.png', 'ealc3fly.png'].forEach(imageName => {
+            [
+                'ealc2.png', 'ealc2low.png', 'ealc3.png', 'ealc3low.png', 'ealc3fly.png',
+                'ice.png', 'dcherry.png', 'dcherryexp.png', 'dchpea.png', 'dchpeashoot.png',
+                'dcarnivore1empty.png', 'dcarnivore1full.png', 'dlawnmowerO.png', 'dlawnmowerC.png'
+            ].forEach(imageName => {
                 if (!levelConfig.preloadImages.includes(imageName)) {
                     levelConfig.preloadImages.push(imageName);
                 }
@@ -306,8 +310,23 @@ window.initGame = function initGame(level) {
                 bgMusicManager.stopBackgroundMusic();
             }
  
-            // Image preloader
-            const preloadImages = levelData.preloadImages;
+            // Image preloader with a small shared fallback list
+            const fallbackPreloadImages = [
+                'projectile.png',
+                'projectilecold.png',
+                'ice.png',
+                'sun.png',
+                'pecen.png',
+                'dlawnmowerO.png',
+                'dlawnmowerC.png',
+                'dcherry.png',
+                'dchpeashoot.png',
+                'dchpea.png',
+                'dcarnivore1empty.png',
+                'dcarnivore1full.png'
+            ];
+
+            const preloadImages = Array.from(new Set([...(levelData.preloadImages || []), ...fallbackPreloadImages]));
  
             const imageCache = {};
             let imagesLoaded = 0;
@@ -334,6 +353,29 @@ window.initGame = function initGame(level) {
             // Preload all images
             Promise.all(preloadImages.map(preloadImage)).then(() => {
                 console.log('All images preloaded');
+
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                    loadingScreen.classList.add('hidden');
+                }
+
+                const loadingVideo = document.getElementById('loading-video');
+                if (loadingVideo) {
+                    loadingVideo.pause();
+                    loadingVideo.currentTime = 0;
+                }
+
+                if (typeof showScreen === 'function') {
+                    showScreen('game');
+                } else {
+                    const gameScreen = document.getElementById('game-screen');
+                    if (gameScreen) {
+                        gameScreen.style.display = 'block';
+                        gameScreen.classList.remove('hidden');
+                    }
+                }
+
                 startGame();
             });
  
@@ -727,8 +769,13 @@ window.initGame = function initGame(level) {
                       }
  
                       draw() {
-                          // Use cold projectile image if available, otherwise regular projectile
-                          const imageKey = this.plantType && PLANT_TYPES[this.plantType] && PLANT_TYPES[this.plantType].slowsEnemies ? 'projectilecold.png' : 'projectile.png';
+                          // Use ice projectile image for slowing plant shots when available
+                          let imageKey;
+                          if (this.plantType && PLANT_TYPES[this.plantType] && PLANT_TYPES[this.plantType].slowsEnemies) {
+                              imageKey = imageCache['ice.png'] ? 'ice.png' : 'projectilecold.png';
+                          } else {
+                              imageKey = 'projectile.png';
+                          }
                           const img = imageCache[imageKey];
                           if (img) {
                               ctx.drawImage(img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
@@ -977,8 +1024,11 @@ window.initGame = function initGame(level) {
                       ctx.textAlign = 'center';
                       ctx.fillText('Plants', menuX + menuWidth / 2, menuY - 20);
  
-                      // Get selected plants from plant selector
-                      const plantList = typeof plantSelector !== 'undefined' ? plantSelector.getSelectedPlants() : Object.keys(PLANT_TYPES);
+                      // Get selected plants from plant selector, and fall back to available plants if none are selected
+                      let plantList = typeof plantSelector !== 'undefined' ? plantSelector.getSelectedPlants() : [];
+                      if (!plantList || plantList.length === 0) {
+                          plantList = Object.keys(PLANT_TYPES);
+                      }
  
                       // Draw 2x3 grid
                       for (let row = 0; row < gridRows; row++) {
@@ -1302,8 +1352,11 @@ window.initGame = function initGame(level) {
                           }
                       }
  
-                      // Get selected plants from plant selector
-                      const plantList = typeof plantSelector !== 'undefined' ? plantSelector.getSelectedPlants() : Object.keys(PLANT_TYPES);
+                      // Get selected plants from plant selector, and fall back to available plants if none are selected
+                      let plantList = typeof plantSelector !== 'undefined' ? plantSelector.getSelectedPlants() : [];
+                      if (!plantList || plantList.length === 0) {
+                          plantList = Object.keys(PLANT_TYPES);
+                      }
                       const menuX = PLANT_MENU_X;
                       const menuY = PLANT_MENU_Y;
                       const slotWidth = 60;

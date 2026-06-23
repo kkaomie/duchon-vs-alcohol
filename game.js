@@ -83,11 +83,53 @@ window.initGame = function initGame(level) {
             levelConfig.config = JSON.parse(JSON.stringify(Level1.config));
             levelConfig.plantTypes = JSON.parse(JSON.stringify(Level1.plantTypes));
             levelConfig.enemyTypes = JSON.parse(JSON.stringify(Level1.enemyTypes));
+            const extraSpeciEnemyTypes = {
+                ealc2: {
+                    name: 'Strong Zombie',
+                    image: 'ealc2.png',
+                    lowHealthImage: 'ealc2low.png',
+                    health: 500,
+                    speed: 0.1,
+                    damage: 20,
+                    damageInterval: 1000,
+                    width: 50,
+                    height: 50,
+                    collisionRadius: 25,
+                    lowHealthThreshold: 0.5
+                },
+                ealc3: {
+                    name: 'Flying Zombie',
+                    image: 'ealc3.png',
+                    lowHealthImage: 'ealc3low.png',
+                    flyImage: 'ealc3fly.png',
+                    health: 500,
+                    speed: 0.075,
+                    flySpeed: 0.3,
+                    damage: 20,
+                    damageInterval: 1000,
+                    width: 50,
+                    height: 50,
+                    collisionRadius: 25,
+                    lowHealthThreshold: 0.5,
+                    isFlyer: true,
+                    initialState: 'flying'
+                }
+            };
+            Object.entries(extraSpeciEnemyTypes).forEach(([typeKey, typeDef]) => {
+                if (!levelConfig.enemyTypes[typeKey]) {
+                    levelConfig.enemyTypes[typeKey] = JSON.parse(JSON.stringify(typeDef));
+                }
+            });
             levelConfig.waves = JSON.parse(JSON.stringify(Level1.waves));
             if (Level1.finalWave) {
                 levelConfig.finalWave = JSON.parse(JSON.stringify(Level1.finalWave));
             }
             levelConfig.preloadImages = [...Level1.preloadImages];
+            ['ealc2.png', 'ealc2low.png', 'ealc3.png', 'ealc3low.png', 'ealc3fly.png'].forEach(imageName => {
+                if (!levelConfig.preloadImages.includes(imageName)) {
+                    levelConfig.preloadImages.push(imageName);
+                }
+            });
             
             // Apply speci modifiers
             if (window.speciModifiers) {

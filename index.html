@@ -188,18 +188,18 @@
         }
 
         .plant-selector-inline-button {
-            width: 50px;
+            width: 300px;
             height: 50px;
             border: 3px solid rgba(255, 255, 255, 0.7);
-            border-radius: 50%;
+            border-radius: 8px;
             background-color: rgba(26, 126, 40, 0.8);
             color: white;
-            font-size: 28px;
+            font-size: 25px;
             cursor: pointer;
             transition: all 0.2s ease;
             -webkit-tap-highlight-color: transparent;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            padding: 0;
+            padding: 0 12px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -252,7 +252,7 @@
         <button id="back-from-levels-btn" class="back-button">← Späť</button>
         <div class="levels-container">
             <div class="levels-header">
-                <h2 class="levels-title">vyber si level zlatko ❤️👅</h2>
+                <h2 class="levels-title">vyber si level zlatko 👅</h2>
                 <button id="plant-selector-inline-btn" class="plant-selector-inline-button" title="Codex">zahrada duchonov</button>
             </div>
             <div class="levels-grid" id="levelsGrid"></div>
@@ -602,14 +602,14 @@
                 const levelIcon = document.createElement('div');
                 levelIcon.className = 'level-icon';
                 if (isCompleted) {
-                    levelIcon.textContent = '✓';
+                    levelIcon.textContent = '❤️';
                 } else {
-                    levelIcon.textContent = isUnlocked ? i : '🔒';
+                    levelIcon.textContent = isUnlocked ? i : '💔';
                 }
                 
                 const levelLabel = document.createElement('div');
                 levelLabel.className = 'level-label';
-                levelLabel.textContent = 'Úroveň ' + i;
+                levelLabel.textContent = 'level ' + i;
                 
                 levelItem.appendChild(levelIcon);
                 levelItem.appendChild(levelLabel);
@@ -633,7 +633,7 @@
             
             const speciIcon = document.createElement('div');
             speciIcon.className = 'level-icon';
-            speciIcon.textContent = '✨';
+            speciIcon.textContent = '❤️‍🔥';
             
             const speciLabel = document.createElement('div');
             speciLabel.className = 'level-label';

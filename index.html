@@ -248,7 +248,7 @@
     </div>
 
     <div id="loading-screen" class="screen hidden" style="display: none !important;">
-        <video id="loading-video" muted playsinline loop preload="auto">
+        <video id="loading-video" muted playsinline preload="auto">
             <source src="./startload.mp4" type="video/mp4">
         </video>
         <div class="loading-overlay">Načítavam hru...</div>
@@ -615,10 +615,41 @@
             });
         }
 
+        async function waitForLoadingVideoLoop() {
+            const loadingVideo = document.getElementById('loading-video');
+            if (!loadingVideo) return;
+
+            return new Promise(resolve => {
+                const onEnded = () => {
+                    loadingVideo.removeEventListener('ended', onEnded);
+                    resolve();
+                };
+                loadingVideo.addEventListener('ended', onEnded);
+                loadingVideo.currentTime = 0;
+                loadingVideo.play().catch(() => {});
+            });
+        }
+
         // Force preload and home screen show on load
         window.addEventListener('load', async () => {
             showScreen('loading');
-            await preloadAppAssets();
+            const preloadPromise = preloadAppAssets();
+            let preloadDone = false;
+            preloadPromise.then(() => { preloadDone = true; }).catch(() => { preloadDone = true; });
+
+            while (true) {
+                await waitForLoadingVideoLoop();
+                if (preloadDone) {
+                    break;
+                }
+                const loadingVideo = document.getElementById('loading-video');
+                if (loadingVideo) {
+                    loadingVideo.currentTime = 0;
+                    loadingVideo.play().catch(() => {});
+                }
+            }
+
+            await preloadPromise;
             generateLevels();
             showScreen('home');
         });
@@ -725,13 +756,18 @@
 
         // Refresh Service Worker and Clear Cache
         refreshSwBtn.addEventListener('click', async () => {
+            const confirmed = confirm('Naozaj chceš obnoviť service worker a vymazať cache? Akciu nie je možné vrátiť späť.');
+            if (!confirmed) {
+                return;
+            }
+
             try {
                 // Unregister all service workers
                 const registrations = await navigator.serviceWorker.getRegistrations();
                 for (let registration of registrations) {
                     await registration.unregister();
                 }
-                                // Clear all caches
+                // Clear all caches
                 const cacheNames = await caches.keys();
                 for (let cacheName of cacheNames) {
                     await caches.delete(cacheName);

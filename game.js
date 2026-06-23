@@ -772,13 +772,10 @@ window.initGame = function initGame(level) {
                       }
  
                       draw() {
-                          // Use ice projectile image for slowing plant shots when available
-                          let imageKey;
-                          if (this.plantType && PLANT_TYPES[this.plantType] && PLANT_TYPES[this.plantType].slowsEnemies) {
-                              imageKey = imageCache['ice.png'] ? 'ice.png' : 'projectilecold.png';
-                          } else {
-                              imageKey = 'projectile.png';
-                          }
+                          // Use cold projectile image for slowing plant shots
+                          const imageKey = this.plantType && PLANT_TYPES[this.plantType] && PLANT_TYPES[this.plantType].slowsEnemies
+                              ? 'projectilecold.png'
+                              : 'projectile.png';
                           const img = imageCache[imageKey];
                           if (img) {
                               ctx.drawImage(img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
@@ -915,7 +912,7 @@ window.initGame = function initGame(level) {
                           if (this.slowEndTime && now < this.slowEndTime) {
                               ctx.save();
                               ctx.globalAlpha = 0.5;
-                              const iceImg = imageCache['ice.png'] || imageCache['projectilecold.png'];
+                              const iceImg = imageCache['ice.png'];
                               if (iceImg) {
                                   ctx.drawImage(iceImg, this.x - this.type.width / 2, this.y - this.type.height / 2, this.type.width, this.type.height);
                               } else {

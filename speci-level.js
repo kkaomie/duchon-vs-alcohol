@@ -105,21 +105,18 @@ class SpeciLevel {
                             <input type="checkbox" id="enemyType-ealc1" checked>
                             <label for="enemyType-ealc1">
                                 <img src="./assets/ealc1.png" alt="ealc1" class="speci-enemy-image">
-                                ealc1
                             </label>
                         </div>
                         <div class="speci-enemy-item">
                             <input type="checkbox" id="enemyType-ealc2" checked>
                             <label for="enemyType-ealc2">
                                 <img src="./assets/ealc2.png" alt="ealc2" class="speci-enemy-image">
-                                ealc2
                             </label>
                         </div>
                         <div class="speci-enemy-item">
                             <input type="checkbox" id="enemyType-ealc3" checked>
                             <label for="enemyType-ealc3">
                                 <img src="./assets/ealc3.png" alt="ealc3" class="speci-enemy-image">
-                                ealc3
                             </label>
                         </div>
                     </div>

@@ -186,17 +186,6 @@ class PlantSelector {
             return; // Already created, don't create again
         }
         
-        // Create plant selector button - make it bigger
-        const btn = document.createElement('button');
-        btn.className = 'plant-selector-button';
-        btn.textContent = 'záhrada duchoňov';
-        btn.id = 'plant-selector-btn';
-        btn.title = 'výber rastlichoňov';
-        btn.style.width = '250px';
-        btn.style.height = '80px';
-        btn.style.fontSize = '20px';
-        levelsScreen.appendChild(btn);
-
         // Create plant selector screen
         const screen = document.createElement('div');
         screen.id = 'plant-selector-screen';

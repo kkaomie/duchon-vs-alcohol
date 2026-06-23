@@ -292,11 +292,6 @@ window.initGame = function initGame(level) {
                 const timeSinceLastSpawn = currentTime - lastSpawn;
                 const shouldSpawn = timeSinceLastSpawn >= spawnConfig.spawnInterval && Math.random() < spawnConfig.spawnChance;
 
-                // Debug: log spawn check for non-ealc1 types
-                if (enemyType !== 'ealc1' && gametime > 65000 && gametime < 75000) {
-                    console.log(`[Speci Wave Check] ${enemyType}: interval=${spawnConfig.spawnInterval.toFixed(0)}, chance=${spawnConfig.spawnChance}, timeSince=${timeSinceLastSpawn.toFixed(0)}, shouldSpawn=${shouldSpawn}`);
-                }
-
                 if (shouldSpawn) {
                     enemiesToSpawn.push(enemyType);
                 }
@@ -1470,9 +1465,9 @@ window.initGame = function initGame(level) {
                                   : levelData.shouldSpawnEnemy(waveEnemyConfig, lastEnemySpawnTimes, now, level, enemySpeedMultiplier);
                               const spawnList = Array.isArray(enemyTypesToSpawn) ? enemyTypesToSpawn : (enemyTypesToSpawn ? [enemyTypesToSpawn] : []);
                               
-                              // Debug: log what we're trying to spawn
-                              if (level === 99 && gametime > 65000 && gametime < 75000 && spawnList.length > 0) {
-                                  console.log(`[Speci Spawn] Trying to spawn: ${spawnList.join(', ')}, ENEMY_TYPES has: ${Object.keys(ENEMY_TYPES).join(', ')}`);
+                              // Debug: log at 60-90s mark
+                              if (level === 99 && gametime > 60000 && gametime < 90000 && gametime % 1000 < 30) {
+                                  console.log(`[Speci @ ${(gametime/1000).toFixed(1)}s] Wave config: ${waveEnemyConfig.waveName}, Enemy types in config: ${Object.keys(waveEnemyConfig.enemies).join(', ')}, Spawn result: ${spawnList.join(', ') || 'none'}`);
                               }
                               
                               spawnList.forEach(enemyTypeToSpawn => {
@@ -1484,7 +1479,7 @@ window.initGame = function initGame(level) {
                                       ? modifiedEnemyTypes[enemyTypeToSpawn]
                                       : ENEMY_TYPES[enemyTypeToSpawn];
                                   if (!enemyType) {
-                                      console.log(`[Speci Spawn ERROR] Enemy type ${enemyTypeToSpawn} not found in ENEMY_TYPES`);
+                                      console.log(`[Speci ERROR @ ${(gametime/1000).toFixed(1)}s] Enemy type ${enemyTypeToSpawn} not found in ENEMY_TYPES`);
                                       return;
                                   }
 
